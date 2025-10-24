@@ -11,6 +11,26 @@
 - **Extensible Architecture**: Easy to add new sizes, fonts, or validation rules without modifying core logic
 - **PNG Image Output**: Direct binary PNG response allows clients to download or display images without additional processing
 
+## Use Cases
+
+```mermaid
+graph LR
+    Client["👤 Client"]
+    Health["Health check"]
+    Gen["Generate cover image"]
+    Retrieve["Retrieve/download image"]
+    
+    Client -->|uses| Health
+    Client -->|uses| Gen
+    Client -->|uses| Retrieve
+```
+
+The system serves a single **Client** actor (any user or external service) with three primary capabilities:
+
+- **Health check**: Verify system availability and status
+- **Generate cover image**: Create a PNG image with custom text and styling
+- **Retrieve/download image**: Access the generated image buffer
+
 ## Default Sizes
 
 The system supports predefined size presets to ensure consistency and easy expansion:
@@ -160,3 +180,36 @@ sequenceDiagram
         GCI-->>Client: HTTP 400 (error details)
     end
 ```
+
+## Deployment Architecture
+
+```mermaid
+graph TB
+    subgraph Client["Client Layer"]
+        Browser["🌐 Web Browser / Client"]
+    end
+    
+    subgraph Frontend["Frontend - Vercel"]
+        FE["Next.js / React App"]
+    end
+    
+    subgraph Backend["Backend - Azure"]
+        FA["Azure Function App<br/>(generateCoverImage)"]
+    end
+    
+    subgraph Storage["Azure Storage"]
+        Blob["Blob Storage<br/>(optional)"]
+    end
+    
+    Browser -->|HTTPS| FE
+    FE -->|HTTP/REST| FA
+    FA -->|Read/Write| Blob
+    FA -->|Image Buffer| FE
+    FE -->|PNG Download| Browser
+```
+
+**Deployment targets:**
+
+- **Frontend**: Vercel (React/Next.js application)
+- **Backend API**: Azure Function App (serverless, handles `generateCoverImage` and `healthCheck`)
+- **Storage** (optional): Azure Blob Storage for image caching or archival
