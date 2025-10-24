@@ -1,0 +1,22 @@
+{
+  "name": "Node.js & TypeScript & Azure CLI",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    },
+    "ghcr.io/devcontainers/features/azure-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-typescript-next",
+        "ms-azuretools.vscode-azurecli"
+      ]
+    }
+  },
+  "forwardPorts": [3000]
+}
