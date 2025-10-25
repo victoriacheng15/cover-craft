@@ -39,8 +39,9 @@ jobs:
 
       - name: Zip api folder for deployment
         run: |
-          # create zip with the api folder content
-          zip -r release.zip ./${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          # create zip with the api folder content (without the api folder itself)
+          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          zip -r ../release.zip .
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
