@@ -38,7 +38,8 @@ jobs:
       shell: bash
       run: |
         cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        zip -r ../deploy.zip . -x local.settings.json
         az functionapp deployment source config-zip \
           --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
           --resource-group personal-projects \
-          --src <(zip -r - .)
+          --src ../deploy.zip
