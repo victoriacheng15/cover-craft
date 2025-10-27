@@ -12,7 +12,7 @@ describe("generateCoverImage", () => {
 	// Helper to create mock request with JSON body
 	const createMockRequest = (
 		query: Record<string, string> = {},
-		body: any = {},
+		body: Record<string, unknown> = {},
 	): HttpRequest =>
 		({
 			url: "http://localhost:7071/api/generateCoverImage",
@@ -82,7 +82,7 @@ describe("generateCoverImage", () => {
 
 		it("should prefer query parameters over body parameters", async () => {
 			const mockRequest = createMockRequest(
-				{ 
+				{
 					heading: "QueryHeading",
 					width: "800",
 					height: "600",
@@ -133,7 +133,10 @@ describe("generateCoverImage", () => {
 		});
 
 		it("should reject width greater than 1200", async () => {
-			const mockRequest = createMockRequest({ width: "1201", imageName: "test" });
+			const mockRequest = createMockRequest({
+				width: "1201",
+				imageName: "test",
+			});
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
@@ -160,7 +163,10 @@ describe("generateCoverImage", () => {
 		});
 
 		it("should reject height greater than 1200", async () => {
-			const mockRequest = createMockRequest({ height: "1201", imageName: "test" });
+			const mockRequest = createMockRequest({
+				height: "1201",
+				imageName: "test",
+			});
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
@@ -176,7 +182,10 @@ describe("generateCoverImage", () => {
 		});
 
 		it("should validate textColor is valid hex color", async () => {
-			const mockRequest = createMockRequest({ textColor: "rgb(255,0,0)", imageName: "test" });
+			const mockRequest = createMockRequest({
+				textColor: "rgb(255,0,0)",
+				imageName: "test",
+			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect([200, 400]).toContain(response.status);
@@ -201,7 +210,10 @@ describe("generateCoverImage", () => {
 
 		it("should reject heading longer than 55 characters", async () => {
 			const longHeading = "a".repeat(56);
-			const mockRequest = createMockRequest({ heading: longHeading, imageName: "test" });
+			const mockRequest = createMockRequest({
+				heading: longHeading,
+				imageName: "test",
+			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
@@ -226,14 +238,20 @@ describe("generateCoverImage", () => {
 
 		it("should reject subheading longer than 120 characters", async () => {
 			const longSubheading = "b".repeat(121);
-			const mockRequest = createMockRequest({ subheading: longSubheading, imageName: "test" });
+			const mockRequest = createMockRequest({
+				subheading: longSubheading,
+				imageName: "test",
+			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
 
 		it("should validate font is in allowed fonts list", async () => {
-			const mockRequest = createMockRequest({ font: "UnknownFont", imageName: "test" });
+			const mockRequest = createMockRequest({
+				font: "UnknownFont",
+				imageName: "test",
+			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect([200, 400]).toContain(response.status);

@@ -30,7 +30,9 @@ interface ValidationError {
 }
 
 // Extract parameters from query and body
-async function extractParams(request: HttpRequest): Promise<Partial<ImageParams>> {
+async function extractParams(
+	request: HttpRequest,
+): Promise<Partial<ImageParams>> {
 	const params: Partial<ImageParams> = {};
 
 	// Get query parameters
@@ -89,7 +91,13 @@ function validateParams(params: ImageParams): ValidationError[] {
 	const errors: ValidationError[] = [];
 
 	// Validate width (always present due to defaults)
-	if (params.width === undefined || !Number.isInteger(params.width) || isNaN(params.width) || params.width < SIZE_RANGE.min || params.width > SIZE_RANGE.max) {
+	if (
+		params.width === undefined ||
+		!Number.isInteger(params.width) ||
+		Number.isNaN(params.width) ||
+		params.width < SIZE_RANGE.min ||
+		params.width > SIZE_RANGE.max
+	) {
 		errors.push({
 			field: "width",
 			message: `Width must be an integer between ${SIZE_RANGE.min} and ${SIZE_RANGE.max}`,
@@ -97,7 +105,13 @@ function validateParams(params: ImageParams): ValidationError[] {
 	}
 
 	// Validate height (always present due to defaults)
-	if (params.height === undefined || !Number.isInteger(params.height) || isNaN(params.height) || params.height < SIZE_RANGE.min || params.height > SIZE_RANGE.max) {
+	if (
+		params.height === undefined ||
+		!Number.isInteger(params.height) ||
+		Number.isNaN(params.height) ||
+		params.height < SIZE_RANGE.min ||
+		params.height > SIZE_RANGE.max
+	) {
 		errors.push({
 			field: "height",
 			message: `Height must be an integer between ${SIZE_RANGE.min} and ${SIZE_RANGE.max}`,
