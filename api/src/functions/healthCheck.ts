@@ -6,8 +6,8 @@ import {
 } from "@azure/functions";
 
 export async function healthCheck(
-	request: HttpRequest,
-	context: InvocationContext,
+	_request: HttpRequest,
+	_context: InvocationContext,
 ): Promise<HttpResponseInit> {
 	const now = new Date();
 
