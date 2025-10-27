@@ -3,7 +3,8 @@ name: API - PR Build & Test Check
 on:
   pull_request:
     branches: [main]
-
+    paths:
+      - 'api/**'
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: "api/"
   NODE_VERSION: "22.x"
