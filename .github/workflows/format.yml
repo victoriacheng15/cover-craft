@@ -1,4 +1,4 @@
-name: biome format
+name: Biome Format Check
 
 on:
   pull_request:
