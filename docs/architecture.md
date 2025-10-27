@@ -7,6 +7,7 @@
 - **Modular Design**: The system is divided into clear, single-responsibility components (extraction, validation, rendering, response building)
 - **Server-side Validation First**: All inputs are validated on the backend to ensure system safety, regardless of frontend validation
 - **Flexible Sizing**: Supports both predefined size presets (e.g., `post: 1200x627`, `square: 1080x1080`) and custom dimensions within acceptable ranges
+- **Custom Image Naming**: Generated images include a user-provided name with timestamp suffix (e.g., `my-awesome-post-1729003305.png`) for easy organization and collision avoidance
 - **Clean Data Flow**: Request parameters flow through extraction → validation → rendering → response, with error handling at each stage
 - **Extensible Architecture**: Easy to add new sizes, fonts, or validation rules without modifying core logic
 - **PNG Image Output**: Direct binary PNG response allows clients to download or display images without additional processing
@@ -60,6 +61,7 @@ classDiagram
         +string font
         +string heading
         +string subheading
+        +string imageName
     }
 
     class DefaultSizes {
