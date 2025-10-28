@@ -17,4 +17,4 @@ jobs:
         with:
           node-version: '22.x'
       - name: Run Biome check
-        run: npx @biomejs/biome check .
+        run: npm run lint
