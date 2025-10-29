@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import Footer from "./Footer";
 
 describe("Footer", () => {
@@ -21,6 +21,12 @@ describe("Footer", () => {
   it("applies correct classes for styling", () => {
     const { container } = render(<Footer />);
     const footer = container.querySelector("footer");
-    expect(footer).toHaveClass("bg-gray-700", "dark:bg-gray-900", "text-gray-50", "py-4", "mt-8");
+    expect(footer).toHaveClass(
+      "bg-gray-700",
+      "dark:bg-gray-900",
+      "text-gray-50",
+      "py-4",
+      "mt-8",
+    );
   });
 });

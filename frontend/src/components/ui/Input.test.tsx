@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import Input from "./Input";
 
 describe("Input", () => {
@@ -35,7 +35,9 @@ describe("Input", () => {
 
   it("handles value and onChange", () => {
     const handleChange = vi.fn();
-    render(<Input data-testid="input-field" value="test" onChange={handleChange} />);
+    render(
+      <Input data-testid="input-field" value="test" onChange={handleChange} />,
+    );
 
     const input = screen.getByTestId("input-field") as HTMLInputElement;
     expect(input.value).toBe("test");
@@ -59,7 +61,9 @@ describe("Input", () => {
   it("renders with different input types", () => {
     const types = ["text", "email", "password", "number", "date"];
     types.forEach((type) => {
-      const { unmount } = render(<Input data-testid={`input-${type}`} type={type as any} />);
+      const { unmount } = render(
+        <Input data-testid={`input-${type}`} type={type} />,
+      );
       const input = screen.getByTestId(`input-${type}`) as HTMLInputElement;
       expect(input.type).toBe(type);
       unmount();

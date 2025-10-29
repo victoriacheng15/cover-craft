@@ -1,6 +1,13 @@
 import { useState } from "react";
+import {
+  Button,
+  Card,
+  ColorPicker,
+  Input,
+  SectionTitle,
+  Select,
+} from "@/components/ui";
 import FormField from "./FormField";
-import { Card, SectionTitle, Input, Select, ColorPicker, Button } from "@/components/ui";
 
 const SIZE_PRESETS = [
   { label: "Post (1200 × 627)", width: 1200, height: 627 },
@@ -33,7 +40,11 @@ export default function CoverForm() {
         <SectionTitle>Cover Details</SectionTitle>
 
         <FormField label="Size Preset" htmlFor="size-preset">
-          <Select id="size-preset" value={size} onChange={(e) => setSize(e.target.value)}>
+          <Select
+            id="size-preset"
+            value={size}
+            onChange={(e) => setSize(e.target.value)}
+          >
             {SIZE_PRESETS.map((preset) => (
               <option key={preset.label} value={preset.label}>
                 {preset.label}
@@ -42,7 +53,11 @@ export default function CoverForm() {
           </Select>
         </FormField>
 
-        <FormField label="Image Name" description="Filename for your cover image" htmlFor="image-name">
+        <FormField
+          label="Image Name"
+          description="Filename for your cover image"
+          htmlFor="image-name"
+        >
           <Input
             id="image-name"
             placeholder="my-awesome-cover"
@@ -51,7 +66,11 @@ export default function CoverForm() {
           />
         </FormField>
 
-        <FormField label="Heading" description="Main cover title" htmlFor="heading">
+        <FormField
+          label="Heading"
+          description="Main cover title"
+          htmlFor="heading"
+        >
           <Input
             id="heading"
             placeholder="Enter your cover title..."
@@ -60,7 +79,11 @@ export default function CoverForm() {
           />
         </FormField>
 
-        <FormField label="Subheading" description="Subtitle or author name" htmlFor="subheading">
+        <FormField
+          label="Subheading"
+          description="Subtitle or author name"
+          htmlFor="subheading"
+        >
           <Input
             id="subheading"
             placeholder="Subtitle or author name..."
@@ -78,11 +101,19 @@ export default function CoverForm() {
         </FormField>
 
         <FormField label="Text Color" htmlFor="text-color">
-          <ColorPicker id="text-color" value={textColor} onChange={(e) => setTextColor(e.target.value)} />
+          <ColorPicker
+            id="text-color"
+            value={textColor}
+            onChange={(e) => setTextColor(e.target.value)}
+          />
         </FormField>
 
         <FormField label="Font" htmlFor="font">
-          <Select id="font" value={font} onChange={(e) => setFont(e.target.value)}>
+          <Select
+            id="font"
+            value={font}
+            onChange={(e) => setFont(e.target.value)}
+          >
             {FONT_OPTIONS.map((f) => (
               <option key={f} value={f}>
                 {f}
@@ -111,7 +142,9 @@ export default function CoverForm() {
           }}
         >
           <div className="text-center">
-            <h1 className="text-2xl font-bold">{heading || "Heading Preview"}</h1>
+            <h1 className="text-2xl font-bold">
+              {heading || "Heading Preview"}
+            </h1>
             <p className="text-lg">{subheading || "Subheading Preview"}</p>
           </div>
         </div>

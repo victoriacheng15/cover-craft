@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import Card from "./Card";
 
 describe("Card", () => {
@@ -7,7 +7,7 @@ describe("Card", () => {
     render(
       <Card>
         <p>Card content</p>
-      </Card>
+      </Card>,
     );
 
     expect(screen.getByText("Card content")).toBeInTheDocument();
@@ -17,7 +17,7 @@ describe("Card", () => {
     render(
       <Card className="custom-class">
         <p>Styled card</p>
-      </Card>
+      </Card>,
     );
 
     const cardElement = screen.getByText("Styled card").parentElement;

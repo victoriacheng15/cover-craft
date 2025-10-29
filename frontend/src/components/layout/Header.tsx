@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {ThemeToggle} from "@/components/ui";
+import { ThemeToggle } from "@/components/ui";
 
 export default function Header() {
   return (

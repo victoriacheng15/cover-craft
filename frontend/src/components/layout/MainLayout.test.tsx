@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import MainLayout from "./MainLayout";
 
 describe("MainLayout", () => {
@@ -23,7 +23,7 @@ describe("MainLayout", () => {
     render(
       <MainLayout>
         <div>Page Content</div>
-      </MainLayout>
+      </MainLayout>,
     );
 
     // Check children rendered

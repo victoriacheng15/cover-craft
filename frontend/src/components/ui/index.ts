@@ -6,12 +6,4 @@ import SectionTitle from "./SectionTitle";
 import Select from "./Select";
 import ThemeToggle from "./ThemeToggle";
 
-export {
-  Button,
-  Card,
-  ColorPicker,
-  Input,
-  SectionTitle,
-  Select,
-  ThemeToggle,
-}
+export { Button, Card, ColorPicker, Input, SectionTitle, Select, ThemeToggle };

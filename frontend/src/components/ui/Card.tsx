@@ -8,7 +8,7 @@ export default function Card({ className, children, ...props }: CardProps) {
       className={cn(
         "rounded-xl border border-border bg-card p-4 shadow-sm",
         "dark:bg-gray-800 dark:border-gray-700",
-        className
+        className,
       )}
       {...props}
     >

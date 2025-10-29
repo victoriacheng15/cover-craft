@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import FormField from "./FormField";
 
 describe("FormField", () => {
@@ -7,7 +7,7 @@ describe("FormField", () => {
     render(
       <FormField label="Username">
         <input type="text" />
-      </FormField>
+      </FormField>,
     );
 
     const label = screen.getByText("Username");
@@ -19,7 +19,7 @@ describe("FormField", () => {
     render(
       <FormField label="Email">
         <input type="email" />
-      </FormField>
+      </FormField>,
     );
 
     const input = screen.getByRole("textbox");
@@ -30,7 +30,7 @@ describe("FormField", () => {
     render(
       <FormField label="Password" description="Must be at least 8 characters">
         <input type="password" />
-      </FormField>
+      </FormField>,
     );
 
     const description = screen.getByText("Must be at least 8 characters");
@@ -41,7 +41,7 @@ describe("FormField", () => {
     render(
       <FormField label="Password" error="Required field">
         <input type="password" />
-      </FormField>
+      </FormField>,
     );
 
     const error = screen.getByText("Required field");
@@ -53,7 +53,7 @@ describe("FormField", () => {
     render(
       <FormField label="Bio" className="custom-class">
         <textarea />
-      </FormField>
+      </FormField>,
     );
 
     const container = screen.getByText("Bio").parentElement;
@@ -64,7 +64,7 @@ describe("FormField", () => {
     render(
       <FormField label="Username" htmlFor="username">
         <input id="username" />
-      </FormField>
+      </FormField>,
     );
 
     const label = screen.getByText("Username");

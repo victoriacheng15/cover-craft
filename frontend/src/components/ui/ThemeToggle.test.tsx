@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import ThemeToggle from "./ThemeToggle";
 
 // Mock localStorage
@@ -7,9 +7,15 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => { store[key] = value.toString(); },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
   };
 })();
 Object.defineProperty(window, "localStorage", { value: localStorageMock });
@@ -81,16 +87,36 @@ describe("ThemeToggle", () => {
   });
 
   it("respects system preference when no stored theme", () => {
-    (window.matchMedia as any).mockImplementation((query: string) => ({
-      matches: query === "(prefers-color-scheme: dark)",
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
+    // (window.matchMedia as any).mockImplementation((query: string) => ({
+    //   matches: query === "(prefers-color-scheme: dark)",
+    //   media: query,
+    //   onchange: null,
+    //   addListener: vi.fn(),
+    //   removeListener: vi.fn(),
+    //   addEventListener: vi.fn(),
+    //   removeEventListener: vi.fn(),
+    //   dispatchEvent: vi.fn(),
+    // }));
+
+    // Define a typed mock for window.matchMedia
+    const mockMatchMedia = vi.fn(
+      (query: string): MediaQueryList => ({
+        matches: query === "(prefers-color-scheme: dark)",
+        media: query,
+        onchange: null,
+        addListener: vi.fn(), // deprecated but still part of the interface
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }),
+    );
+
+    // Override window.matchMedia
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      value: mockMatchMedia,
+    });
 
     render(<ThemeToggle data-testid="theme-toggle" />);
     const button = screen.getByRole("button", { name: /toggle theme/i });

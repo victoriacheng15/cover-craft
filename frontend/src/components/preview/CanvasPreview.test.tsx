@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import CanvasPreview from "./CanvasPreview";
 
 describe("CanvasPreview", () => {
@@ -11,7 +11,7 @@ describe("CanvasPreview", () => {
         backgroundColor="#ffffff"
         textColor="#000000"
         font="Arial"
-      />
+      />,
     );
 
     expect(screen.getByText("Test Heading")).toBeInTheDocument();
@@ -26,7 +26,7 @@ describe("CanvasPreview", () => {
         backgroundColor="#ffffff"
         textColor="#000000"
         font="Arial"
-      />
+      />,
     );
 
     expect(screen.getByText("Heading Preview")).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe("CanvasPreview", () => {
         font="Roboto"
         width={800}
         height={400}
-      />
+      />,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -64,7 +64,7 @@ describe("CanvasPreview", () => {
         backgroundColor="#000000"
         textColor="#ffffff"
         font="Arial"
-      />
+      />,
     );
 
     const wrapper = container.firstChild as HTMLElement;

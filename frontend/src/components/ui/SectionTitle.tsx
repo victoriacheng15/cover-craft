@@ -17,7 +17,14 @@ export default function SectionTitle({
   };
 
   return (
-    <h2 className={cn("mb-2 text-gray-900 dark:text-gray-50", sizeClasses[size], className)} {...props}>
+    <h2
+      className={cn(
+        "mb-2 text-gray-900 dark:text-gray-50",
+        sizeClasses[size],
+        className,
+      )}
+      {...props}
+    >
       {children}
     </h2>
   );

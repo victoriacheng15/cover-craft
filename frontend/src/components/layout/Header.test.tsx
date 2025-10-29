@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import Header from "./Header";
 
 describe("Header", () => {
@@ -50,7 +50,7 @@ describe("Header", () => {
       "bg-gray-700",
       "dark:bg-gray-900",
       "text-gray-50",
-      "shadow-sm"
+      "shadow-sm",
     );
   });
 });
