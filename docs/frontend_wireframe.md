@@ -83,9 +83,6 @@ A simple, clean layout for generating custom cover images with real-time preview
 ### Header
 
 - **Logo/Title**: "Cover Craft" with icon
-- **Navigation**:
-  - Dark mode toggle
-  - GitHub repository link
 - **Styling**: Sticky header, minimal design
 
 ### Main Section
@@ -231,62 +228,27 @@ A simple, clean layout for generating custom cover images with real-time preview
 
 ## Color Scheme
 
-### Cover Image Default Theme: Charcoal + Mint Green
+### App UI Color Scheme (Latest)
 
-**Primary Colors:**
+**Light Theme:**
 
-- **Background (Charcoal)**: `bg-gray-700` - `#374151`
-- **Text (Soft White)**: `text-gray-50` - `#F9FAFB`
-- **Accent (Mint Green)**: `bg-emerald-500` - `#10B981`
-
-**Additional Shades:**
-
-```text
-Charcoal Variations:
-- Lighter (hover, cards):    bg-gray-600  - #4B5563
-- Default (main bg):         bg-gray-700  - #374151
-- Darker (emphasis):         bg-gray-800  - #1F2937
-
-Mint Green Variations:
-- Light (subtle accents):    bg-emerald-100 - #D1FAE5
-- Default (main accent):     bg-emerald-500 - #10B981
-- Dark (hover, active):      bg-emerald-600 - #059669
-```
-
-**Usage Examples:**
-
-```tsx
-// Cover background
-className="bg-gray-700"
-
-// Title text
-className="text-gray-50 text-4xl font-bold"
-
-// Subtitle/accent text
-className="text-emerald-500"
-
-// Buttons/CTAs
-className="bg-emerald-500 hover:bg-emerald-600 text-gray-50"
-
-// Borders/dividers
-className="border-emerald-500"
-```
-
-### App UI Color Scheme (Light/Dark Modes)
-
-**Light Mode:**
-
-- Background: `bg-gray-50` - `#F9FAFB` (soft white)
-- Card/Form: `bg-gray-100` - `#F3F4F6` (very light gray)
+- Background: `bg-emerald-100` - `#D1FAE5` (mint tint)
+- Card/Form: `bg-gray-50` - `#F9FAFB` (soft white)
 - Text: `text-gray-900` - `#111827` (soft black)
-- Accent: `bg-emerald-500` (mint green)
+- Accent: `bg-emerald-500` - `#10B981` (mint green)
 
-**Dark Mode:**
+**Component Usage:**
 
-- Background: `dark:bg-gray-900` - `#111827` (soft black)
-- Card/Form: `dark:bg-gray-800` - `#1F2937` (charcoal)
-- Text: `dark:text-gray-50` - `#F9FAFB` (soft white)
-- Accent: `dark:bg-emerald-400` (lighter mint for dark mode)
+- MainLayout: `bg-emerald-100`, `text-gray-900`
+- Card: `border-emerald-500`, `bg-gray-50`
+- Header: `bg-emerald-200`, `text-gray-900`
+- Footer: `bg-emerald-200`, `text-gray-900`, `hover:text-emerald-500`
+- FormField: `text-gray-900`, `text-gray-500`, `text-red-500`
+- SectionTitle: `text-gray-900`
+- Input: `border-gray-900`, `bg-gray-50`, `placeholder:text-muted-foreground`, `focus-visible:ring-ring`
+- Select: `border-gray-900`, `bg-gray-50`, `focus-visible:ring-ring`
+- Button: `focus:ring-emerald-400`
+- CanvasPreview: `border-gray-300`
 
 ---
 
