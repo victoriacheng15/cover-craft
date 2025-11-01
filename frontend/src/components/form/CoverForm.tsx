@@ -81,11 +81,7 @@ export default function CoverForm() {
           />
         </FormField>
 
-        <FormField
-          label="Subtitle"
-          description="Subtitle"
-          htmlFor="subheading"
-        >
+        <FormField label="Subtitle" description="Subtitle" htmlFor="subheading">
           <Input
             id="subheading"
             placeholder="Subtitle"
