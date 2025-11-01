@@ -8,7 +8,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50">
+    <div className="flex flex-col min-h-screen bg-emerald-100 text-gray-900">
       {/* Header */}
       <Header />
 
