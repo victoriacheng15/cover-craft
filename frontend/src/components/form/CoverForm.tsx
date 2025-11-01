@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import {
   Button,
@@ -67,7 +69,7 @@ export default function CoverForm() {
         </FormField>
 
         <FormField
-          label="Heading"
+          label="Title"
           description="Main cover title"
           htmlFor="heading"
         >
@@ -80,13 +82,13 @@ export default function CoverForm() {
         </FormField>
 
         <FormField
-          label="Subheading"
-          description="Subtitle or author name"
+          label="Subtitle"
+          description="Subtitle"
           htmlFor="subheading"
         >
           <Input
             id="subheading"
-            placeholder="Subtitle or author name..."
+            placeholder="Subtitle"
             value={subheading}
             onChange={(e) => setSubheading(e.target.value)}
           />
