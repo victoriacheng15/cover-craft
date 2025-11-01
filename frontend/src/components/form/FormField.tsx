@@ -26,11 +26,7 @@ export default function FormField({
         {label}
       </label>
       {children}
-      {description && (
-        <p className="text-xs text-gray-500">
-          {description}
-        </p>
-      )}
+      {description && <p className="text-xs text-gray-500">{description}</p>}
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );

@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-emerald-200 text-gray-900 shadow-sm">
