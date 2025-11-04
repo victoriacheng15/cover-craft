@@ -9,6 +9,7 @@ import {
   SectionTitle,
   Select,
 } from "@/components/ui";
+import { downloadImage, generateCoverImage } from "@/lib";
 import FormField from "./FormField";
 
 const SIZE_PRESETS = [
@@ -27,12 +28,44 @@ export default function CoverForm() {
   const [textColor, setTextColor] = useState("#F9FAFB");
   const [font, setFont] = useState(FONT_OPTIONS[0]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [generatedImage, setGeneratedImage] = useState<Blob | null>(null);
 
-  const handleGenerate = () => {
-    // Placeholder for API call
-    setIsGenerating(true);
-    setTimeout(() => setIsGenerating(false), 1000);
-    // Replace with actual API integration later
+  const handleGenerate = async () => {
+    try {
+      setIsGenerating(true);
+      setError(null);
+
+      // Get selected size dimensions
+      const selectedSize = SIZE_PRESETS.find((preset) => preset.label === size);
+      if (!selectedSize) {
+        throw new Error("Invalid size selected");
+      }
+
+      // Call API to generate cover image
+      const imageBlob = await generateCoverImage({
+        width: selectedSize.width,
+        height: selectedSize.height,
+        backgroundColor,
+        textColor,
+        font,
+        heading,
+        subheading,
+        imageName,
+      });
+
+      setGeneratedImage(imageBlob);
+
+      // Automatically download the image
+      const timestamp = Math.floor(Date.now() / 1000);
+      const filename = `${imageName}-${timestamp}.png`;
+      downloadImage(imageBlob, filename);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate image");
+      console.error("Error generating image:", err);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -125,6 +158,12 @@ export default function CoverForm() {
             ))}
           </Select>
         </FormField>
+
+        {error && (
+          <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            <p className="text-sm font-medium">{error}</p>
+          </div>
+        )}
 
         <div className="flex justify-center">
           <Button
