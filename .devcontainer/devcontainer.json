@@ -4,7 +4,10 @@
     "ghcr.io/devcontainers/features/node:1": {
       "version": "lts"
     },
-    "ghcr.io/devcontainers/features/azure-cli:1": {}
+    "ghcr.io/devcontainers/features/azure-cli:1": {},
+    "ghcr.io/devcontainers/features/azure-functions-core-tools:1": {
+        "version": "latest"
+    }
   },
   "customizations": {
     "vscode": {
@@ -18,5 +21,6 @@
       ]
     }
   },
-  "forwardPorts": [3000]
+  "forwardPorts": [3000, 7071],
+  "postCreateCommand": "npm install -g @google/gemini-cli"
 }
