@@ -3,8 +3,7 @@ import { describe, expect, it } from "vitest";
 import CoverForm from "./CoverForm";
 
 describe("CoverForm", () => {
-  // keep failing so hold on and get back to this later
-  it.skip("renders all form fields correctly", () => {
+  it("renders all form fields correctly", () => {
     render(<CoverForm />);
 
     // Scope to the form card
@@ -21,20 +20,20 @@ describe("CoverForm", () => {
     ) as HTMLSelectElement;
     expect(sizeSelect.value).toBe("Post (1200 × 627)");
 
-    // Inputs
-    const imageNameInput = within(formCard).getByLabelText(
-      /Image Name/i,
+    // Inputs - use placeholder to find specific inputs
+    const imageNameInput = within(formCard).getByPlaceholderText(
+      "my-awesome-cover",
     ) as HTMLInputElement;
-    const headingInput = within(formCard).getByLabelText(
-      /Heading/i,
+    const titleInput = within(formCard).getByPlaceholderText(
+      "Enter your cover title...",
     ) as HTMLInputElement;
-    const subheadingInput = within(formCard).getByLabelText(
-      /Subheading/i,
+    const subtitleInput = within(formCard).getByPlaceholderText(
+      "Subtitle",
     ) as HTMLInputElement;
 
     expect(imageNameInput).toBeInTheDocument();
-    expect(headingInput).toBeInTheDocument();
-    expect(subheadingInput).toBeInTheDocument();
+    expect(titleInput).toBeInTheDocument();
+    expect(subtitleInput).toBeInTheDocument();
 
     // Color pickers
     const bgColorInput = within(formCard).getByLabelText(
@@ -45,7 +44,7 @@ describe("CoverForm", () => {
     ) as HTMLInputElement;
 
     expect(bgColorInput.value).toBe("#374151");
-    expect(textColorInput.value).toBe("#F9FAFB");
+    expect(textColorInput.value).toBe("#f9fafb");
 
     // Font select
     const fontSelect = within(formCard).getByLabelText(
@@ -70,13 +69,13 @@ describe("CoverForm", () => {
     const imageNameInput = inputs.find(
       (input) => (input as HTMLInputElement).placeholder === "my-awesome-cover",
     ) as HTMLInputElement;
-    const headingInput = inputs.find(
+    const titleInput = inputs.find(
       (input) =>
         (input as HTMLInputElement).placeholder === "Enter your cover title...",
     ) as HTMLInputElement;
 
     fireEvent.change(imageNameInput, { target: { value: "test-cover" } });
-    fireEvent.change(headingInput, { target: { value: "Test Heading" } });
+    fireEvent.change(titleInput, { target: { value: "Test Title" } });
 
     expect(generateBtn).not.toBeDisabled();
   });

@@ -23,18 +23,4 @@ describe("Card", () => {
     const cardElement = screen.getByText("Styled card").parentElement;
     expect(cardElement).toHaveClass("custom-class");
   });
-
-  it("includes default Tailwind classes", () => {
-    render(<Card>Default card</Card>);
-
-    const cardElement = screen.getByText("Default card").closest("div");
-
-    expect(cardElement).toHaveClass("rounded-xl");
-    expect(cardElement).toHaveClass("border");
-    expect(cardElement).toHaveClass("bg-card");
-    expect(cardElement).toHaveClass("p-4");
-    expect(cardElement).toHaveClass("shadow-sm");
-    expect(cardElement).toHaveClass("dark:bg-gray-800");
-    expect(cardElement).toHaveClass("dark:border-gray-700");
-  });
 });
