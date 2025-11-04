@@ -29,7 +29,7 @@ export default function CoverForm() {
   const [font, setFont] = useState(FONT_OPTIONS[0]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [generatedImage, setGeneratedImage] = useState<Blob | null>(null);
+  const [_generatedImage, setGeneratedImage] = useState<Blob | null>(null);
 
   const handleGenerate = async () => {
     try {
