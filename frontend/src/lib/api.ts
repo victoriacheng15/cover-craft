@@ -18,9 +18,7 @@ export async function healthCheck(): Promise<HealthCheckResponse> {
 /**
  * Generate cover image
  */
-export async function generateCoverImage(
-  params: ImageParams,
-): Promise<Blob> {
+export async function generateCoverImage(params: ImageParams): Promise<Blob> {
   const response = await fetch(`${API_URL}/generateCoverImage`, {
     method: "POST",
     headers: {
