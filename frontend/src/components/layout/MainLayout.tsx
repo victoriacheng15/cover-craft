@@ -13,9 +13,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <Header />
 
       {/* Main content */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
+      <main className="flex-1 w-[90%] max-w-7xl mx-auto py-8">{children}</main>
 
       {/* Footer */}
       <Footer />

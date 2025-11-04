@@ -18,7 +18,7 @@ export default function FormField({
   ...props
 }: FormFieldProps) {
   return (
-    <div className={cn("space-y-1", className)} {...props}>
+    <div className={cn("flex flex-col gap-1", className)} {...props}>
       <label
         htmlFor={htmlFor}
         className="block text-sm font-medium text-gray-900"

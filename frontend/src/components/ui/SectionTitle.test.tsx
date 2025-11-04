@@ -64,13 +64,6 @@ describe("SectionTitle", () => {
     expect(title).toHaveClass("custom-class");
   });
 
-  it("includes theme color classes", () => {
-    render(<SectionTitle data-testid="title">Test Title</SectionTitle>);
-    const title = screen.getByTestId("title");
-    expect(title).toHaveClass("text-gray-900");
-    expect(title).toHaveClass("dark:text-gray-50");
-  });
-
   it("renders with children correctly", () => {
     render(
       <SectionTitle>

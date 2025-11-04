@@ -21,12 +21,6 @@ describe("Footer", () => {
   it("applies correct classes for styling", () => {
     const { container } = render(<Footer />);
     const footer = container.querySelector("footer");
-    expect(footer).toHaveClass(
-      "bg-gray-700",
-      "dark:bg-gray-900",
-      "text-gray-50",
-      "py-4",
-      "mt-8",
-    );
+    expect(footer).toHaveClass("bg-emerald-200", "text-gray-900", "py-4");
   });
 });

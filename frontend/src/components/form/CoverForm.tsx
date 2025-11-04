@@ -36,9 +36,9 @@ export default function CoverForm() {
   };
 
   return (
-    <div className="grid md:grid-cols-5 gap-6">
+    <div className="w-full flex flex-col md:flex-row gap-6">
       {/* Form Section */}
-      <Card className="md:col-span-2 space-y-4">
+      <Card className="min-w-[50%] flex-1 flex flex-col gap-4">
         <SectionTitle>Cover Details</SectionTitle>
 
         <FormField label="Size Preset" htmlFor="size-preset">
@@ -90,21 +90,27 @@ export default function CoverForm() {
           />
         </FormField>
 
-        <FormField label="Background Color" htmlFor="background-color">
-          <ColorPicker
-            id="background-color"
-            value={backgroundColor}
-            onChange={(e) => setBackgroundColor(e.target.value)}
-          />
-        </FormField>
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <FormField label="Background Color" htmlFor="background-color">
+              <ColorPicker
+                id="background-color"
+                value={backgroundColor}
+                onChange={(e) => setBackgroundColor(e.target.value)}
+              />
+            </FormField>
+          </div>
 
-        <FormField label="Text Color" htmlFor="text-color">
-          <ColorPicker
-            id="text-color"
-            value={textColor}
-            onChange={(e) => setTextColor(e.target.value)}
-          />
-        </FormField>
+          <div className="flex-1">
+            <FormField label="Text Color" htmlFor="text-color">
+              <ColorPicker
+                id="text-color"
+                value={textColor}
+                onChange={(e) => setTextColor(e.target.value)}
+              />
+            </FormField>
+          </div>
+        </div>
 
         <FormField label="Font" htmlFor="font">
           <Select
@@ -120,16 +126,18 @@ export default function CoverForm() {
           </Select>
         </FormField>
 
-        <Button
-          onClick={handleGenerate}
-          disabled={!heading || !imageName || isGenerating}
-        >
-          {isGenerating ? "Generating..." : "Generate"}
-        </Button>
+        <div className="flex justify-center">
+          <Button
+            onClick={handleGenerate}
+            disabled={!heading || !imageName || isGenerating}
+          >
+            {isGenerating ? "Generating..." : "Generate"}
+          </Button>
+        </div>
       </Card>
 
       {/* Preview Section */}
-      <Card className="md:col-span-3 h-[400px] flex flex-col justify-center items-center">
+      <Card className="w-full md:flex-1 min-h-[400px] h-[400px] flex flex-col justify-center items-center">
         <SectionTitle>Live Preview</SectionTitle>
         <div
           className="w-full h-full flex justify-center items-center rounded-md border border-gray-300"
