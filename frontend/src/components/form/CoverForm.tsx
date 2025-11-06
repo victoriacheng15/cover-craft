@@ -60,7 +60,7 @@ const FONT_OPTIONS = [
   "Roboto",
   "Lato",
   "Playfair Display",
-  "Poppins",
+  "Open Sans",
 ];
 
 const fontFamilyMap: Record<string, string> = {
@@ -68,7 +68,7 @@ const fontFamilyMap: Record<string, string> = {
   Roboto: "var(--font-roboto)",
   Lato: "var(--font-lato)",
   "Playfair Display": "var(--font-playfair-display)",
-  Poppins: "var(--font-poppins)",
+  "Open Sans": "var(--font-open-sans)",
 };
 
 export default function CoverForm() {

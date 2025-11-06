@@ -93,7 +93,7 @@ describe("CoverForm", () => {
 
     // Last select is font
     const fontSelect = selects[selects.length - 1] as HTMLSelectElement;
-    fireEvent.change(fontSelect, { target: { value: "Playfair Display" } });
-    expect(fontSelect.value).toBe("Playfair Display");
+    fireEvent.change(fontSelect, { target: { value: "Open Sans" } });
+    expect(fontSelect.value).toBe("Open Sans");
   });
 });
