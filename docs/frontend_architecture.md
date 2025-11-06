@@ -237,9 +237,17 @@ sequenceDiagram
     Form-->>User: Download starts
 ```
 
-## Extensibility & Future Ideas
+## Accessibility Standards
 
-### How to Extend
+Built with accessibility support in mind. The app includes:
+
+- **Semantic HTML & ARIA**: Proper labels, form regions, error announcements, and descriptions for assistive technologies
+- **Keyboard Navigation**: All interactive elements work with keyboard, no traps, visible focus indicators
+- **Color & Contrast**: Good color contrast on text, proper labeling so color isn't the only way to convey info
+- **Screen Reader Support**: Error messages and loading states are announced, image alt text is descriptive
+- **Responsive Focus**: Clear focus indicators throughout the form and buttons
+
+## Extensibility
 
 **Adding a New Size Preset:**
 1. Add to `SIZE_PRESETS` array in `CoverForm.tsx`
@@ -255,8 +263,9 @@ sequenceDiagram
 **Adding Form Validation:**
 - Currently: Only `title` field is required to enable Generate button
 - Add regex validation for `filename`, `title`, `subtitle` as needed
+- Ensure error messages are associated with form fields via `aria-describedby`
 
-### Potential Future Enhancements
+## Potential Future Enhancements
 
 - **Template Presets**: Pre-built templates (Blog, YouTube, Social Media, Newsletter)
 - **Save/Load Designs**: LocalStorage or cloud backend to persist design drafts
@@ -266,3 +275,5 @@ sequenceDiagram
 - **Design History**: Track and restore previous designs
 - **Batch Generation**: Generate multiple variations with different text
 - **Export Options**: SVG, PDF, or other formats beyond PNG
+- **Dark Mode**: Add dark theme with proper color contrast maintenance
+- **Internationalization**: Support multiple languages with ARIA translations
