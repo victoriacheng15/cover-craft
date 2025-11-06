@@ -128,7 +128,10 @@ async function extractParams(
 }
 
 // Modular validation functions for each parameter type
-function validateSize(width: number | undefined, height: number | undefined): ValidationError[] {
+function validateSize(
+	width: number | undefined,
+	height: number | undefined,
+): ValidationError[] {
 	const errors: ValidationError[] = [];
 
 	if (
@@ -160,7 +163,10 @@ function validateSize(width: number | undefined, height: number | undefined): Va
 	return errors;
 }
 
-function validateColors(backgroundColor: string, textColor: string): ValidationError[] {
+function validateColors(
+	backgroundColor: string,
+	textColor: string,
+): ValidationError[] {
 	const errors: ValidationError[] = [];
 
 	if (!HEX_COLOR_REGEX.test(backgroundColor)) {
@@ -193,7 +199,10 @@ function validateFont(font: string): ValidationError[] {
 	return errors;
 }
 
-function validateTextLength(heading: string, subheading: string): ValidationError[] {
+function validateTextLength(
+	heading: string,
+	subheading: string,
+): ValidationError[] {
 	const errors: ValidationError[] = [];
 
 	if (heading && heading.length > MAX_TITLE_LENGTH) {
