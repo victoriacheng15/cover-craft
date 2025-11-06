@@ -3,12 +3,12 @@
 	"version": "1.0.0",
 	"description": "",
 	"scripts": {
-		"build": "tsc",
+		"build": "tsc && mkdir -p dist/assets && cp -r src/assets/fonts dist/assets/fonts",
 		"watch": "tsc -w",
 		"clean": "rimraf dist",
 		"prestart": "npm run clean && npm run build",
 		"start": "func start",
-		"test": "vitest"
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"@azure/functions": "^4.0.0",

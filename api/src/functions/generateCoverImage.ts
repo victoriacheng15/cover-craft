@@ -4,14 +4,28 @@ import {
 	type HttpResponseInit,
 	type InvocationContext,
 } from "@azure/functions";
-import { Canvas } from "canvas";
+import { Canvas, registerFont } from "canvas";
+import path from "path";
 
 // Validation constants
 const SIZE_RANGE = { min: 1, max: 1200 };
-const ALLOWED_FONTS = ["Arial", "Helvetica", "Times New Roman", "Courier New"];
+const ALLOWED_FONTS = ["Montserrat", "Roboto", "Lato", "Playfair Display", "Open Sans"];
 const MAX_TITLE_LENGTH = 55;
 const MAX_SUBTITLE_LENGTH = 120;
 const HEX_COLOR_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+
+// Register fonts
+const fontDir = path.join(__dirname, "../assets/fonts");
+registerFont(path.join(fontDir, "Montserrat-Regular.ttf"), { family: "Montserrat" });
+registerFont(path.join(fontDir, "Montserrat-Bold.ttf"), { family: "Montserrat", weight: "bold" });
+registerFont(path.join(fontDir, "Roboto-Regular.ttf"), { family: "Roboto" });
+registerFont(path.join(fontDir, "Roboto-Bold.ttf"), { family: "Roboto", weight: "bold" });
+registerFont(path.join(fontDir, "Lato-Regular.ttf"), { family: "Lato" });
+registerFont(path.join(fontDir, "Lato-Bold.ttf"), { family: "Lato", weight: "bold" });
+registerFont(path.join(fontDir, "PlayfairDisplay-Regular.ttf"), { family: "Playfair Display" });
+registerFont(path.join(fontDir, "PlayfairDisplay-Bold.ttf"), { family: "Playfair Display", weight: "bold" });
+registerFont(path.join(fontDir, "OpenSans-Regular.ttf"), { family: "Open Sans" });
+registerFont(path.join(fontDir, "OpenSans-Bold.ttf"), { family: "Open Sans", weight: "bold" });
 
 interface ImageParams {
 	width: number;
@@ -178,24 +192,31 @@ async function generatePNG(params: ImageParams): Promise<Buffer> {
 	ctx.fillStyle = params.backgroundColor;
 	ctx.fillRect(0, 0, params.width, params.height);
 
-	// Calculate text positioning
+	// Calculate text positioning based on canvas dimensions
 	const padding = 40;
 	const maxTextWidth = params.width - padding * 2;
+	const centerX = params.width / 2;
+	const centerY = params.height / 2;
 
-	// Draw heading
+	// Calculate font sizes based on canvas height for responsiveness
+	const headingFontSize = Math.max(30, Math.round(params.height * 0.08)); // 8% of height
+	const subheadingFontSize = Math.max(20, Math.round(params.height * 0.06)); // 6% of height
+	const lineSpacing = headingFontSize * 1.2; // Space between heading and subheading
+
+	// Draw heading with bold font weight, positioned above center
 	ctx.fillStyle = params.textColor;
-	ctx.font = `bold 50px ${params.font}`;
+	ctx.font = `bold ${headingFontSize}px "${params.font}"`;
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
 
-	const headingY = params.height * 0.5;
-	ctx.fillText(params.heading, params.width / 2, headingY, maxTextWidth);
+	const headingY = centerY - lineSpacing / 2;
+	ctx.fillText(params.heading, centerX, headingY, maxTextWidth);
 
-	// Draw subheading
-	ctx.font = `40px ${params.font}`;
+	// Draw subheading with regular font weight, positioned below heading
+	ctx.font = `normal ${subheadingFontSize}px "${params.font}"`;
 	ctx.fillStyle = params.textColor;
-	const subheadingY = params.height * 0.55;
-	ctx.fillText(params.subheading, params.width / 2, subheadingY, maxTextWidth);
+	const subheadingY = centerY + lineSpacing / 2;
+	ctx.fillText(params.subheading, centerX, subheadingY, maxTextWidth);
 
 	// Convert canvas to PNG buffer
 	return canvas.toBuffer("image/png");
