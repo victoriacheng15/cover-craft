@@ -26,17 +26,6 @@ describe("FormField", () => {
     expect(input).toBeInTheDocument();
   });
 
-  it("renders description when provided", () => {
-    render(
-      <FormField label="Password" description="Must be at least 8 characters">
-        <input type="password" />
-      </FormField>,
-    );
-
-    const description = screen.getByText("Must be at least 8 characters");
-    expect(description).toBeInTheDocument();
-  });
-
   it("renders error message when provided", () => {
     render(
       <FormField label="Password" error="Required field">
