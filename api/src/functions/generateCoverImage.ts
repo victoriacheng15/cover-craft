@@ -60,9 +60,9 @@ interface ImageParams {
 	backgroundColor: string;
 	textColor: string;
 	font: string;
-	heading: string;
-	subheading: string;
-	imageName: string;
+	title: string;
+	subtitle?: string;
+	filename: string;
 }
 
 interface ValidationError {
@@ -82,9 +82,9 @@ async function extractParams(
 	const queryBgColor = request.query.get("backgroundColor");
 	const queryTextColor = request.query.get("textColor");
 	const queryFont = request.query.get("font");
-	const queryHeading = request.query.get("heading");
-	const querySubheading = request.query.get("subheading");
-	const queryImageName = request.query.get("imageName");
+	const queryTitle = request.query.get("title");
+	const querySubtitle = request.query.get("subtitle");
+	const queryFilename = request.query.get("filename");
 
 	// Try to parse body
 	let bodyParams: Partial<ImageParams> = {};
@@ -120,9 +120,9 @@ async function extractParams(
 	params.backgroundColor = queryBgColor || bodyParams.backgroundColor;
 	params.textColor = queryTextColor || bodyParams.textColor;
 	params.font = queryFont || bodyParams.font;
-	params.heading = queryHeading || bodyParams.heading;
-	params.subheading = querySubheading || bodyParams.subheading;
-	params.imageName = queryImageName || bodyParams.imageName;
+	params.title = queryTitle || bodyParams.title;
+	params.subtitle = querySubtitle || bodyParams.subtitle;
+	params.filename = queryFilename || bodyParams.filename;
 
 	return params;
 }
@@ -200,35 +200,35 @@ function validateFont(font: string): ValidationError[] {
 }
 
 function validateTextLength(
-	heading: string,
-	subheading: string,
+	title: string,
+	subtitle?: string,
 ): ValidationError[] {
 	const errors: ValidationError[] = [];
 
-	if (heading && heading.length > MAX_TITLE_LENGTH) {
+	if (title && title.length > MAX_TITLE_LENGTH) {
 		errors.push({
-			field: "heading",
-			message: `heading must be ${MAX_TITLE_LENGTH} characters or less`,
+			field: "title",
+			message: `title must be ${MAX_TITLE_LENGTH} characters or less`,
 		});
 	}
 
-	if (subheading && subheading.length > MAX_SUBTITLE_LENGTH) {
+	if (subtitle && subtitle.length > MAX_SUBTITLE_LENGTH) {
 		errors.push({
-			field: "subheading",
-			message: `subheading must be ${MAX_SUBTITLE_LENGTH} characters or less`,
+			field: "subtitle",
+			message: `subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`,
 		});
 	}
 
 	return errors;
 }
 
-function validateImageName(imageName: string): ValidationError[] {
+function validateFilename(filename: string): ValidationError[] {
 	const errors: ValidationError[] = [];
 
-	if (!imageName || imageName.trim().length === 0) {
+	if (!filename || filename.trim().length === 0) {
 		errors.push({
-			field: "imageName",
-			message: "imageName is required and cannot be empty",
+			field: "filename",
+			message: "filename is required and cannot be empty",
 		});
 	}
 
@@ -242,8 +242,8 @@ function validateParams(params: ImageParams): ValidationError[] {
 	errors.push(...validateSize(params.width, params.height));
 	errors.push(...validateColors(params.backgroundColor, params.textColor));
 	errors.push(...validateFont(params.font));
-	errors.push(...validateTextLength(params.heading, params.subheading));
-	errors.push(...validateImageName(params.imageName));
+	errors.push(...validateTextLength(params.title, params.subtitle));
+	errors.push(...validateFilename(params.filename));
 
 	return errors;
 }
@@ -275,13 +275,13 @@ async function generatePNG(params: ImageParams): Promise<Buffer> {
 	ctx.textBaseline = "middle";
 
 	const headingY = centerY - lineSpacing / 2;
-	ctx.fillText(params.heading, centerX, headingY, maxTextWidth);
+	ctx.fillText(params.title, centerX, headingY, maxTextWidth);
 
 	// Draw subheading with regular font weight, positioned below heading
 	ctx.font = `normal ${subheadingFontSize}px "${params.font}"`;
 	ctx.fillStyle = params.textColor;
 	const subheadingY = centerY + lineSpacing / 2;
-	ctx.fillText(params.subheading, centerX, subheadingY, maxTextWidth);
+	ctx.fillText(params.subtitle || "", centerX, subheadingY, maxTextWidth);
 
 	// Convert canvas to PNG buffer
 	return canvas.toBuffer("image/png");
@@ -304,9 +304,9 @@ export async function generateCoverImage(
 			backgroundColor: extractedParams.backgroundColor as string,
 			textColor: extractedParams.textColor as string,
 			font: extractedParams.font as string,
-			heading: extractedParams.heading as string,
-			subheading: extractedParams.subheading as string,
-			imageName: extractedParams.imageName as string,
+			title: extractedParams.title as string,
+			subtitle: extractedParams.subtitle as string,
+			filename: extractedParams.filename as string,
 		};
 
 		// Validate parameters
@@ -330,7 +330,7 @@ export async function generateCoverImage(
 			status: 200,
 			headers: {
 				"Content-Type": "image/png",
-				"Content-Disposition": `attachment; filename="${params.imageName}-${Date.now()}.png"`,
+				"Content-Disposition": `attachment; filename="${params.filename}-${Date.now()}.png"`,
 				"Cache-Control": "no-cache, no-store, must-revalidate",
 			},
 			body: pngBuffer,
