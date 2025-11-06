@@ -4,152 +4,197 @@ This document outlines all DevOps workflows, CI/CD pipelines, and automation pra
 
 ## Overview
 
-The project uses GitHub Actions for continuous integration, deployment, and code quality checks. All workflows follow a snake_case naming convention and use path filters to optimize CI/CD execution.
+The project uses GitHub Actions for continuous integration and deployment. All workflows use path-based triggering to optimize CI/CD execution and ensure workflows only run when relevant files change.
 
 ## Workflow Architecture
 
 ### Path-Based Triggering
 
-All workflows use path filters to ensure they only run when relevant files change:
+All workflows use path filters for intelligent triggering:
 
 - **API workflows**: Trigger on `api/**` changes
 - **Frontend workflows**: Trigger on `frontend/**` changes
-- **Documentation workflows**: Trigger on `**/*.md` changes
+- **Markdown workflows**: Trigger on `**/*.md` changes
 
 This approach:
-
 - Reduces unnecessary workflow runs
-- Saves CI/CD minutes
-- Provides faster feedback
-- Keeps concerns separated
+- Saves CI/CD minutes and time
+- Provides faster feedback to developers
+- Keeps concerns separated and organized
 
 ## Active Workflows
 
-### 1. API - Biome Format Check (`api_format.yml`)
+### 1. API - Format, Build & Test (`api_ci.yml`)
 
-**Purpose**: Ensures consistent code formatting in the API codebase using Biome.
+**Purpose**: Validates API code formatting, builds successfully, and all tests pass on pull requests.
 
-**Trigger**: Pull requests that modify files in `api/**`
-
-**Steps**:
-
-1. Checkout code
-2. Setup Node.js 22.x
-3. Run Biome format check on API files
-
-**Key Features**:
-
-- Uses custom reusable action: `victoriacheng15hub/platform-actions/biome-format@main`
-- Fails PR if formatting issues are detected
-- Fast feedback loop for developers
-
----
-
-### 2. API - PR Build & Test Check (`api_pr_check.yml`)
-
-**Purpose**: Validates that API code builds successfully and all tests pass before merging.
-
-**Trigger**: Pull requests to `main` branch that modify files in `api/**`
+**Trigger**: Pull requests to `main` branch with changes in `api/**`
 
 **Environment Variables**:
-
 - `AZURE_FUNCTIONAPP_PACKAGE_PATH`: `api/`
 - `NODE_VERSION`: `22.x`
 
-**Steps**:
+**Jobs**:
 
-1. Checkout code
-2. Setup Node.js 22.x
-3. Install dependencies (`npm install`)
-4. Build project (`npm run build`)
-5. Run tests (`npm run test -- --run`)
+#### api-format
+- Runs Biome format check using custom reusable action
+- Validates code formatting consistency
+- Must pass before build-and-test job runs
+
+#### build-and-test
+- Depends on: `api-format` (sequential execution)
+- Install dependencies via npm
+- Build project (`npm run build`)
+- Run all tests (`npm run test -- --run`)
+- Ensures no broken code reaches main branch
 
 **Key Features**:
+- Sequential job execution ensures format check passes first
+- Comprehensive test coverage validation
+- TypeScript compilation verification
+- Required check before merge
 
-- Prevents broken code from reaching main branch
-- Ensures all tests pass (31 test cases for generateCoverImage)
-- Validates TypeScript compilation
+---
+
+### 2. Frontend - Format & Test (`frontend_ci.yml`)
+
+**Purpose**: Validates frontend code formatting and runs unit tests on pull requests.
+
+**Trigger**: Pull requests with changes in `frontend/**`
+
+**Environment Variables**:
+- `NODE_VERSION`: `22.x`
+
+**Jobs**:
+
+#### format
+- Install dependencies via npm ci
+- Run Biome linting (`npm run lint`)
+- Validates code quality and formatting
+
+#### test
+- Install dependencies via npm ci
+- Run unit tests (`npm run test`)
+- Validates application functionality
+
+**Key Features**:
+- Parallel job execution (both jobs run simultaneously)
+- Uses npm ci for reproducible builds
+- Fast feedback loop for frontend developers
 - Required check before merge
 
 ---
 
 ### 3. Function App Deployment (`azure_function.yml`)
 
-**Purpose**: Automatically deploys the API to Azure Functions when changes are merged to main.
+**Purpose**: Automatically deploys API to Azure Functions on merge to main.
 
 **Trigger**:
-
 - Push to `main` branch with changes in `api/**`
 - Manual dispatch (`workflow_dispatch`)
 
 **Environment Variables**:
-
 - `AZURE_FUNCTIONAPP_NAME`: `cover-craft`
 - `AZURE_FUNCTIONAPP_PACKAGE_PATH`: `api/`
 - `NODE_VERSION`: `22.x`
 
-**Steps**:
+**Job**: build-and-deploy
 
+**Steps**:
 1. Checkout code
 2. Setup Node.js 22.x
-3. Install dependencies and build (`npm install`, `npm run build`)
-4. Run tests (`npm run test`)
-5. Azure Login using stored credentials
-6. Create deployment zip (excluding `local.settings.json`)
-7. Deploy to Azure Functions using Azure CLI
+3. Install dependencies, build, and run tests
+4. Azure Login using service principal
+5. Create deployment zip (excludes `local.settings.json`)
+6. Deploy to Azure Functions using Azure CLI
+
+**Deployment Command**:
+```bash
+az functionapp deployment source config-zip \
+  --name {{ AZURE_FUNCTIONAPP_NAME }} \
+  --resource-group personal-projects \
+  --src ../deploy.zip
+```
 
 **Key Features**:
-
-- Automated deployment on merge to main
-- Excludes sensitive configuration files from deployment
-- Runs full test suite before deployment
-- Uses Azure service principal credentials stored in GitHub secrets
+- Automated deployment on merge (no manual steps required)
+- Excludes sensitive configuration files from deployment zip
+- Runs full test suite before deployment validation
+- Uses Azure service principal credentials from GitHub secrets
 - Zero-downtime deployment
+- Manual dispatch option for emergency deployments
 
-**Required Secrets**:
-
-- `AZURE_CREDENTIALS`: Azure service principal credentials
-
----
-
-### 4. Frontend - Biome Format Check (`frontend_format.yml`)
-
-**Purpose**: Ensures consistent code formatting in the frontend codebase using Biome.
-
-**Trigger**: Pull requests that modify files in `frontend/**`
-
-**Steps**:
-
-1. Checkout code
-2. Setup Node.js 22.x
-3. Run Biome format check on frontend files
-
-**Key Features**:
-
-- Ready for when frontend is implemented
-- Uses same format checking approach as API
-- Uses custom reusable action: `victoriacheng15hub/platform-actions/biome-format@main`
-
-**Status**: ⏳ Prepared but inactive until `frontend/` folder exists
+**Required GitHub Secrets**:
+- `AZURE_CREDENTIALS`: Azure service principal credentials (JSON format with clientId, clientSecret, subscriptionId, tenantId)
 
 ---
 
-### 5. Markdown Linter (`markdownlint.yml`)
+### 4. Markdown Linter (`markdownlint.yml`)
 
-**Purpose**: Ensures consistent markdown formatting across all documentation files.
+**Purpose**: Ensures consistent markdown formatting and validates documentation files.
 
 **Trigger**:
-
-- Pull requests to `main` branch that modify `**/*.md` files
+- Pull requests to `main` branch with changes in `**/*.md`
 - Manual dispatch (`workflow_dispatch`)
 
-**Steps**:
+**Job**: markdownlint
 
+**Steps**:
 1. Checkout code
-2. Run markdown linter on all `.md` files
+2. Run markdown linting on all `.md` files
 
 **Key Features**:
-
 - Uses custom reusable action: `victoriacheng15hub/platform-actions/markdown-linter@main`
-- Maintains documentation quality
+- Maintains documentation quality standards
 - Enforces markdown best practices
+- Catches formatting issues before merge
+
+---
+
+## CI/CD Pipeline Flow
+
+### Pull Request Flow (API)
+
+```mermaid
+graph TD
+    A["PR opened with api/** changes"] --> B["api_ci.yml triggers"]
+    B --> C["api-format job runs<br/>Biome check"]
+    C -->|passes| D["build-and-test job runs"]
+    D --> E["npm install"]
+    E --> F["npm run build"]
+    F --> G["npm run test"]
+    G -->|all pass| H["✓ PR ready for review and merge"]
+    C -->|fails| I["✗ PR blocked - fix formatting"]
+    D -->|fails| J["✗ PR blocked - fix build/tests"]
+```
+
+### Pull Request Flow (Frontend)
+
+```mermaid
+graph TD
+    A["PR opened with frontend/** changes"] --> B["frontend_ci.yml triggers"]
+    B --> C["format job runs<br/>npm run lint"]
+    B --> D["test job runs<br/>npm run test"]
+    C -->|passes| E["✓ Format check OK"]
+    D -->|passes| F["✓ Tests OK"]
+    E --> G["✓ PR ready for review and merge"]
+    F --> G
+    C -->|fails| H["✗ PR blocked - fix formatting"]
+    D -->|fails| I["✗ PR blocked - fix tests"]
+```
+
+### Deployment Flow (API)
+
+```mermaid
+graph TD
+    A["PR merged to main<br/>api/** changes"] --> B["azure_function.yml triggers"]
+    B --> C["build-and-deploy job"]
+    C --> D["npm install"]
+    D --> E["npm run build"]
+    E --> F["npm run test"]
+    F -->|all pass| G["Azure Login"]
+    G --> H["Create deployment zip<br/>exclude local.settings.json"]
+    H --> I["Deploy to Azure Functions<br/>az functionapp deployment source config-zip"]
+    I -->|success| J["✓ API live in production"]
+    F -->|fails| K["✗ Deployment blocked - fix tests"]
+```
