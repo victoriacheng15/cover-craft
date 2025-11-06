@@ -4,6 +4,7 @@ interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
   label: string;
   error?: string;
   htmlFor?: string;
+  required?: boolean;
   children: React.ReactNode;
 }
 
@@ -12,6 +13,7 @@ export default function FormField({
   label,
   error,
   htmlFor,
+  required = false,
   children,
   ...props
 }: FormFieldProps) {
@@ -22,9 +24,14 @@ export default function FormField({
         className="block text-sm font-medium text-gray-900"
       >
         {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
       </label>
       {children}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && (
+        <p className="text-xs text-red-500" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

@@ -237,9 +237,17 @@ sequenceDiagram
     Form-->>User: Download starts
 ```
 
-## Extensibility & Future Ideas
+## Accessibility Standards
 
-### How to Extend
+Built with accessibility support in mind. The app includes:
+
+- **Semantic HTML & ARIA**: All form inputs use proper `<label>` elements, error messages have `role="alert"` with `aria-live="polite"`, preview areas use `role="img"` with descriptive labels, form sections have `aria-label` attributes, button loading states use `aria-busy`
+- **Keyboard Navigation**: All interactive elements (inputs, selects, color pickers, buttons) are fully keyboard accessible with logical tab order and no keyboard traps
+- **Color & Contrast**: Text colors meet WCAG AA contrast ratios, color pickers are always paired with text labels so information isn't conveyed by color alone
+- **Screen Reader Support**: Error messages are announced via `role="alert"`, loading states are announced via `aria-busy`, image alt text is descriptive (e.g., "Generated cover image: {title}"), form fields have descriptive `aria-label` attributes
+- **Focus Indicators**: All interactive elements have visible focus rings with `focus:ring-2` styling
+
+## Extensibility
 
 **Adding a New Size Preset:**
 1. Add to `SIZE_PRESETS` array in `CoverForm.tsx`
@@ -255,8 +263,9 @@ sequenceDiagram
 **Adding Form Validation:**
 - Currently: Only `title` field is required to enable Generate button
 - Add regex validation for `filename`, `title`, `subtitle` as needed
+- Ensure error messages are associated with form fields via `aria-describedby`
 
-### Potential Future Enhancements
+## Potential Future Enhancements
 
 - **Template Presets**: Pre-built templates (Blog, YouTube, Social Media, Newsletter)
 - **Save/Load Designs**: LocalStorage or cloud backend to persist design drafts
@@ -266,3 +275,5 @@ sequenceDiagram
 - **Design History**: Track and restore previous designs
 - **Batch Generation**: Generate multiple variations with different text
 - **Export Options**: SVG, PDF, or other formats beyond PNG
+- **Dark Mode**: Add dark theme with proper color contrast maintenance
+- **Internationalization**: Support multiple languages with ARIA translations
