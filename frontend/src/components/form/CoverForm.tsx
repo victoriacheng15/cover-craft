@@ -1,8 +1,14 @@
 "use client";
 
+import {
+  Lato,
+  Montserrat,
+  Open_Sans,
+  Playfair_Display,
+  Roboto,
+} from "next/font/google";
 import Image from "next/image";
 import { useState } from "react";
-import { Montserrat, Roboto, Lato, Playfair_Display, Open_Sans } from "next/font/google";
 import {
   Button,
   Card,
@@ -44,20 +50,25 @@ const openSans = Open_Sans({
   weight: ["400", "700"],
 });
 
-
 const SIZE_PRESETS = [
   { label: "Post (1200 × 627)", width: 1200, height: 627 },
   { label: "Square (1080 × 1080)", width: 1080, height: 1080 },
 ];
 
-const FONT_OPTIONS = ["Montserrat", "Roboto", "Lato", "Playfair Display", "Poppins"];
+const FONT_OPTIONS = [
+  "Montserrat",
+  "Roboto",
+  "Lato",
+  "Playfair Display",
+  "Poppins",
+];
 
 const fontFamilyMap: Record<string, string> = {
-  "Montserrat": "var(--font-montserrat)",
-  "Roboto": "var(--font-roboto)",
-  "Lato": "var(--font-lato)",
+  Montserrat: "var(--font-montserrat)",
+  Roboto: "var(--font-roboto)",
+  Lato: "var(--font-lato)",
   "Playfair Display": "var(--font-playfair-display)",
-  "Poppins": "var(--font-poppins)",
+  Poppins: "var(--font-poppins)",
 };
 
 export default function CoverForm() {
@@ -126,7 +137,9 @@ export default function CoverForm() {
   };
 
   return (
-    <div className={`w-full flex flex-col md:flex-row gap-6 ${montserrat.variable} ${roboto.variable} ${lato.variable} ${playfairDisplay.variable} ${openSans.variable}`}>
+    <div
+      className={`w-full flex flex-col md:flex-row gap-6 ${montserrat.variable} ${roboto.variable} ${lato.variable} ${playfairDisplay.variable} ${openSans.variable}`}
+    >
       {/* Form Section */}
       <Card className="min-w-[50%] flex-1 flex flex-col gap-4">
         <SectionTitle>Cover Details</SectionTitle>
@@ -255,7 +268,9 @@ export default function CoverForm() {
                 <h1 className="text-2xl" style={{ fontWeight: 700 }}>
                   {heading || "Heading Preview"}
                 </h1>
-                <p className="text-lg" style={{ fontWeight: 400 }}>{subheading || "Subheading Preview"}</p>
+                <p className="text-lg" style={{ fontWeight: 400 }}>
+                  {subheading || "Subheading Preview"}
+                </p>
               </div>
             </div>
           </>

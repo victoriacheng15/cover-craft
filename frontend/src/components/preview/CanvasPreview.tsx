@@ -9,9 +9,9 @@ interface CanvasPreviewProps {
 }
 
 const fontFamilyMap: Record<string, string> = {
-  "Montserrat": "var(--font-montserrat)",
-  "Roboto": "var(--font-roboto)",
-  "Lato": "var(--font-lato)",
+  Montserrat: "var(--font-montserrat)",
+  Roboto: "var(--font-roboto)",
+  Lato: "var(--font-lato)",
   "Playfair Display": "var(--font-playfair-display)",
   "Open Sans": "var(--font-open-sans)",
 };
