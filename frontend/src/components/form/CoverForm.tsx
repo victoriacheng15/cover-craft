@@ -71,14 +71,28 @@ const fontFamilyMap: Record<string, string> = {
   "Open Sans": "var(--font-open-sans)",
 };
 
+interface FormData {
+  size: string;
+  filename: string;
+  title: string;
+  subtitle?: string;
+  backgroundColor: string;
+  textColor: string;
+  font: string;
+}
+
+const initialFormData: FormData = {
+  size: SIZE_PRESETS[0].label,
+  filename: "",
+  title: "",
+  subtitle: "",
+  backgroundColor: "#374151",
+  textColor: "#F9FAFB",
+  font: FONT_OPTIONS[0],
+};
+
 export default function CoverForm() {
-  const [size, setSize] = useState(SIZE_PRESETS[0].label);
-  const [imageName, setImageName] = useState("");
-  const [heading, setHeading] = useState("");
-  const [subheading, setSubheading] = useState("");
-  const [backgroundColor, setBackgroundColor] = useState("#374151");
-  const [textColor, setTextColor] = useState("#F9FAFB");
-  const [font, setFont] = useState(FONT_OPTIONS[0]);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [_generatedImage, setGeneratedImage] = useState<Blob | null>(null);
@@ -86,9 +100,18 @@ export default function CoverForm() {
     null,
   );
 
-  // Get scaled dimensions for preview (25% of actual size, but max 50% of container)
+  const handleInputChange = (key: keyof FormData, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  // Get scaled dimensions for preview (50% of actual size for display)
   const getPreviewDimensions = () => {
-    const selectedSize = SIZE_PRESETS.find((preset) => preset.label === size);
+    const selectedSize = SIZE_PRESETS.find(
+      (preset) => preset.label === formData.size,
+    );
     if (!selectedSize) return { width: 300, height: 157 };
     return {
       width: selectedSize.width * 0.5,
@@ -103,7 +126,9 @@ export default function CoverForm() {
       setGeneratedImageUrl(null);
 
       // Get selected size dimensions
-      const selectedSize = SIZE_PRESETS.find((preset) => preset.label === size);
+      const selectedSize = SIZE_PRESETS.find(
+        (preset) => preset.label === formData.size,
+      );
       if (!selectedSize) {
         throw new Error("Invalid size selected");
       }
@@ -112,12 +137,12 @@ export default function CoverForm() {
       const imageBlob = await generateCoverImage({
         width: selectedSize.width,
         height: selectedSize.height,
-        backgroundColor,
-        textColor,
-        font,
-        heading,
-        subheading,
-        imageName,
+        backgroundColor: formData.backgroundColor,
+        textColor: formData.textColor,
+        font: formData.font,
+        title: formData.title,
+        subtitle: formData.subtitle,
+        filename: formData.filename || "cover",
       });
 
       setGeneratedImage(imageBlob);
@@ -128,6 +153,9 @@ export default function CoverForm() {
         setGeneratedImageUrl(reader.result as string);
       };
       reader.readAsDataURL(imageBlob);
+
+      // Reset form after successful generation
+      setFormData(initialFormData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate image");
       console.error("Error generating image:", err);
@@ -147,8 +175,8 @@ export default function CoverForm() {
         <FormField label="Size Preset" htmlFor="size-preset">
           <Select
             id="size-preset"
-            value={size}
-            onChange={(e) => setSize(e.target.value)}
+            value={formData.size}
+            onChange={(e) => handleInputChange("size", e.target.value)}
           >
             {SIZE_PRESETS.map((preset) => (
               <option key={preset.label} value={preset.label}>
@@ -158,38 +186,30 @@ export default function CoverForm() {
           </Select>
         </FormField>
 
-        <FormField
-          label="Image Name"
-          description="Filename for your cover image"
-          htmlFor="image-name"
-        >
+        <FormField label="Filename" htmlFor="filename">
           <Input
-            id="image-name"
+            id="filename"
             placeholder="my-awesome-cover"
-            value={imageName}
-            onChange={(e) => setImageName(e.target.value)}
+            value={formData.filename}
+            onChange={(e) => handleInputChange("filename", e.target.value)}
           />
         </FormField>
 
-        <FormField
-          label="Title"
-          description="Main cover title"
-          htmlFor="heading"
-        >
+        <FormField label="Title" htmlFor="title">
           <Input
-            id="heading"
+            id="title"
             placeholder="Enter your cover title..."
-            value={heading}
-            onChange={(e) => setHeading(e.target.value)}
+            value={formData.title}
+            onChange={(e) => handleInputChange("title", e.target.value)}
           />
         </FormField>
 
-        <FormField label="Subtitle" description="Subtitle" htmlFor="subheading">
+        <FormField label="Subtitle" htmlFor="subtitle">
           <Input
-            id="subheading"
+            id="subtitle"
             placeholder="Subtitle"
-            value={subheading}
-            onChange={(e) => setSubheading(e.target.value)}
+            value={formData.subtitle}
+            onChange={(e) => handleInputChange("subtitle", e.target.value)}
           />
         </FormField>
 
@@ -198,8 +218,10 @@ export default function CoverForm() {
             <FormField label="Background Color" htmlFor="background-color">
               <ColorPicker
                 id="background-color"
-                value={backgroundColor}
-                onChange={(e) => setBackgroundColor(e.target.value)}
+                value={formData.backgroundColor}
+                onChange={(e) =>
+                  handleInputChange("backgroundColor", e.target.value)
+                }
               />
             </FormField>
           </div>
@@ -208,8 +230,8 @@ export default function CoverForm() {
             <FormField label="Text Color" htmlFor="text-color">
               <ColorPicker
                 id="text-color"
-                value={textColor}
-                onChange={(e) => setTextColor(e.target.value)}
+                value={formData.textColor}
+                onChange={(e) => handleInputChange("textColor", e.target.value)}
               />
             </FormField>
           </div>
@@ -218,8 +240,8 @@ export default function CoverForm() {
         <FormField label="Font" htmlFor="font">
           <Select
             id="font"
-            value={font}
-            onChange={(e) => setFont(e.target.value)}
+            value={formData.font}
+            onChange={(e) => handleInputChange("font", e.target.value)}
           >
             {FONT_OPTIONS.map((f) => (
               <option key={f} value={f}>
@@ -238,7 +260,7 @@ export default function CoverForm() {
         <div className="flex justify-center">
           <Button
             onClick={handleGenerate}
-            disabled={!heading || !imageName || isGenerating}
+            disabled={!formData.title || isGenerating}
           >
             {isGenerating ? "Generating..." : "Generate"}
           </Button>
@@ -256,9 +278,9 @@ export default function CoverForm() {
             <div
               className="flex justify-center items-center rounded-md border border-gray-300 max-w-full"
               style={{
-                backgroundColor,
-                color: textColor,
-                fontFamily: fontFamilyMap[font],
+                backgroundColor: formData.backgroundColor,
+                color: formData.textColor,
+                fontFamily: fontFamilyMap[formData.font],
                 width: `min(${getPreviewDimensions().width}px, 100%)`,
                 height: `auto`,
                 aspectRatio: `${getPreviewDimensions().width} / ${getPreviewDimensions().height}`,
@@ -266,10 +288,10 @@ export default function CoverForm() {
             >
               <div className="text-center px-4">
                 <h1 className="text-2xl" style={{ fontWeight: 700 }}>
-                  {heading || "Heading Preview"}
+                  {formData.title || "Title Preview"}
                 </h1>
                 <p className="text-lg" style={{ fontWeight: 400 }}>
-                  {subheading || "Subheading Preview"}
+                  {formData.subtitle || "Subtitle Preview"}
                 </p>
               </div>
             </div>
@@ -293,8 +315,8 @@ export default function CoverForm() {
                   if (_generatedImage) {
                     try {
                       const timestamp = Math.floor(Date.now() / 1000);
-                      const filename = `${imageName}-${timestamp}.png`;
-                      await downloadImage(_generatedImage, filename);
+                      const downloadFilename = `${formData.filename || "cover"}-${timestamp}.png`;
+                      await downloadImage(_generatedImage, downloadFilename);
                     } catch (err) {
                       setError(
                         err instanceof Error

@@ -21,9 +21,9 @@ export interface ImageParams {
   backgroundColor: string;
   textColor: string;
   font: string;
-  heading: string;
-  subheading: string;
-  imageName: string;
+  title: string;
+  subtitle?: string;
+  filename: string;
 }
 
 export interface ApiError {
