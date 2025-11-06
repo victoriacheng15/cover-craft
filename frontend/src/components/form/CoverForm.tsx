@@ -100,10 +100,7 @@ export default function CoverForm() {
     null,
   );
 
-  const handleInputChange = (
-    key: keyof FormData,
-    value: string,
-  ) => {
+  const handleInputChange = (key: keyof FormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [key]: value,
@@ -189,10 +186,7 @@ export default function CoverForm() {
           </Select>
         </FormField>
 
-        <FormField
-          label="Filename"
-          htmlFor="filename"
-        >
+        <FormField label="Filename" htmlFor="filename">
           <Input
             id="filename"
             placeholder="my-awesome-cover"
@@ -201,10 +195,7 @@ export default function CoverForm() {
           />
         </FormField>
 
-        <FormField
-          label="Title"
-          htmlFor="title"
-        >
+        <FormField label="Title" htmlFor="title">
           <Input
             id="title"
             placeholder="Enter your cover title..."
@@ -213,10 +204,7 @@ export default function CoverForm() {
           />
         </FormField>
 
-        <FormField
-          label="Subtitle"
-          htmlFor="subtitle"
-        >
+        <FormField label="Subtitle" htmlFor="subtitle">
           <Input
             id="subtitle"
             placeholder="Subtitle"
