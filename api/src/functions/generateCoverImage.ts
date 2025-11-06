@@ -1,3 +1,4 @@
+import path from "node:path";
 import {
 	app,
 	type HttpRequest,
@@ -5,27 +6,53 @@ import {
 	type InvocationContext,
 } from "@azure/functions";
 import { Canvas, registerFont } from "canvas";
-import path from "path";
 
 // Validation constants
 const SIZE_RANGE = { min: 1, max: 1200 };
-const ALLOWED_FONTS = ["Montserrat", "Roboto", "Lato", "Playfair Display", "Open Sans"];
+const ALLOWED_FONTS = [
+	"Montserrat",
+	"Roboto",
+	"Lato",
+	"Playfair Display",
+	"Open Sans",
+];
 const MAX_TITLE_LENGTH = 55;
 const MAX_SUBTITLE_LENGTH = 120;
 const HEX_COLOR_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
 
 // Register fonts
 const fontDir = path.join(__dirname, "../assets/fonts");
-registerFont(path.join(fontDir, "Montserrat-Regular.ttf"), { family: "Montserrat" });
-registerFont(path.join(fontDir, "Montserrat-Bold.ttf"), { family: "Montserrat", weight: "bold" });
+registerFont(path.join(fontDir, "Montserrat-Regular.ttf"), {
+	family: "Montserrat",
+});
+registerFont(path.join(fontDir, "Montserrat-Bold.ttf"), {
+	family: "Montserrat",
+	weight: "bold",
+});
 registerFont(path.join(fontDir, "Roboto-Regular.ttf"), { family: "Roboto" });
-registerFont(path.join(fontDir, "Roboto-Bold.ttf"), { family: "Roboto", weight: "bold" });
+registerFont(path.join(fontDir, "Roboto-Bold.ttf"), {
+	family: "Roboto",
+	weight: "bold",
+});
 registerFont(path.join(fontDir, "Lato-Regular.ttf"), { family: "Lato" });
-registerFont(path.join(fontDir, "Lato-Bold.ttf"), { family: "Lato", weight: "bold" });
-registerFont(path.join(fontDir, "PlayfairDisplay-Regular.ttf"), { family: "Playfair Display" });
-registerFont(path.join(fontDir, "PlayfairDisplay-Bold.ttf"), { family: "Playfair Display", weight: "bold" });
-registerFont(path.join(fontDir, "OpenSans-Regular.ttf"), { family: "Open Sans" });
-registerFont(path.join(fontDir, "OpenSans-Bold.ttf"), { family: "Open Sans", weight: "bold" });
+registerFont(path.join(fontDir, "Lato-Bold.ttf"), {
+	family: "Lato",
+	weight: "bold",
+});
+registerFont(path.join(fontDir, "PlayfairDisplay-Regular.ttf"), {
+	family: "Playfair Display",
+});
+registerFont(path.join(fontDir, "PlayfairDisplay-Bold.ttf"), {
+	family: "Playfair Display",
+	weight: "bold",
+});
+registerFont(path.join(fontDir, "OpenSans-Regular.ttf"), {
+	family: "Open Sans",
+});
+registerFont(path.join(fontDir, "OpenSans-Bold.ttf"), {
+	family: "Open Sans",
+	weight: "bold",
+});
 
 interface ImageParams {
 	width: number;

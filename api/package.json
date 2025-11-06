@@ -8,7 +8,9 @@
 		"clean": "rimraf dist",
 		"prestart": "npm run clean && npm run build",
 		"start": "func start",
-		"test": "vitest run"
+		"test": "vitest run",
+		"lint": "npx @biomejs/biome check src --write",
+		"format": "npx @biomejs/biome format src --write"
 	},
 	"dependencies": {
 		"@azure/functions": "^4.0.0",
