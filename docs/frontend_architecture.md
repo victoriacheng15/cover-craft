@@ -241,11 +241,11 @@ sequenceDiagram
 
 Built with accessibility support in mind. The app includes:
 
-- **Semantic HTML & ARIA**: Proper labels, form regions, error announcements, and descriptions for assistive technologies
-- **Keyboard Navigation**: All interactive elements work with keyboard, no traps, visible focus indicators
-- **Color & Contrast**: Good color contrast on text, proper labeling so color isn't the only way to convey info
-- **Screen Reader Support**: Error messages and loading states are announced, image alt text is descriptive
-- **Responsive Focus**: Clear focus indicators throughout the form and buttons
+- **Semantic HTML & ARIA**: All form inputs use proper `<label>` elements, error messages have `role="alert"` with `aria-live="polite"`, preview areas use `role="img"` with descriptive labels, form sections have `aria-label` attributes, button loading states use `aria-busy`
+- **Keyboard Navigation**: All interactive elements (inputs, selects, color pickers, buttons) are fully keyboard accessible with logical tab order and no keyboard traps
+- **Color & Contrast**: Text colors meet WCAG AA contrast ratios, color pickers are always paired with text labels so information isn't conveyed by color alone
+- **Screen Reader Support**: Error messages are announced via `role="alert"`, loading states are announced via `aria-busy`, image alt text is descriptive (e.g., "Generated cover image: {title}"), form fields have descriptive `aria-label` attributes
+- **Focus Indicators**: All interactive elements have visible focus rings with `focus:ring-2` styling
 
 ## Extensibility
 
