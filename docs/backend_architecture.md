@@ -34,9 +34,9 @@ classDiagram
         +string backgroundColor
         +string textColor
         +string font
-        +string heading
-        +string subheading
-        +string imageName
+        +string title
+        +string subtitle
+        +string filename
     }
 
     class DefaultSizes {
@@ -65,8 +65,8 @@ classDiagram
     class ValidationRules {
         +SizeRange sizeRange
         +string[] allowedFonts
-        +number maxHeadingLength
-        +number maxSubheadingLength
+        +number maxTitleLength
+        +number maxSubtitleLength
         +string colorFormat
     }
 
@@ -98,8 +98,8 @@ classDiagram
         +validateSize(width, height): ValidationError[]
         +validateColors(bgColor, textColor): ValidationError[]
         +validateFont(font): ValidationError[]
-        +validateTextLength(heading, subheading): ValidationError[]
-        +validateImageName(imageName): ValidationError[]
+        +validateTextLength(title, subtitle): ValidationError[]
+        +validateFilename(filename): ValidationError[]
         +validateParams(params): ValidationError[]
     }
 
