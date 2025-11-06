@@ -10,7 +10,7 @@ describe("CanvasPreview", () => {
         subheading="Test Subheading"
         backgroundColor="#ffffff"
         textColor="#000000"
-        font="Arial"
+        font="Montserrat"
       />,
     );
 
@@ -25,7 +25,7 @@ describe("CanvasPreview", () => {
         subheading=""
         backgroundColor="#ffffff"
         textColor="#000000"
-        font="Arial"
+        font="Montserrat"
       />,
     );
 
@@ -50,7 +50,7 @@ describe("CanvasPreview", () => {
     expect(wrapper).toHaveStyle({
       backgroundColor: "#123456",
       color: "#abcdef",
-      fontFamily: "Roboto",
+      fontFamily: "var(--font-roboto)",
       width: "800px",
       height: "400px",
     });
@@ -63,7 +63,7 @@ describe("CanvasPreview", () => {
         subheading="Check Defaults"
         backgroundColor="#000000"
         textColor="#ffffff"
-        font="Arial"
+        font="Montserrat"
       />,
     );
 
