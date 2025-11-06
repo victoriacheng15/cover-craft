@@ -1,3 +1,20 @@
+// Minimal types for File System Access API
+export type SaveFilePickerOptions = {
+  suggestedName?: string;
+  types?: Array<{
+    description?: string;
+    accept: Record<string, string[]>;
+  }>;
+};
+
+export interface FileSystemFileHandle {
+  createWritable: () => Promise<FileSystemWritableFileStream>;
+}
+
+export interface FileSystemWritableFileStream {
+  write: (data: Blob | BufferSource | string) => Promise<void>;
+  close: () => Promise<void>;
+}
 export interface ImageParams {
   width: number;
   height: number;
