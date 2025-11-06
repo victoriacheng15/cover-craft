@@ -127,17 +127,16 @@ async function extractParams(
 	return params;
 }
 
-// Validate all parameters
-function validateParams(params: ImageParams): ValidationError[] {
+// Modular validation functions for each parameter type
+function validateSize(width: number | undefined, height: number | undefined): ValidationError[] {
 	const errors: ValidationError[] = [];
 
-	// Validate width (always present due to defaults)
 	if (
-		params.width === undefined ||
-		!Number.isInteger(params.width) ||
-		Number.isNaN(params.width) ||
-		params.width < SIZE_RANGE.min ||
-		params.width > SIZE_RANGE.max
+		width === undefined ||
+		!Number.isInteger(width) ||
+		Number.isNaN(width) ||
+		width < SIZE_RANGE.min ||
+		width > SIZE_RANGE.max
 	) {
 		errors.push({
 			field: "width",
@@ -145,13 +144,12 @@ function validateParams(params: ImageParams): ValidationError[] {
 		});
 	}
 
-	// Validate height (always present due to defaults)
 	if (
-		params.height === undefined ||
-		!Number.isInteger(params.height) ||
-		Number.isNaN(params.height) ||
-		params.height < SIZE_RANGE.min ||
-		params.height > SIZE_RANGE.max
+		height === undefined ||
+		!Number.isInteger(height) ||
+		Number.isNaN(height) ||
+		height < SIZE_RANGE.min ||
+		height > SIZE_RANGE.max
 	) {
 		errors.push({
 			field: "height",
@@ -159,53 +157,84 @@ function validateParams(params: ImageParams): ValidationError[] {
 		});
 	}
 
-	// Validate backgroundColor (always present due to defaults)
-	if (!HEX_COLOR_REGEX.test(params.backgroundColor)) {
+	return errors;
+}
+
+function validateColors(backgroundColor: string, textColor: string): ValidationError[] {
+	const errors: ValidationError[] = [];
+
+	if (!HEX_COLOR_REGEX.test(backgroundColor)) {
 		errors.push({
 			field: "backgroundColor",
 			message: "backgroundColor must be a valid hex color (e.g., #ffffff)",
 		});
 	}
 
-	// Validate textColor (always present due to defaults)
-	if (!HEX_COLOR_REGEX.test(params.textColor)) {
+	if (!HEX_COLOR_REGEX.test(textColor)) {
 		errors.push({
 			field: "textColor",
 			message: "textColor must be a valid hex color (e.g., #000000)",
 		});
 	}
 
-	// Validate font (always present due to defaults)
-	if (!ALLOWED_FONTS.includes(params.font)) {
+	return errors;
+}
+
+function validateFont(font: string): ValidationError[] {
+	const errors: ValidationError[] = [];
+
+	if (!ALLOWED_FONTS.includes(font)) {
 		errors.push({
 			field: "font",
 			message: `font must be one of: ${ALLOWED_FONTS.join(", ")}`,
 		});
 	}
 
-	// Validate heading length
-	if (params.heading && params.heading.length > MAX_TITLE_LENGTH) {
+	return errors;
+}
+
+function validateTextLength(heading: string, subheading: string): ValidationError[] {
+	const errors: ValidationError[] = [];
+
+	if (heading && heading.length > MAX_TITLE_LENGTH) {
 		errors.push({
 			field: "heading",
 			message: `heading must be ${MAX_TITLE_LENGTH} characters or less`,
 		});
 	}
 
-	// Validate subheading length
-	if (params.subheading && params.subheading.length > MAX_SUBTITLE_LENGTH) {
+	if (subheading && subheading.length > MAX_SUBTITLE_LENGTH) {
 		errors.push({
 			field: "subheading",
 			message: `subheading must be ${MAX_SUBTITLE_LENGTH} characters or less`,
 		});
 	}
 
-	// Validate imageName (required, non-empty)
-	if (!params.imageName || params.imageName.trim().length === 0) {
+	return errors;
+}
+
+function validateImageName(imageName: string): ValidationError[] {
+	const errors: ValidationError[] = [];
+
+	if (!imageName || imageName.trim().length === 0) {
 		errors.push({
 			field: "imageName",
 			message: "imageName is required and cannot be empty",
 		});
 	}
+
+	return errors;
+}
+
+// Main validation function that composes all validators
+function validateParams(params: ImageParams): ValidationError[] {
+	const errors: ValidationError[] = [];
+
+	errors.push(...validateSize(params.width, params.height));
+	errors.push(...validateColors(params.backgroundColor, params.textColor));
+	errors.push(...validateFont(params.font));
+	errors.push(...validateTextLength(params.heading, params.subheading));
+	errors.push(...validateImageName(params.imageName));
 
 	return errors;
 }
