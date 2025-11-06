@@ -1,21 +1,37 @@
-name: API - PR Build & Test Check
+name: API - Format, Build & Test
 
 on:
   pull_request:
     branches: [main]
     paths:
       - 'api/**'
+
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: "api/"
   NODE_VERSION: "22.x"
 
 jobs:
-  build-and-test:
+  api-format:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
     steps:
       - uses: actions/checkout@v5.0.0
-      - name: Setup Node ${{ env.NODE_VERSION }} Environment
-        uses: actions/setup-node@v6.0.0
+      - uses: actions/setup-node@v6.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: victoriacheng15hub/platform-actions/biome-format@main
+        with:
+          path: 'api/**'
+
+  build-and-test:
+    runs-on: ubuntu-latest
+    needs: api-format
+    steps:
+      - uses: actions/checkout@v5.0.0
+      - uses: actions/setup-node@v6.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
