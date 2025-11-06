@@ -234,9 +234,19 @@ export default function CoverForm() {
             </div>
             <div className="flex gap-2 mt-4">
               <Button
-                onClick={() => {
+                onClick={async () => {
                   if (_generatedImage) {
-                    downloadImage(_generatedImage, "cover.png");
+                    try {
+                      const timestamp = Math.floor(Date.now() / 1000);
+                      const filename = `${imageName}-${timestamp}.png`;
+                      await downloadImage(_generatedImage, filename);
+                    } catch (err) {
+                      setError(
+                        err instanceof Error
+                          ? err.message
+                          : "Failed to download image",
+                      );
+                    }
                   }
                 }}
               >
