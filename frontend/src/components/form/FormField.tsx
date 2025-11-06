@@ -22,7 +22,6 @@ export default function FormField({
       <label
         htmlFor={htmlFor}
         className="block text-sm font-medium text-gray-900"
-        aria-required={required}
       >
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}

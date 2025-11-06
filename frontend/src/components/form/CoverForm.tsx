@@ -170,7 +170,10 @@ export default function CoverForm() {
       className={`w-full flex flex-col md:flex-row gap-6 ${montserrat.variable} ${roboto.variable} ${lato.variable} ${playfairDisplay.variable} ${openSans.variable}`}
     >
       {/* Form Section */}
-      <Card className="min-w-[50%] flex-1 flex flex-col gap-4" role="region" aria-label="Cover image generator form">
+      <Card
+        className="min-w-[50%] flex-1 flex flex-col gap-4"
+        aria-label="Cover image generator form"
+      >
         <SectionTitle>Cover Details</SectionTitle>
 
         <FormField label="Size Preset" htmlFor="size-preset">
@@ -278,7 +281,11 @@ export default function CoverForm() {
             onClick={handleGenerate}
             disabled={!formData.title || isGenerating}
             isLoading={isGenerating}
-            aria-label={isGenerating ? "Generating your cover image" : "Generate cover image"}
+            aria-label={
+              isGenerating
+                ? "Generating your cover image"
+                : "Generate cover image"
+            }
           >
             {isGenerating ? "Generating..." : "Generate"}
           </Button>
@@ -288,8 +295,11 @@ export default function CoverForm() {
       {/* Preview Section */}
       <Card
         className="w-full md:min-w-[300px] flex flex-col items-center"
-        role="region"
-        aria-label={generatedImageUrl ? "Generated cover image" : "Live preview of cover image"}
+        aria-label={
+          generatedImageUrl
+            ? "Generated cover image"
+            : "Live preview of cover image"
+        }
         aria-live="polite"
       >
         {!generatedImageUrl ? (
