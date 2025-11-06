@@ -2,12 +2,14 @@ import { cn } from "@/lib";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline";
+  isLoading?: boolean;
 }
 
 export default function Button({
   variant = "primary",
   className,
   disabled,
+  isLoading = false,
   children,
   ...props
 }: ButtonProps) {
@@ -26,7 +28,8 @@ export default function Button({
   return (
     <button
       className={cn(base, variants[variant], className)}
-      disabled={disabled}
+      disabled={disabled || isLoading}
+      aria-busy={isLoading}
       {...props}
     >
       {children}

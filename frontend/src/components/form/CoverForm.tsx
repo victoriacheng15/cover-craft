@@ -99,6 +99,7 @@ export default function CoverForm() {
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(
     null,
   );
+  const errorId = "form-error-message";
 
   const handleInputChange = (key: keyof FormData, value: string) => {
     setFormData((prev) => ({
@@ -169,7 +170,7 @@ export default function CoverForm() {
       className={`w-full flex flex-col md:flex-row gap-6 ${montserrat.variable} ${roboto.variable} ${lato.variable} ${playfairDisplay.variable} ${openSans.variable}`}
     >
       {/* Form Section */}
-      <Card className="min-w-[50%] flex-1 flex flex-col gap-4">
+      <Card className="min-w-[50%] flex-1 flex flex-col gap-4" role="region" aria-label="Cover image generator form">
         <SectionTitle>Cover Details</SectionTitle>
 
         <FormField label="Size Preset" htmlFor="size-preset">
@@ -177,6 +178,7 @@ export default function CoverForm() {
             id="size-preset"
             value={formData.size}
             onChange={(e) => handleInputChange("size", e.target.value)}
+            aria-label="Select cover image size preset"
           >
             {SIZE_PRESETS.map((preset) => (
               <option key={preset.label} value={preset.label}>
@@ -192,15 +194,18 @@ export default function CoverForm() {
             placeholder="my-awesome-cover"
             value={formData.filename}
             onChange={(e) => handleInputChange("filename", e.target.value)}
+            aria-label="Enter filename for your cover image (optional)"
           />
         </FormField>
 
-        <FormField label="Title" htmlFor="title">
+        <FormField label="Title" htmlFor="title" required>
           <Input
             id="title"
             placeholder="Enter your cover title..."
             value={formData.title}
             onChange={(e) => handleInputChange("title", e.target.value)}
+            aria-label="Enter your cover title (required)"
+            aria-describedby={error ? errorId : undefined}
           />
         </FormField>
 
@@ -210,6 +215,7 @@ export default function CoverForm() {
             placeholder="Subtitle"
             value={formData.subtitle}
             onChange={(e) => handleInputChange("subtitle", e.target.value)}
+            aria-label="Enter your cover subtitle (optional)"
           />
         </FormField>
 
@@ -222,6 +228,8 @@ export default function CoverForm() {
                 onChange={(e) =>
                   handleInputChange("backgroundColor", e.target.value)
                 }
+                title="Choose background color for your cover"
+                aria-label="Background color picker"
               />
             </FormField>
           </div>
@@ -232,6 +240,8 @@ export default function CoverForm() {
                 id="text-color"
                 value={formData.textColor}
                 onChange={(e) => handleInputChange("textColor", e.target.value)}
+                title="Choose text color for your cover"
+                aria-label="Text color picker"
               />
             </FormField>
           </div>
@@ -242,6 +252,7 @@ export default function CoverForm() {
             id="font"
             value={formData.font}
             onChange={(e) => handleInputChange("font", e.target.value)}
+            aria-label="Select font for your cover text"
           >
             {FONT_OPTIONS.map((f) => (
               <option key={f} value={f}>
@@ -252,7 +263,12 @@ export default function CoverForm() {
         </FormField>
 
         {error && (
-          <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+          <div
+            className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md"
+            role="alert"
+            id={errorId}
+            aria-live="polite"
+          >
             <p className="text-sm font-medium">{error}</p>
           </div>
         )}
@@ -261,6 +277,8 @@ export default function CoverForm() {
           <Button
             onClick={handleGenerate}
             disabled={!formData.title || isGenerating}
+            isLoading={isGenerating}
+            aria-label={isGenerating ? "Generating your cover image" : "Generate cover image"}
           >
             {isGenerating ? "Generating..." : "Generate"}
           </Button>
@@ -269,8 +287,10 @@ export default function CoverForm() {
 
       {/* Preview Section */}
       <Card
-        test-id="check"
         className="w-full md:min-w-[300px] flex flex-col items-center"
+        role="region"
+        aria-label={generatedImageUrl ? "Generated cover image" : "Live preview of cover image"}
+        aria-live="polite"
       >
         {!generatedImageUrl ? (
           <>
@@ -285,11 +305,13 @@ export default function CoverForm() {
                 height: `auto`,
                 aspectRatio: `${getPreviewDimensions().width} / ${getPreviewDimensions().height}`,
               }}
+              role="img"
+              aria-label={`Preview: ${formData.title || "Title"} - ${formData.subtitle || "Subtitle"}`}
             >
               <div className="text-center px-4">
-                <h1 className="text-2xl" style={{ fontWeight: 700 }}>
+                <h2 className="text-2xl" style={{ fontWeight: 700 }}>
                   {formData.title || "Title Preview"}
-                </h1>
+                </h2>
                 <p className="text-lg" style={{ fontWeight: 400 }}>
                   {formData.subtitle || "Subtitle Preview"}
                 </p>
@@ -302,7 +324,7 @@ export default function CoverForm() {
             <div className="w-full flex justify-center items-center">
               <Image
                 src={generatedImageUrl || ""}
-                alt="Generated Cover"
+                alt={`Generated cover image: ${formData.title}`}
                 width={getPreviewDimensions().width}
                 height={getPreviewDimensions().height}
                 className="max-w-full h-auto object-contain rounded-md border border-gray-300"
@@ -326,6 +348,7 @@ export default function CoverForm() {
                     }
                   }
                 }}
+                aria-label={`Download generated cover image as ${formData.filename || "cover"}.png`}
               >
                 Download
               </Button>
