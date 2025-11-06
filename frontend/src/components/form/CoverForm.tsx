@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import {
   Button,
@@ -30,11 +31,25 @@ export default function CoverForm() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [_generatedImage, setGeneratedImage] = useState<Blob | null>(null);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(
+    null,
+  );
+
+  // Get scaled dimensions for preview (25% of actual size, but max 50% of container)
+  const getPreviewDimensions = () => {
+    const selectedSize = SIZE_PRESETS.find((preset) => preset.label === size);
+    if (!selectedSize) return { width: 300, height: 157 };
+    return {
+      width: selectedSize.width * 0.5,
+      height: selectedSize.height * 0.5,
+    };
+  };
 
   const handleGenerate = async () => {
     try {
       setIsGenerating(true);
       setError(null);
+      setGeneratedImageUrl(null);
 
       // Get selected size dimensions
       const selectedSize = SIZE_PRESETS.find((preset) => preset.label === size);
@@ -56,10 +71,12 @@ export default function CoverForm() {
 
       setGeneratedImage(imageBlob);
 
-      // Automatically download the image
-      const timestamp = Math.floor(Date.now() / 1000);
-      const filename = `${imageName}-${timestamp}.png`;
-      downloadImage(imageBlob, filename);
+      // Convert blob to data URL for display (more compatible than blob URL)
+      const reader = new FileReader();
+      reader.onload = () => {
+        setGeneratedImageUrl(reader.result as string);
+      };
+      reader.readAsDataURL(imageBlob);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate image");
       console.error("Error generating image:", err);
@@ -176,23 +193,58 @@ export default function CoverForm() {
       </Card>
 
       {/* Preview Section */}
-      <Card className="w-full md:flex-1 min-h-[400px] h-[400px] flex flex-col justify-center items-center">
-        <SectionTitle>Live Preview</SectionTitle>
-        <div
-          className="w-full h-full flex justify-center items-center rounded-md border border-gray-300"
-          style={{
-            backgroundColor,
-            color: textColor,
-            fontFamily: font,
-          }}
-        >
-          <div className="text-center">
-            <h1 className="text-2xl font-bold">
-              {heading || "Heading Preview"}
-            </h1>
-            <p className="text-lg">{subheading || "Subheading Preview"}</p>
-          </div>
-        </div>
+      <Card
+        test-id="check"
+        className="w-full md:min-w-[300px] flex flex-col items-center"
+      >
+        {!generatedImageUrl ? (
+          <>
+            <SectionTitle>Live Preview</SectionTitle>
+            <div
+              className="flex justify-center items-center rounded-md border border-gray-300 max-w-full"
+              style={{
+                backgroundColor,
+                color: textColor,
+                fontFamily: font,
+                width: `min(${getPreviewDimensions().width}px, 100%)`,
+                height: `auto`,
+                aspectRatio: `${getPreviewDimensions().width} / ${getPreviewDimensions().height}`,
+              }}
+            >
+              <div className="text-center px-4">
+                <h1 className="text-2xl font-bold">
+                  {heading || "Heading Preview"}
+                </h1>
+                <p className="text-lg">{subheading || "Subheading Preview"}</p>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <SectionTitle>Generated Image</SectionTitle>
+            <div className="w-full flex justify-center items-center">
+              <Image
+                src={generatedImageUrl || ""}
+                alt="Generated Cover"
+                width={getPreviewDimensions().width}
+                height={getPreviewDimensions().height}
+                className="max-w-full h-auto object-contain rounded-md border border-gray-300"
+                unoptimized
+              />
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button
+                onClick={() => {
+                  if (_generatedImage) {
+                    downloadImage(_generatedImage, "cover.png");
+                  }
+                }}
+              >
+                Download
+              </Button>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   );

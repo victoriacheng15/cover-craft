@@ -34,15 +34,18 @@ export async function generateCoverImage(params: ImageParams): Promise<Blob> {
 }
 
 /**
- * Download the generated image
+ * Download the generated image using FileReader (more compatible)
  */
 export function downloadImage(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  const reader = new FileReader();
+  reader.onload = () => {
+    const link = document.createElement("a");
+    link.style.display = "none";
+    link.href = reader.result as string;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  reader.readAsDataURL(blob);
 }
