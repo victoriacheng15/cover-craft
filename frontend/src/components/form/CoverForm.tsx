@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { Montserrat, Roboto, Lato, Playfair_Display, Open_Sans } from "next/font/google";
 import {
   Button,
   Card,
@@ -13,12 +14,51 @@ import {
 import { downloadImage, generateCoverImage } from "@/lib";
 import FormField from "./FormField";
 
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const lato = Lato({
+  variable: "--font-lato",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair-display",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+
 const SIZE_PRESETS = [
   { label: "Post (1200 × 627)", width: 1200, height: 627 },
   { label: "Square (1080 × 1080)", width: 1080, height: 1080 },
 ];
 
-const FONT_OPTIONS = ["Arial", "Roboto", "Inter", "Georgia", "Times New Roman"];
+const FONT_OPTIONS = ["Montserrat", "Roboto", "Lato", "Playfair Display", "Poppins"];
+
+const fontFamilyMap: Record<string, string> = {
+  "Montserrat": "var(--font-montserrat)",
+  "Roboto": "var(--font-roboto)",
+  "Lato": "var(--font-lato)",
+  "Playfair Display": "var(--font-playfair-display)",
+  "Poppins": "var(--font-poppins)",
+};
 
 export default function CoverForm() {
   const [size, setSize] = useState(SIZE_PRESETS[0].label);
@@ -86,7 +126,7 @@ export default function CoverForm() {
   };
 
   return (
-    <div className="w-full flex flex-col md:flex-row gap-6">
+    <div className={`w-full flex flex-col md:flex-row gap-6 ${montserrat.variable} ${roboto.variable} ${lato.variable} ${playfairDisplay.variable} ${openSans.variable}`}>
       {/* Form Section */}
       <Card className="min-w-[50%] flex-1 flex flex-col gap-4">
         <SectionTitle>Cover Details</SectionTitle>
@@ -205,17 +245,17 @@ export default function CoverForm() {
               style={{
                 backgroundColor,
                 color: textColor,
-                fontFamily: font,
+                fontFamily: fontFamilyMap[font],
                 width: `min(${getPreviewDimensions().width}px, 100%)`,
                 height: `auto`,
                 aspectRatio: `${getPreviewDimensions().width} / ${getPreviewDimensions().height}`,
               }}
             >
               <div className="text-center px-4">
-                <h1 className="text-2xl font-bold">
+                <h1 className="text-2xl" style={{ fontWeight: 700 }}>
                   {heading || "Heading Preview"}
                 </h1>
-                <p className="text-lg">{subheading || "Subheading Preview"}</p>
+                <p className="text-lg" style={{ fontWeight: 400 }}>{subheading || "Subheading Preview"}</p>
               </div>
             </div>
           </>

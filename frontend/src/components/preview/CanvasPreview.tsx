@@ -8,6 +8,14 @@ interface CanvasPreviewProps {
   height?: number;
 }
 
+const fontFamilyMap: Record<string, string> = {
+  "Montserrat": "var(--font-montserrat)",
+  "Roboto": "var(--font-roboto)",
+  "Lato": "var(--font-lato)",
+  "Playfair Display": "var(--font-playfair-display)",
+  "Open Sans": "var(--font-open-sans)",
+};
+
 export default function CanvasPreview({
   heading,
   subheading,
@@ -23,14 +31,18 @@ export default function CanvasPreview({
       style={{
         backgroundColor,
         color: textColor,
-        fontFamily: font,
+        fontFamily: fontFamilyMap[font],
         width: `${width}px`,
         height: `${height}px`,
       }}
     >
       <div className="text-center px-4">
-        <h1 className="text-4xl font-bold">{heading || "Heading Preview"}</h1>
-        <p className="text-2xl mt-2">{subheading || "Subheading Preview"}</p>
+        <h1 className="text-4xl" style={{ fontWeight: 700 }}>
+          {heading || "Heading Preview"}
+        </h1>
+        <p className="text-2xl mt-2" style={{ fontWeight: 400 }}>
+          {subheading || "Subheading Preview"}
+        </p>
       </div>
     </div>
   );

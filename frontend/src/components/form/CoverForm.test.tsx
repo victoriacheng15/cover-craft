@@ -50,7 +50,7 @@ describe("CoverForm", () => {
     const fontSelect = within(formCard).getByLabelText(
       /Font/i,
     ) as HTMLSelectElement;
-    expect(fontSelect.value).toBe("Arial");
+    expect(fontSelect.value).toBe("Montserrat");
 
     // Generate button
     const generateBtn = within(formCard).getByRole("button", {
@@ -93,7 +93,7 @@ describe("CoverForm", () => {
 
     // Last select is font
     const fontSelect = selects[selects.length - 1] as HTMLSelectElement;
-    fireEvent.change(fontSelect, { target: { value: "Arial" } });
-    expect(fontSelect.value).toBe("Arial");
+    fireEvent.change(fontSelect, { target: { value: "Playfair Display" } });
+    expect(fontSelect.value).toBe("Playfair Display");
   });
 });
