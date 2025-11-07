@@ -11,6 +11,8 @@ A full-stack cover image generator application showcasing modern web development
 - [Frontend Architecture](./docs/frontend_architecture.md): Component structure, real-time preview, state management, and accessibility
 - [Backend Architecture](./docs/backend_architecture.md): Serverless API design, image generation logic, and validation
 - [DevOps Practices](./docs/devops_practice.md): Deployment strategies, CI/CD pipelines, and cloud infrastructure
+- [Learning Notes](./docs/learning_note.md): Key takeaways from deploying to Azure Function App
+
 
 ## 🚀 Key Features & Technical Highlights
 
