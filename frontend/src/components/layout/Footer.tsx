@@ -7,7 +7,7 @@ export default function Footer() {
         <span>© 2025 Victoria Cheng</span>
         <span>|</span>
         <Link
-          href="https://github.com/your-repo"
+          href="https://github.com/victoriacheng15/cover-craft"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-emerald-500"
