@@ -31,15 +31,11 @@ async function dbConnect() {
 
   if (!cached.promise) {
     cached.promise = (async () => {
-      try {
-        const mongooseInstance = await mongooseModule.connect(MONGODB_URI, {
-          bufferCommands: false,
-        });
-        console.log("✅ Connected to MongoDB");
-        return mongooseInstance;
-      } catch (err) {
-        throw err;
-      }
+      const mongooseInstance = await mongooseModule.connect(MONGODB_URI, {
+        bufferCommands: false,
+      });
+      console.log("✅ Connected to MongoDB");
+      return mongooseInstance;
     })();
   }
 

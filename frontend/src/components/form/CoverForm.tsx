@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Lato,
-  Montserrat,
-  Open_Sans,
-  Playfair_Display,
-  Roboto,
-} from "next/font/google";
 import Image from "next/image";
-import { useState } from "react";
 import {
   Button,
   Card,
@@ -17,162 +9,29 @@ import {
   SectionTitle,
   Select,
 } from "@/components/ui";
+import { FONT_OPTIONS, SIZE_PRESETS, useForm } from "@/hooks/useForm";
 import {
-  downloadImage,
-  generateCoverImage,
-  sendDownloadMetric,
-  sendGenericMetric,
+  fontFamilyMap,
+  lato,
+  montserrat,
+  openSans,
+  playfairDisplay,
+  roboto,
 } from "@/lib";
 import FormField from "./FormField";
 
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const roboto = Roboto({
-  variable: "--font-roboto",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const lato = Lato({
-  variable: "--font-lato",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const playfairDisplay = Playfair_Display({
-  variable: "--font-playfair-display",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const openSans = Open_Sans({
-  variable: "--font-open-sans",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const SIZE_PRESETS = [
-  { label: "Post (1200 × 627)", width: 1200, height: 627 },
-  { label: "Square (1080 × 1080)", width: 1080, height: 1080 },
-];
-
-const FONT_OPTIONS = [
-  "Montserrat",
-  "Roboto",
-  "Lato",
-  "Playfair Display",
-  "Open Sans",
-];
-
-const fontFamilyMap: Record<string, string> = {
-  Montserrat: "var(--font-montserrat)",
-  Roboto: "var(--font-roboto)",
-  Lato: "var(--font-lato)",
-  "Playfair Display": "var(--font-playfair-display)",
-  "Open Sans": "var(--font-open-sans)",
-};
-
-interface FormData {
-  size: string;
-  filename: string;
-  title: string;
-  subtitle?: string;
-  backgroundColor: string;
-  textColor: string;
-  font: string;
-}
-
-const initialFormData: FormData = {
-  size: SIZE_PRESETS[0].label,
-  filename: "",
-  title: "",
-  subtitle: "",
-  backgroundColor: "#374151",
-  textColor: "#F9FAFB",
-  font: FONT_OPTIONS[0],
-};
-
 export default function CoverForm() {
-  const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [_generatedImage, setGeneratedImage] = useState<Blob | null>(null);
-  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(
-    null,
-  );
+  const {
+    formData,
+    isGenerating,
+    error,
+    generatedImageUrl,
+    handleInputChange,
+    getPreviewDimensions,
+    handleGenerate,
+    handleDownload,
+  } = useForm();
   const errorId = "form-error-message";
-
-  const handleInputChange = (key: keyof FormData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
-
-  // Get scaled dimensions for preview (50% of actual size for display)
-  const getPreviewDimensions = () => {
-    const selectedSize = SIZE_PRESETS.find(
-      (preset) => preset.label === formData.size,
-    );
-    if (!selectedSize) return { width: 300, height: 157 };
-    return {
-      width: selectedSize.width * 0.5,
-      height: selectedSize.height * 0.5,
-    };
-  };
-
-  const handleGenerate = async () => {
-    try {
-      setIsGenerating(true);
-      setError(null);
-      setGeneratedImageUrl(null);
-
-      // Get selected size dimensions
-      const selectedSize = SIZE_PRESETS.find(
-        (preset) => preset.label === formData.size,
-      );
-
-      if (!selectedSize) {
-        throw new Error("Invalid size selected");
-      }
-
-      // Send generate_click metric
-      sendGenericMetric("generate_click", formData.size, formData.font);
-
-      // Call API to generate cover image
-      const imageBlob = await generateCoverImage({
-        width: selectedSize.width,
-        height: selectedSize.height,
-        backgroundColor: formData.backgroundColor,
-        textColor: formData.textColor,
-        font: formData.font,
-        title: formData.title,
-        subtitle: formData.subtitle,
-        filename: formData.filename || "cover",
-      });
-
-      setGeneratedImage(imageBlob);
-
-      // Convert blob to data URL for display (more compatible than blob URL)
-      const reader = new FileReader();
-      reader.onload = () => {
-        setGeneratedImageUrl(reader.result as string);
-      };
-      reader.readAsDataURL(imageBlob);
-
-      // Reset form after successful generation
-      setFormData(initialFormData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate image");
-      console.error("Error generating image:", err);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   return (
     <div
@@ -352,23 +211,7 @@ export default function CoverForm() {
             </div>
             <div className="flex gap-2 mt-4">
               <Button
-                onClick={async () => {
-                  if (_generatedImage) {
-                    try {
-                      // Send download_click metric (only event and timestamp)
-                      sendDownloadMetric();
-                      const timestamp = Math.floor(Date.now() / 1000);
-                      const downloadFilename = `${formData.filename || "cover"}-${timestamp}.png`;
-                      await downloadImage(_generatedImage, downloadFilename);
-                    } catch (err) {
-                      setError(
-                        err instanceof Error
-                          ? err.message
-                          : "Failed to download image",
-                      );
-                    }
-                  }
-                }}
+                onClick={handleDownload}
                 aria-label={`Download generated cover image as ${formData.filename || "cover"}.png`}
               >
                 Download
