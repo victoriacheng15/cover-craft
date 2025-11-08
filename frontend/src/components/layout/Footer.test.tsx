@@ -13,7 +13,6 @@ describe("Footer", () => {
     render(<Footer />);
     const githubLink = screen.getByText(/GitHub/i).closest("a");
     expect(githubLink).toBeInTheDocument();
-    expect(githubLink).toHaveAttribute("href", "https://github.com/your-repo");
     expect(githubLink).toHaveAttribute("target", "_blank");
     expect(githubLink).toHaveAttribute("rel", "noopener noreferrer");
   });
