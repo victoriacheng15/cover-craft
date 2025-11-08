@@ -17,7 +17,12 @@ import {
   SectionTitle,
   Select,
 } from "@/components/ui";
-import { downloadImage, generateCoverImage } from "@/lib";
+import {
+  downloadImage,
+  generateCoverImage,
+  sendDownloadMetric,
+  sendGenericMetric,
+} from "@/lib";
 import FormField from "./FormField";
 
 const montserrat = Montserrat({
@@ -130,9 +135,13 @@ export default function CoverForm() {
       const selectedSize = SIZE_PRESETS.find(
         (preset) => preset.label === formData.size,
       );
+
       if (!selectedSize) {
         throw new Error("Invalid size selected");
       }
+
+      // Send generate_click metric
+      sendGenericMetric("generate_click", formData.size, formData.font);
 
       // Call API to generate cover image
       const imageBlob = await generateCoverImage({
@@ -346,6 +355,8 @@ export default function CoverForm() {
                 onClick={async () => {
                   if (_generatedImage) {
                     try {
+                      // Send download_click metric (only event and timestamp)
+                      sendDownloadMetric();
                       const timestamp = Math.floor(Date.now() / 1000);
                       const downloadFilename = `${formData.filename || "cover"}-${timestamp}.png`;
                       await downloadImage(_generatedImage, downloadFilename);
