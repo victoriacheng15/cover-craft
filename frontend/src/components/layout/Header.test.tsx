@@ -22,9 +22,21 @@ describe("Header", () => {
     );
   });
 
-  it("centers the title", () => {
-    const { container } = render(<Header />);
-    const headerDiv = container.querySelector("header > div");
-    expect(headerDiv).toHaveClass("text-center");
+  it("renders navigation links", () => {
+    render(<Header />);
+    const homeLink = screen.getByRole("link", { name: /home/i });
+    const analyticsLink = screen.getByRole("link", { name: /analytics/i });
+
+    expect(homeLink).toBeInTheDocument();
+    expect(analyticsLink).toBeInTheDocument();
+  });
+
+  it("navigation links have correct hrefs", () => {
+    render(<Header />);
+    const homeLink = screen.getByRole("link", { name: /home/i });
+    const analyticsLink = screen.getByRole("link", { name: /analytics/i });
+
+    expect(homeLink).toHaveAttribute("href", "/");
+    expect(analyticsLink).toHaveAttribute("href", "/analytics");
   });
 });

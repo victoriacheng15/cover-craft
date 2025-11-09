@@ -8,9 +8,21 @@ describe("SectionTitle", () => {
     expect(screen.getByText("Test Title")).toBeInTheDocument();
   });
 
+  it("renders as h1 element", () => {
+    render(<SectionTitle as="h1">Test Title</SectionTitle>);
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading).toBeInTheDocument();
+  });
+
   it("renders as h2 element", () => {
     render(<SectionTitle>Test Title</SectionTitle>);
     const heading = screen.getByRole("heading", { level: 2 });
+    expect(heading).toBeInTheDocument();
+  });
+
+  it("renders as h3 element", () => {
+    render(<SectionTitle as="h3">Test Title</SectionTitle>);
+    const heading = screen.getByRole("heading", { level: 3 });
     expect(heading).toBeInTheDocument();
   });
 
@@ -51,6 +63,17 @@ describe("SectionTitle", () => {
     );
     const title = screen.getByTestId("title");
     expect(title).toHaveClass("text-xl");
+    expect(title).toHaveClass("font-bold");
+  });
+
+  it("renders with xl size", () => {
+    render(
+      <SectionTitle data-testid="title" size="xl">
+        Test Title
+      </SectionTitle>,
+    );
+    const title = screen.getByTestId("title");
+    expect(title).toHaveClass("text-3xl");
     expect(title).toHaveClass("font-bold");
   });
 

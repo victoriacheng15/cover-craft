@@ -1,12 +1,14 @@
 import { cn } from "@/lib";
 
-interface SectionTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
-  size?: "sm" | "md" | "lg";
-}
+type SectionTitleProps = React.HTMLAttributes<HTMLHeadingElement> & {
+  size?: "sm" | "md" | "lg" | "xl";
+  as?: "h1" | "h2" | "h3";
+};
 
 export default function SectionTitle({
   className,
   size = "md",
+  as = "h2",
   children,
   ...props
 }: SectionTitleProps) {
@@ -14,14 +16,17 @@ export default function SectionTitle({
     sm: "text-sm font-semibold",
     md: "text-lg font-bold",
     lg: "text-xl font-bold",
+    xl: "text-3xl font-bold",
   };
 
+  const Tag = as;
+
   return (
-    <h2
+    <Tag
       className={cn("mb-2 text-gray-900", sizeClasses[size], className)}
       {...props}
     >
       {children}
-    </h2>
+    </Tag>
   );
 }

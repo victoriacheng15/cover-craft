@@ -120,4 +120,4 @@ export function useForm() {
   };
 }
 
-export { SIZE_PRESETS, FONT_OPTIONS, initialFormData };
+export { SIZE_PRESETS, FONT_OPTIONS };
