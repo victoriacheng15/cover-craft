@@ -9,7 +9,7 @@ import {
   SectionTitle,
   Select,
 } from "@/components/ui";
-import { FONT_OPTIONS, SIZE_PRESETS, useForm } from "@/hooks/useForm";
+import { FONT_OPTIONS, SIZE_PRESETS, useForm } from "@/hooks";
 import {
   fontFamilyMap,
   lato,
@@ -42,7 +42,7 @@ export default function CoverForm() {
         className="min-w-[50%] flex-1 flex flex-col gap-4"
         aria-label="Cover image generator form"
       >
-        <SectionTitle>Cover Details</SectionTitle>
+        <SectionTitle size="lg">Cover Details</SectionTitle>
 
         <FormField label="Size Preset" htmlFor="size-preset">
           <Select
@@ -172,7 +172,7 @@ export default function CoverForm() {
       >
         {!generatedImageUrl ? (
           <>
-            <SectionTitle>Live Preview</SectionTitle>
+            <SectionTitle size="lg">Live Preview</SectionTitle>
             <div
               className="flex justify-center items-center rounded-md border border-gray-300 max-w-full"
               style={{
@@ -198,7 +198,7 @@ export default function CoverForm() {
           </>
         ) : (
           <>
-            <SectionTitle>Generated Image</SectionTitle>
+            <SectionTitle size="lg">Generated Image</SectionTitle>
             <div className="w-full flex justify-center items-center">
               <Image
                 src={generatedImageUrl || ""}

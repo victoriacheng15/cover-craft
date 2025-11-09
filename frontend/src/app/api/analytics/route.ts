@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongoose";
 import Metric from "@/models/Metric";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   await dbConnect();
 
   // Aggregate counts for each event type
