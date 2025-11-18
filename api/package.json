@@ -9,6 +9,8 @@
 		"prestart": "npm run clean && npm run build",
 		"start": "func start",
 		"test": "vitest run",
+		"test:watch": "vitest --watch",
+		"test:coverage": "vitest run --coverage",
 		"lint": "npx @biomejs/biome check src --write",
 		"format": "npx @biomejs/biome format src --write"
 	},
@@ -18,6 +20,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "^20.x",
+		"@vitest/coverage-v8": "^4.0.10",
 		"rimraf": "^5.0.0",
 		"typescript": "^4.0.0",
 		"vitest": "^4.0.3"
