@@ -9,39 +9,80 @@ on:
 
 env:
   AZURE_FUNCTIONAPP_NAME: 'cover-craft'
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'api/'
-  NODE_VERSION: '22.x'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'api'
+  NODE_VERSION: '24.x' # Use LTS for better cache availability & stability
+  BUILD_ARTIFACT: 'function_dist'
+
+concurrency:
+  group: cover-craft-function-deploy
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5.0.0
-    - name: Setup Node ${{ env.NODE_VERSION }} Environment
-      uses: actions/setup-node@v6.0.0
-      with:
-        node-version: ${{ env.NODE_VERSION }}
+      - name: Checkout (shallow)
+        uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 1
 
-    - name: Resolve Project Dependencies Using Npm
-      shell: bash
-      run: |
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        npm install
-        npm run build --if-present
-        npm run test --if-present
-        popd
+      - name: Setup Node (${{ env.NODE_VERSION }}) with cache
+        uses: actions/setup-node@v6.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
 
-    - name: Azure Login
-      uses: azure/login@v2.3.0
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Install dependencies (clean & fast)
+        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        run: |
+          npm ci --prefer-offline --no-audit --no-fund
 
-    - name: Deploy to Azure Functions
-      shell: bash
-      run: |
-        cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        zip -r ../deploy.zip . -x local.settings.json
-        az functionapp deployment source config-zip \
-          --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
-          --resource-group personal-projects \
-          --src ../deploy.zip
+      - name: Build (TypeScript -> JS)
+        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        run: |
+          npm run build
+
+      - name: Run tests (fail fast)
+        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        run: |
+          npm test -- --run
+
+      - name: Prune dev dependencies (reduce zip size)
+        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        run: |
+          npm prune --production
+
+      - name: Prepare deployment package (dist + production deps only)
+        run: |
+          set -e
+          mkdir -p $BUILD_ARTIFACT
+          # Copy compiled output only (exclude compiled test artifacts)
+          rsync -a --exclude '__tests__/' $AZURE_FUNCTIONAPP_PACKAGE_PATH/dist/ $BUILD_ARTIFACT/
+          # Copy required root-level config files
+          cp $AZURE_FUNCTIONAPP_PACKAGE_PATH/host.json $BUILD_ARTIFACT/host.json
+          cp $AZURE_FUNCTIONAPP_PACKAGE_PATH/package.json $BUILD_ARTIFACT/package.json
+          cp $AZURE_FUNCTIONAPP_PACKAGE_PATH/package-lock.json $BUILD_ARTIFACT/package-lock.json
+          # Copy production node_modules (already pruned)
+          rsync -a $AZURE_FUNCTIONAPP_PACKAGE_PATH/node_modules/ $BUILD_ARTIFACT/node_modules/
+          # Create zip (store at repo root)
+          (cd $BUILD_ARTIFACT && zip -r ../deploy.zip . >/dev/null)
+          ls -lh deploy.zip
+          echo "Contents (top 20):" && unzip -l deploy.zip | head -20
+
+      - name: Azure Login
+        uses: azure/login@v2.3.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Functions (Zip Push)
+        run: |
+          az functionapp deployment source config-zip \
+            --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
+            --resource-group personal-projects \
+            --src deploy.zip
+
+      - name: Post-deploy info
+        run: |
+          echo "Deployment completed at $(date -u)."
+          echo "Zip size (post-prune):" && ls -lh deploy.zip
