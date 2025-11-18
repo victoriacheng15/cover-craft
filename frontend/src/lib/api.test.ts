@@ -1,9 +1,5 @@
-import { describe, expect, it, beforeEach, vi, afterEach } from "vitest";
-import {
-  healthCheck,
-  generateCoverImage,
-  downloadImage,
-} from "./api";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { downloadImage, generateCoverImage, healthCheck } from "./api";
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -60,16 +56,13 @@ describe("API functions", () => {
 
       const result = await generateCoverImage(params);
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/generateCoverImage",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(params),
+      expect(global.fetch).toHaveBeenCalledWith("/api/generateCoverImage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(params),
+      });
       expect(result).toEqual(mockBlob);
     });
 
@@ -180,9 +173,7 @@ describe("API functions", () => {
         createWritable: vi.fn().mockResolvedValueOnce(mockWritable),
       };
 
-      const mockShowSaveFilePicker = vi
-        .fn()
-        .mockResolvedValueOnce(mockHandle);
+      const mockShowSaveFilePicker = vi.fn().mockResolvedValueOnce(mockHandle);
 
       (window as any).showSaveFilePicker = mockShowSaveFilePicker;
 
@@ -210,7 +201,9 @@ describe("API functions", () => {
       abortError.name = "AbortError";
 
       // Mock window with showSaveFilePicker
-      (window as any).showSaveFilePicker = vi.fn().mockRejectedValueOnce(abortError);
+      (window as any).showSaveFilePicker = vi
+        .fn()
+        .mockRejectedValueOnce(abortError);
 
       // Should not throw
       await expect(downloadImage(blob, filename)).resolves.toBeUndefined();
@@ -221,9 +214,9 @@ describe("API functions", () => {
       const filename = "test-image.png";
 
       // Mock window with showSaveFilePicker
-      (window as any).showSaveFilePicker = vi.fn().mockRejectedValueOnce(
-        new Error("Permission denied"),
-      );
+      (window as any).showSaveFilePicker = vi
+        .fn()
+        .mockRejectedValueOnce(new Error("Permission denied"));
 
       await expect(downloadImage(blob, filename)).rejects.toThrow(
         "Failed to save file: Permission denied",

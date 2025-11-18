@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { describe, expect, it, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useAnalytics } from "./useAnalytics";
 
 // Mock fetch globally
@@ -30,12 +30,8 @@ describe("useAnalytics", () => {
       eventCounts: [{ _id: "generate_click", count: 100 }],
       generateClickCount: 100,
       downloadClickCount: 50,
-      generateClicksPerMonth: [
-        { _id: { year: 2025, month: 11 }, count: 80 },
-      ],
-      downloadClicksPerMonth: [
-        { _id: { year: 2025, month: 11 }, count: 40 },
-      ],
+      generateClicksPerMonth: [{ _id: { year: 2025, month: 11 }, count: 80 }],
+      downloadClicksPerMonth: [{ _id: { year: 2025, month: 11 }, count: 40 }],
       generateByFont: [{ _id: "Montserrat", count: 60 }],
       generateBySize: [{ _id: "Post (1200 × 627)", count: 100 }],
     };
@@ -167,12 +163,8 @@ describe("useAnalytics", () => {
       eventCounts: [],
       generateClickCount: 100,
       downloadClickCount: 50,
-      generateClicksPerMonth: [
-        { _id: { year: 2025, month: 11 }, count: 80 },
-      ],
-      downloadClicksPerMonth: [
-        { _id: { year: 2025, month: 11 }, count: 40 },
-      ],
+      generateClicksPerMonth: [{ _id: { year: 2025, month: 11 }, count: 80 }],
+      downloadClicksPerMonth: [{ _id: { year: 2025, month: 11 }, count: 40 }],
       generateByFont: [],
       generateBySize: [],
     };
@@ -255,9 +247,7 @@ describe("useAnalytics", () => {
         { _id: { year: 2025, month: 11 }, count: 80 },
         { _id: { year: 2025, month: 10 }, count: 20 },
       ],
-      downloadClicksPerMonth: [
-        { _id: { year: 2025, month: 11 }, count: 40 },
-      ],
+      downloadClicksPerMonth: [{ _id: { year: 2025, month: 11 }, count: 40 }],
       generateByFont: [],
       generateBySize: [],
     };

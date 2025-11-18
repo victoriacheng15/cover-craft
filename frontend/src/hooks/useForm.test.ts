@@ -1,6 +1,6 @@
-import { renderHook, act, waitFor } from "@testing-library/react";
-import { describe, expect, it, beforeEach, vi, afterEach } from "vitest";
-import { useForm, SIZE_PRESETS, FONT_OPTIONS } from "./useForm";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { FONT_OPTIONS, SIZE_PRESETS, useForm } from "./useForm";
 
 // Mock the lib functions
 vi.mock("@/lib", () => ({

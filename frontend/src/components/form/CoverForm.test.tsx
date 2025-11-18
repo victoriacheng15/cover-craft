@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import CoverForm from "./CoverForm";
 
 // Mock useForm hook
@@ -145,14 +145,10 @@ describe("CoverForm", () => {
     (useFormHook as any).mockReturnValue(createMockUseForm());
     render(<CoverForm />);
 
-    const formCard = screen.getByLabelText(
-      "Cover image generator form",
-    );
+    const formCard = screen.getByLabelText("Cover image generator form");
     expect(formCard).toBeInTheDocument();
 
-    const sizeInput = screen.getByLabelText(
-      "Select cover image size preset",
-    );
+    const sizeInput = screen.getByLabelText("Select cover image size preset");
     expect(sizeInput).toBeInTheDocument();
 
     const titleInput = screen.getByLabelText(
