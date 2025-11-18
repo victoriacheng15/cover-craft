@@ -108,6 +108,46 @@ describe("generateCoverImage", () => {
 			expect(response.status).toBe(200);
 			// Query param should take precedence
 		});
+
+		it("should handle JSON parse errors gracefully", async () => {
+			const mockRequest = {
+				...createMockRequest({
+					width: "1080",
+					height: "1080",
+					backgroundColor: "#ffffff",
+					textColor: "#000000",
+					font: "Montserrat",
+					title: "Test",
+					subtitle: "Test",
+					filename: "test",
+				}),
+				text: vi.fn().mockResolvedValue("invalid json {"),
+			};
+
+			const response = await generateCoverImage(mockRequest, mockContext);
+			// Should succeed using query params
+			expect(response.status).toBe(200);
+		});
+
+		it("should handle text() method throwing TypeError", async () => {
+			const mockRequest = {
+				...createMockRequest({
+					width: "1080",
+					height: "1080",
+					backgroundColor: "#ffffff",
+					textColor: "#000000",
+					font: "Montserrat",
+					title: "Test",
+					subtitle: "Test",
+					filename: "test",
+				}),
+				text: vi.fn().mockRejectedValue(new TypeError("Network error")),
+			};
+
+			const response = await generateCoverImage(mockRequest, mockContext);
+			// Should return 500 for non-Error exceptions from text()
+			expect(response.status).toBe(500);
+		});
 	});
 
 	describe("Parameter Validation", () => {
@@ -374,6 +414,17 @@ describe("generateCoverImage", () => {
 			if (response.status === 400) {
 				expect(response.body).toBeDefined();
 			}
+		});
+
+		it("should handle non-Error thrown values in catch block", async () => {
+			const mockRequest = {
+				...createMockRequest(),
+				text: vi.fn().mockRejectedValue("String error thrown"),
+			};
+
+			const response = await generateCoverImage(mockRequest, mockContext);
+			expect(response.status).toBe(500);
+			expect(response.body).toBeDefined();
 		});
 	});
 
