@@ -8,7 +8,8 @@ The backend is a modular, serverless API built on Azure Functions. It provides e
 ## Key Principles
 
 - **Modular Components**: Extraction, validation, rendering, and response building are separated for maintainability.
-- **Server-side Validation**: All inputs are validated on the backend for security and reliability.
+- **Server-side Validation**: All inputs are validated on the backend for security and reliability, including WCAG AA contrast checking.
+- **Accessibility First**: Color contrast validation ensures all generated images meet accessibility standards.
 - **Extensible Design**: Adding new sizes, fonts, or validation rules requires minimal changes.
 - **Direct PNG Output**: Images are returned as binary PNG buffers for immediate use.
 
@@ -203,3 +204,69 @@ This ensures text is:
 - Large enough for readability on all presets
 - Responsive to different canvas dimensions
 - Consistently scaled between backend rendering and frontend preview
+
+## Color Contrast Validation
+
+The backend validates color contrast using the WCAG formula to ensure generated images are accessible.
+
+### Validation Rule
+
+- **WCAG AA Standard**: Contrast ratio ≥ 4.5:1 for normal text
+- All generated images must meet this threshold
+- Backend rejects requests with insufficient contrast
+
+### Implementation
+
+**Contrast Calculation Process:**
+
+1. Parse hex colors to RGB components: `hexToRgb(color: string)`
+2. Calculate relative luminance for each color: `getRelativeLuminance(rgb)`
+   - Apply gamma correction using WCAG formula
+   - Returns normalized value (0-1 range)
+3. Compute contrast ratio: `getContrastRatio(color1, color2)`
+   - Formula: `(lighter luminance + 0.05) / (darker luminance + 0.05)`
+   - Returns ratio on 1-21 scale
+4. Validate against threshold: `validateContrast(bgColor, textColor)`
+   - Compares ratio to WCAG AA minimum (4.5:1)
+   - Returns validation error if threshold not met
+
+**Error Response Example:**
+
+```json
+{
+  "status": 400,
+  "error": "Validation failed",
+  "details": [
+    {
+      "field": "contrast",
+      "message": "Color contrast ratio 2.45:1 does not meet WCAG AA standard (4.5:1). Please choose colors with better contrast."
+    }
+  ]
+}
+```
+
+### Testing
+
+**Test Cases:**
+
+- Good contrast: `#000000` (black) on `#ffffff` (white) = 21:1 ✓
+- Poor contrast: `#ffff00` (yellow) on `#ffffff` (white) = 1.07:1 ✗
+- Boundary: Colors with ratio exactly 4.5:1 ✓
+- Edge cases: Dark colors on dark backgrounds, light on light
+
+**Example curl command to trigger validation error:**
+
+```bash
+curl -X POST "http://localhost:7071/api/generateCoverImage" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "width": 1200,
+    "height": 627,
+    "backgroundColor": "#ffffff",
+    "textColor": "#ffff00",
+    "font": "Montserrat",
+    "title": "Poor Contrast Example",
+    "subtitle": "This will fail validation!",
+    "filename": "test-contrast-fail"
+  }'
+```

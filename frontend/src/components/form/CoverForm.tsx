@@ -9,7 +9,7 @@ import {
   SectionTitle,
   Select,
 } from "@/components/ui";
-import { FONT_OPTIONS, SIZE_PRESETS, useForm } from "@/hooks";
+import { FONT_OPTIONS, SIZE_PRESETS, useContrastCheck, useForm } from "@/hooks";
 import {
   fontFamilyMap,
   lato,
@@ -32,6 +32,12 @@ export default function CoverForm() {
     handleDownload,
     handleReset,
   } = useForm();
+
+  const contrastCheck = useContrastCheck(
+    formData.backgroundColor,
+    formData.textColor,
+  );
+
   const errorId = "form-error-message";
 
   return (
@@ -91,6 +97,38 @@ export default function CoverForm() {
           />
         </FormField>
 
+        <div className="p-3 bg-slate-50 rounded-md border border-slate-200">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-slate-700">Color Contrast</p>
+            <div className="flex items-center gap-2">
+              {contrastCheck.status === "good" && (
+                <>
+                  <span className="inline-block w-3 h-3 bg-green-500 rounded-full"></span>
+                  <span className="text-sm font-semibold text-green-700">
+                    {contrastCheck.message}
+                  </span>
+                </>
+              )}
+              {contrastCheck.status === "warning" && (
+                <>
+                  <span className="inline-block w-3 h-3 bg-yellow-500 rounded-full"></span>
+                  <span className="text-sm font-semibold text-yellow-700">
+                    {contrastCheck.message}
+                  </span>
+                </>
+              )}
+              {contrastCheck.status === "poor" && (
+                <>
+                  <span className="inline-block w-3 h-3 bg-red-500 rounded-full"></span>
+                  <span className="text-sm font-semibold text-red-700">
+                    {contrastCheck.message}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="flex gap-4">
           <div className="flex-1">
             <FormField label="Background Color" htmlFor="background-color">
@@ -148,12 +186,21 @@ export default function CoverForm() {
         <div className="flex justify-center gap-2">
           <Button
             onClick={handleGenerate}
-            disabled={!formData.title || isGenerating}
+            disabled={
+              !formData.title || isGenerating || !contrastCheck.meetsWCAG
+            }
             isLoading={isGenerating}
+            title={
+              !contrastCheck.meetsWCAG
+                ? `Cannot generate: ${contrastCheck.message}`
+                : undefined
+            }
             aria-label={
               isGenerating
                 ? "Generating your cover image"
-                : "Generate cover image"
+                : !contrastCheck.meetsWCAG
+                  ? `Generate button disabled: ${contrastCheck.message}`
+                  : "Generate cover image"
             }
           >
             {isGenerating ? "Generating..." : "Generate"}

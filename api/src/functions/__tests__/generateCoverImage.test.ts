@@ -167,7 +167,15 @@ describe("generateCoverImage", () => {
 		});
 
 		it("should reject width less than 1", async () => {
-			const mockRequest = createMockRequest({ width: "0", filename: "test" });
+			const mockRequest = createMockRequest({
+				width: "0",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Test",
+				filename: "test",
+			});
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
@@ -175,6 +183,11 @@ describe("generateCoverImage", () => {
 		it("should reject width greater than 1200", async () => {
 			const mockRequest = createMockRequest({
 				width: "1201",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Test",
 				filename: "test",
 			});
 			const response = await generateCoverImage(mockRequest, mockContext);
@@ -197,14 +210,27 @@ describe("generateCoverImage", () => {
 		});
 
 		it("should reject height less than 1", async () => {
-			const mockRequest = createMockRequest({ height: "0", filename: "test" });
+			const mockRequest = createMockRequest({
+				width: "400",
+				height: "0",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Test",
+				filename: "test",
+			});
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
 
 		it("should reject height greater than 1200", async () => {
 			const mockRequest = createMockRequest({
+				width: "400",
 				height: "1201",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Test",
 				filename: "test",
 			});
 			const response = await generateCoverImage(mockRequest, mockContext);
@@ -213,22 +239,32 @@ describe("generateCoverImage", () => {
 
 		it("should validate backgroundColor is valid hex color", async () => {
 			const mockRequest = createMockRequest({
+				width: "400",
+				height: "400",
 				backgroundColor: "invalid-color",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Test",
 				filename: "test",
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
-			expect([200, 400]).toContain(response.status);
+			expect(response.status).toBe(400);
 		});
 
 		it("should validate textColor is valid hex color", async () => {
 			const mockRequest = createMockRequest({
+				width: "400",
+				height: "400",
+				backgroundColor: "#ffffff",
 				textColor: "rgb(255,0,0)",
+				font: "Montserrat",
+				title: "Test",
 				filename: "test",
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
-			expect([200, 400]).toContain(response.status);
+			expect(response.status).toBe(400);
 		});
 
 		it("should accept heading up to 55 characters", async () => {
@@ -251,6 +287,11 @@ describe("generateCoverImage", () => {
 		it("should reject heading longer than 55 characters", async () => {
 			const longTitle = "a".repeat(56);
 			const mockRequest = createMockRequest({
+				width: "400",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
 				title: longTitle,
 				filename: "test",
 			});
@@ -279,6 +320,12 @@ describe("generateCoverImage", () => {
 		it("should reject subheading longer than 120 characters", async () => {
 			const longSubtitle = "b".repeat(121);
 			const mockRequest = createMockRequest({
+				width: "400",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Test",
 				subtitle: longSubtitle,
 				filename: "test",
 			});
@@ -289,12 +336,17 @@ describe("generateCoverImage", () => {
 
 		it("should validate font is in allowed fonts list", async () => {
 			const mockRequest = createMockRequest({
+				width: "400",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
 				font: "UnknownFont",
+				title: "Test",
 				filename: "test",
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
-			expect([200, 400]).toContain(response.status);
+			expect(response.status).toBe(400);
 		});
 	});
 
@@ -390,6 +442,12 @@ describe("generateCoverImage", () => {
 		it("should return 400 for validation errors", async () => {
 			const mockRequest = createMockRequest({
 				width: "invalid",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Test",
+				filename: "test",
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
@@ -408,12 +466,19 @@ describe("generateCoverImage", () => {
 		});
 
 		it("should include error message in response", async () => {
-			const mockRequest = createMockRequest({ width: "invalid" });
+			const mockRequest = createMockRequest({
+				width: "invalid",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Test",
+				filename: "test",
+			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
-			if (response.status === 400) {
-				expect(response.body).toBeDefined();
-			}
+			expect(response.status).toBe(400);
+			expect(response.body).toBeDefined();
 		});
 
 		it("should handle non-Error thrown values in catch block", async () => {
@@ -431,7 +496,13 @@ describe("generateCoverImage", () => {
 	describe("Edge Cases", () => {
 		it("should handle special characters in title", async () => {
 			const mockRequest = createMockRequest({
+				width: "400",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
 				title: "Special <>&\"'",
+				filename: "test",
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
@@ -440,7 +511,13 @@ describe("generateCoverImage", () => {
 
 		it("should handle Unicode characters in title", async () => {
 			const mockRequest = createMockRequest({
+				width: "400",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
 				title: "你好 مرحبا Привет",
+				filename: "test",
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
@@ -451,6 +528,11 @@ describe("generateCoverImage", () => {
 			const mockRequest = createMockRequest({
 				width: "50",
 				height: "50",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Test",
+				filename: "test",
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
@@ -461,10 +543,53 @@ describe("generateCoverImage", () => {
 			const mockRequest = createMockRequest({
 				width: "4000",
 				height: "3000",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Test",
+				filename: "test",
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect([200, 400]).toContain(response.status);
+		});
+	});
+
+	describe("Color Contrast Validation", () => {
+		it("should accept good contrast (AAA)", async () => {
+			const mockRequest = createMockRequest({
+				width: "400",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#000000",
+				font: "Montserrat",
+				title: "Good Contrast",
+				filename: "test",
+			});
+
+			const response = await generateCoverImage(mockRequest, mockContext);
+			expect(response.status).toBe(200);
+		});
+
+		it("should reject poor contrast (below 4.5:1)", async () => {
+			const mockRequest = createMockRequest({
+				width: "400",
+				height: "400",
+				backgroundColor: "#ffffff",
+				textColor: "#ffff00",
+				font: "Montserrat",
+				title: "Poor Contrast",
+				filename: "test",
+			});
+
+			const response = await generateCoverImage(mockRequest, mockContext);
+			expect(response.status).toBe(400);
+			const body = JSON.parse(response.body as string);
+			expect(body.details).toContainEqual(
+				expect.objectContaining({
+					field: "contrast",
+				}),
+			);
 		});
 	});
 });

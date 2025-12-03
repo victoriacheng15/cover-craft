@@ -1,4 +1,12 @@
 import { downloadImage, generateCoverImage, healthCheck } from "./api";
+import {
+  getContrastRatio,
+  getContrastStatus,
+  getRelativeLuminance,
+  getWCAGLevel,
+  hexToRgb,
+  meetsWCAGAA,
+} from "./contrast";
 import type { ApiError, HealthCheckResponse, ImageParams } from "./types";
 import {
   cn,
@@ -16,7 +24,13 @@ export {
   cn,
   downloadImage,
   generateCoverImage,
+  getContrastRatio,
+  getContrastStatus,
+  getRelativeLuminance,
+  getWCAGLevel,
   healthCheck,
+  hexToRgb,
+  meetsWCAGAA,
   sendDownloadMetric,
   sendGenericMetric,
   lato,
