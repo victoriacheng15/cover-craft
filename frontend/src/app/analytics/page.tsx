@@ -3,6 +3,7 @@
 import {
   Bar,
   BarChart,
+  CartesianGrid,
   Cell,
   Legend,
   Line,
@@ -34,19 +35,20 @@ export default function AnalyticsPage() {
               <SectionTitle as="h3" size="md">
                 Total Generate, Download & Combined Clicks
               </SectionTitle>
-              <div className="w-full min-w-0">
+              <div className="w-full min-w-0 bg-slate-100 rounded-lg p-4">
                 <ResponsiveContainer width="100%" height={250} minWidth={0}>
                   <BarChart
                     data={totalClicksData}
                     margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
                   >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
                     <XAxis dataKey="name" />
                     <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Bar dataKey="value">
-                      <Cell fill="#fbbf24" /> {/* Total */}
-                      <Cell fill="#34d399" /> {/* Generate */}
-                      <Cell fill="#60a5fa" /> {/* Download */}
+                      <Cell fill="#475569" /> {/* Total - slate-600 */}
+                      <Cell fill="#10b981" /> {/* Generate - emerald-500 */}
+                      <Cell fill="#3b82f6" /> {/* Download - blue-500 */}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -57,12 +59,13 @@ export default function AnalyticsPage() {
               <SectionTitle as="h3" size="md">
                 Monthly Click Trends (Last 12 Months)
               </SectionTitle>
-              <div className="w-full min-w-0">
+              <div className="w-full min-w-0 bg-slate-100 rounded-lg p-4">
                 <ResponsiveContainer width="100%" height={250} minWidth={0}>
                   <LineChart
                     data={monthlyLineData}
                     margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
                   >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
                     <XAxis
                       dataKey="month"
                       angle={-30}
@@ -76,14 +79,14 @@ export default function AnalyticsPage() {
                     <Line
                       type="monotone"
                       dataKey="Generate"
-                      stroke="#34d399"
+                      stroke="#10b981"
                       strokeWidth={2}
                       dot={{ r: 3 }}
                     />
                     <Line
                       type="monotone"
                       dataKey="Download"
-                      stroke="#60a5fa"
+                      stroke="#3b82f6"
                       strokeWidth={2}
                       dot={{ r: 3 }}
                     />
@@ -93,7 +96,7 @@ export default function AnalyticsPage() {
             </section>
 
             <div className="flex flex-col sm:flex-row gap-8">
-              <section className="flex-1">
+              <section className="flex-1 bg-slate-100 rounded-lg p-4">
                 <SectionTitle as="h3" size="md">
                   Font Usage Distribution
                 </SectionTitle>
@@ -120,7 +123,7 @@ export default function AnalyticsPage() {
                   </PieChart>
                 </ResponsiveContainer>
               </section>
-              <section className="flex-1">
+              <section className="flex-1 bg-slate-100 rounded-lg p-4">
                 <SectionTitle as="h3" size="md">
                   Size Presets Distribution
                 </SectionTitle>
