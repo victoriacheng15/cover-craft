@@ -21,7 +21,7 @@ A modular React/Next.js application for generating custom cover images with real
 ┌─────────────────────────────────────────────────────────────┐
 │                          HEADER                             │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │              Cover Craft 🎨 (centered)               │   │
+│  │              Cover Craft 🎨                          │   │
 │  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 
@@ -56,10 +56,9 @@ A modular React/Next.js application for generating custom cover images with real
 │  │  │Font              │  │                                 │
 │  │  └──────────────────┘  │                                 │
 │  │                        │                                 │
-│  │      ┌──────────┐      │                                 │
-│  │      │Generate  │      │                                 │
-│  │      │(centered)│      │                                 │
-│  │      └──────────┘      │                                 │
+│  │  ┌───────────┬────────┐│                                 │
+│  │  │ Generate  │ Reset  ││                                 │
+│  │  └───────────┴────────┘│                                 │
 │  │                        │                                 │
 │  └────────────────────────┘                                 │
 │                                                             │
@@ -68,7 +67,7 @@ A modular React/Next.js application for generating custom cover images with real
 ┌─────────────────────────────────────────────────────────────┐
 │                          FOOTER                             │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │     © 2025 Victoria Cheng | GitHub (centered)        │   │
+│  │     © 2025 Victoria Cheng | GitHub                  │   │
 │  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -95,7 +94,7 @@ The application is organized into modular, reusable components:
   - Imports Google Fonts (Montserrat, Roboto, Lato, Playfair Display, Open Sans)
   - Maps font selections to CSS variables for live preview rendering
   - State: size, filename, title, subtitle, backgroundColor, textColor, font, isGenerating, error
-  - Buttons: Generate (disabled until title field filled), Download (appears after generation)
+  - Buttons: Generate (disabled until title field filled), Reset (always enabled, clears form), Download (appears after generation)
 
 - **`FormField`**: Reusable wrapper component for form inputs with label and optional description text.
 
@@ -158,10 +157,12 @@ type ImageResponse = Blob;       // PNG image as Blob
 ### Available Options
 
 **Size Presets:**
+
 - `"Post (1200 × 627)"` - Standard social media post format
 - `"Square (1080 × 1080)"` - Square social media tile format
 
 **Font Options:**
+
 - Montserrat
 - Roboto
 - Lato
@@ -250,10 +251,12 @@ Built with accessibility support in mind. The app includes:
 ## Extensibility
 
 **Adding a New Size Preset:**
+
 1. Add to `SIZE_PRESETS` array in `CoverForm.tsx`
 2. Update backend `ALLOWED_SIZES` to match
 
 **Adding a New Font:**
+
 1. Import from `next/font/google` in `CoverForm.tsx`
 2. Add to `FONT_OPTIONS` array
 3. Add mapping to `fontFamilyMap`
@@ -261,6 +264,7 @@ Built with accessibility support in mind. The app includes:
 5. Update backend `ALLOWED_FONTS` list
 
 **Adding Form Validation:**
+
 - Currently: Only `title` field is required to enable Generate button
 - Add regex validation for `filename`, `title`, `subtitle` as needed
 - Ensure error messages are associated with form fields via `aria-describedby`

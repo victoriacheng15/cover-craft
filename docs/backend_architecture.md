@@ -105,6 +105,13 @@ classDiagram
 
     class Rendering {
         +generatePNG(params): Buffer
+        +calculateFontSizes(height): FontSizes
+    }
+
+    class FontSizes {
+        +number headingFontSize
+        +number subheadingFontSize
+        +number lineSpacing
     }
 
     class ValidationError {
@@ -118,6 +125,7 @@ classDiagram
     Extraction --> ImageParams
     Validation --> ValidationError : returns
     Rendering --> ImageParams : consumes
+    Rendering --> FontSizes : calculates
 ```
 
 ## Sequence Flow
@@ -172,3 +180,26 @@ graph TB
     FA -->|Image Buffer| FE
     FE -->|PNG Download| Browser
 ```
+
+## Font Size Calculations
+
+The backend uses responsive font sizing based on canvas height to ensure optimal readability across different image dimensions.
+
+### Formula (Solution #2)
+
+- **Heading**: `Math.max(32, Math.round(height * 0.09))` - 9% of canvas height with minimum 32px
+- **Subheading**: `Math.max(24, Math.round(height * 0.07))` - 7% of canvas height with minimum 24px
+- **Line Spacing**: `headingFontSize * 1.2` - Space between heading and subheading
+
+### Size Presets
+
+| Preset | Dimensions | Heading | Subheading |
+|--------|-----------|---------|-----------|
+| Post | 1200 × 627 | 56px | 44px |
+| Square | 1080 × 1080 | 97px | 75px |
+
+This ensures text is:
+
+- Large enough for readability on all presets
+- Responsive to different canvas dimensions
+- Consistently scaled between backend rendering and frontend preview

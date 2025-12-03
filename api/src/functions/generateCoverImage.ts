@@ -264,8 +264,9 @@ async function generatePNG(params: ImageParams): Promise<Buffer> {
 	const centerY = params.height / 2;
 
 	// Calculate font sizes based on canvas height for responsiveness
-	const headingFontSize = Math.max(30, Math.round(params.height * 0.08)); // 8% of height
-	const subheadingFontSize = Math.max(20, Math.round(params.height * 0.06)); // 6% of height
+	// Solution #2: 9% heading (min 32px) and 7% subheading (min 24px) for better readability
+	const headingFontSize = Math.max(32, Math.round(params.height * 0.09)); // 9% of height
+	const subheadingFontSize = Math.max(24, Math.round(params.height * 0.07)); // 7% of height
 	const lineSpacing = headingFontSize * 1.2; // Space between heading and subheading
 
 	// Draw heading with bold font weight, positioned above center

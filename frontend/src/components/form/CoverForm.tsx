@@ -30,6 +30,7 @@ export default function CoverForm() {
     getPreviewDimensions,
     handleGenerate,
     handleDownload,
+    handleReset,
   } = useForm();
   const errorId = "form-error-message";
 
@@ -144,7 +145,7 @@ export default function CoverForm() {
           </div>
         )}
 
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-2">
           <Button
             onClick={handleGenerate}
             disabled={!formData.title || isGenerating}
@@ -156,6 +157,12 @@ export default function CoverForm() {
             }
           >
             {isGenerating ? "Generating..." : "Generate"}
+          </Button>
+          <Button
+            onClick={handleReset}
+            aria-label="Reset form to default values"
+          >
+            Reset
           </Button>
         </div>
       </Card>
