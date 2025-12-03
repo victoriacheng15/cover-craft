@@ -147,7 +147,11 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 	};
 }
 
-function getRelativeLuminance(rgb: { r: number; g: number; b: number }): number {
+function getRelativeLuminance(rgb: {
+	r: number;
+	g: number;
+	b: number;
+}): number {
 	const [r, g, b] = [rgb.r, rgb.g, rgb.b].map((c) => {
 		const normalized = c / 255;
 		return normalized <= 0.03928
@@ -158,10 +162,7 @@ function getRelativeLuminance(rgb: { r: number; g: number; b: number }): number 
 	return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-function getContrastRatio(
-	color1: string,
-	color2: string,
-): number {
+function getContrastRatio(color1: string, color2: string): number {
 	const rgb1 = hexToRgb(color1);
 	const rgb2 = hexToRgb(color2);
 
@@ -309,9 +310,7 @@ function validateParams(params: ImageParams): ValidationError[] {
 	errors.push(...validateFont(params.font));
 	errors.push(...validateTextLength(params.title, params.subtitle));
 	errors.push(...validateFilename(params.filename));
-	errors.push(
-		...validateContrast(params.backgroundColor, params.textColor),
-	);
+	errors.push(...validateContrast(params.backgroundColor, params.textColor));
 
 	return errors;
 }

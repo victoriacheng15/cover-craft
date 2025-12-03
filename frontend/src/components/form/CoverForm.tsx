@@ -186,7 +186,9 @@ export default function CoverForm() {
         <div className="flex justify-center gap-2">
           <Button
             onClick={handleGenerate}
-            disabled={!formData.title || isGenerating || !contrastCheck.meetsWCAG}
+            disabled={
+              !formData.title || isGenerating || !contrastCheck.meetsWCAG
+            }
             isLoading={isGenerating}
             title={
               !contrastCheck.meetsWCAG
