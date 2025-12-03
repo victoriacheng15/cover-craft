@@ -156,7 +156,7 @@ function getRelativeLuminance(rgb: {
 		const normalized = c / 255;
 		return normalized <= 0.03928
 			? normalized / 12.92
-			: Math.pow((normalized + 0.055) / 1.055, 2.4);
+			: ((normalized + 0.055) / 1.055) ** 2.4;
 	});
 
 	return 0.2126 * r + 0.7152 * g + 0.0722 * b;

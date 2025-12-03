@@ -9,7 +9,7 @@ import {
   SectionTitle,
   Select,
 } from "@/components/ui";
-import { FONT_OPTIONS, SIZE_PRESETS, useForm, useContrastCheck } from "@/hooks";
+import { FONT_OPTIONS, SIZE_PRESETS, useContrastCheck, useForm } from "@/hooks";
 import {
   fontFamilyMap,
   lato,
