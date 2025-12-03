@@ -41,14 +41,14 @@ export function useAnalytics() {
 
   // Chart colors - medium to dark colors for better contrast on whitesmoke background
   const COLORS = [
-    "#10b981",   // emerald-500
-    "#3b82f6",   // blue-500
-    "#475569",   // slate-600
-    "#dc2626",   // red-600
-    "#7c3aed",   // violet-600
-    "#db2777",   // rose-600
-    "#0891b2",   // cyan-600
-    "#6366f1",   // indigo-600
+    "#10b981", // emerald-500
+    "#3b82f6", // blue-500
+    "#475569", // slate-600
+    "#dc2626", // red-600
+    "#7c3aed", // violet-600
+    "#db2777", // rose-600
+    "#0891b2", // cyan-600
+    "#6366f1", // indigo-600
   ];
 
   // Prepare data for total clicks chart, including combined total
