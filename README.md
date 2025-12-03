@@ -19,13 +19,13 @@ A full-stack cover image generator application with built-in analytics dashboard
 - [DevOps Practices](./docs/devops_practice.md): Deployment strategies, CI/CD pipelines, infrastructure
 - [Learning Notes](./docs/learning_note.md): Key insights from development and deployment
 
-
 ## ⚙️ What It Does
 
 1. **Cover Image Generation**: Create custom cover images with customizable text, colors, fonts, and size presets
 2. **Real-time Preview**: See changes instantly as you adjust design parameters
-3. **Activity Tracking**: All generate and download actions are logged to MongoDB
-4. **Analytics Dashboard**: `/analytics` route displays comprehensive metrics with interactive charts:
+3. **Color Contrast Validation**: WCAG AA compliance checking ensures all generated images are accessible (≥ 4.5:1 contrast ratio)
+4. **Activity Tracking**: All generate and download actions are logged to MongoDB
+5. **Analytics Dashboard**: `/analytics` route displays comprehensive metrics with interactive charts:
    - Total clicks (combined, generate, download)
    - Monthly trends (12-month line chart)
    - Font and size usage distribution (pie charts)
@@ -33,20 +33,25 @@ A full-stack cover image generator application with built-in analytics dashboard
 ## 🚀 Key Features & Technical Highlights
 
 ### Frontend Architecture
+
 - **Full-Stack TypeScript**: Type-safe code from frontend to backend
 - **React Components**: Modular, reusable UI components with proper separation of concerns
 - **Real-time Preview**: Instant updates as users customize designs
+- **Color Contrast Validation**: Debounced WCAG AA compliance checking with real-time visual feedback
 - **Responsive Design**: Mobile-first approach with optimized layouts
-- **Custom Hooks**: `useAnalytics` for data fetching and state management
-- **Accessibility**: WCAG 2.1 AA compliant with semantic HTML and ARIA attributes
+- **Custom Hooks**: `useAnalytics` for data fetching, `useContrastCheck` for accessibility validation
+- **Accessibility**: WCAG 2.1 AA compliant with semantic HTML, ARIA attributes, and contrast validation
 
 ### Backend Architecture
+
 - **Serverless Azure Functions**: Scalable, cost-efficient image generation
 - **Node.js Canvas**: High-quality PNG rendering
+- **WCAG Color Contrast Validation**: Ensures all generated images meet accessibility standards (≥ 4.5:1 ratio)
 - **MongoDB Integration**: Analytics data persistence and aggregation
 - **API Endpoints**: RESTful design for image generation and analytics queries
 
 ### Code Quality & Deployment
+
 - **Comprehensive Testing**: Unit tests for both frontend (Vitest) and backend
 - **Code Quality**: Automated linting and formatting with Biome
 - **Multi-Cloud Deployment**: Frontend on Vercel, backend on Azure Function App
@@ -55,6 +60,7 @@ A full-stack cover image generator application with built-in analytics dashboard
 ## 🧠 Why This Project
 
 This project demonstrates:
+
 - ✅ **Full-stack TypeScript** application with end-to-end type safety
 - ✅ **Serverless architecture** handling concurrent requests efficiently
 - ✅ **Multi-cloud integration** (Vercel + Azure) with production-ready configuration
@@ -63,23 +69,20 @@ This project demonstrates:
 - ✅ **WCAG 2.1 AA accessibility** compliance
 - ✅ **Clean, maintainable codebase** with clear documentation
 
-
 ## 📂 Project Structure
 
-```
+```plaintext
 cover-craft/
 ├── frontend/                 # Next.js frontend application
-│   ├── src/
-│   │   ├── app/             # Next.js app router pages
-│   │   ├── components/      # React components (form, layout, UI, preview)
-│   │   ├── hooks/           # Custom React hooks (e.g., analytics fetching)
-│   │   └── lib/             # Utilities and API functions
-│   └── package.json
+│   └── src/
+│       ├── app/             # Next.js app router pages
+│       ├── components/      # React components
+│       ├── hooks/           # Custom React hooks
+│       └── lib/             # Utilities and API functions
 ├── api/                      # Azure Functions backend
-│   ├── src/
-│   │   ├── functions/       # Azure Function endpoints
-│   │   └── assets/          # Fonts for image generation
-│   └── package.json
+│   └── src/
+│       ├── functions/       # Azure Function endpoints
+│       └── assets/          # Fonts for image generation
 ├── docs/                     # Architecture and development docs
 └── README.md                # This file
 ```
@@ -100,7 +103,8 @@ All data is persisted in MongoDB and aggregated on-demand. Built with recharts f
 ## 🏃 Getting Started
 
 ### Prerequisites
-- Node.js 18+
+
+- Node.js 22+ (LTS recommended, tested on Node 24)
 - npm or yarn
 - Azure Functions Core Tools (for local backend development)
 - MongoDB connection string (for analytics features)
@@ -108,12 +112,14 @@ All data is persisted in MongoDB and aggregated on-demand. Built with recharts f
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/victoriacheng15/cover-craft.git
 cd cover-craft
 ```
 
 2. Install dependencies:
+
 ```bash
 # Frontend
 cd frontend && npm install && cd ..
@@ -125,18 +131,22 @@ cd api && npm install && cd ..
 ### Running Locally
 
 **Terminal 1 - Frontend:**
+
 ```bash
 cd frontend
 npm run dev
 ```
+
 Visit `http://localhost:3000`
 
 **Terminal 2 - Backend:**
+
 ```bash
 cd api
 npm run prestart  # Compile TypeScript
 npm start         # Start Azure Functions locally
 ```
+
 Backend available at `http://localhost:7071`
 
 ## 🧪 Testing & Code Quality
@@ -157,6 +167,7 @@ npm run lint      # Lint code
 ## ♿ Accessibility
 
 This project is built with accessibility in mind:
+
 - Semantic HTML and ARIA attributes
 - WCAG 2.1 AA color contrast ratios
 - Screen reader announcements for dynamic content
