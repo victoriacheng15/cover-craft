@@ -19,6 +19,7 @@ const ALLOWED_FONTS = [
 const MAX_TITLE_LENGTH = 55;
 const MAX_SUBTITLE_LENGTH = 120;
 const HEX_COLOR_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+const WCAG_AA_CONTRAST_RATIO = 4.5;
 
 // Register fonts
 const fontDir = path.join(__dirname, "../assets/fonts");
@@ -125,6 +126,52 @@ async function extractParams(
 	params.filename = queryFilename || bodyParams.filename;
 
 	return params;
+}
+
+// Contrast utility functions for WCAG validation
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+	const cleaned = hex.replace("#", "");
+	const expanded =
+		cleaned.length === 3
+			? cleaned
+					.split("")
+					.map((c) => c + c)
+					.join("")
+			: cleaned;
+
+	const num = parseInt(expanded, 16);
+	return {
+		r: (num >> 16) & 255,
+		g: (num >> 8) & 255,
+		b: num & 255,
+	};
+}
+
+function getRelativeLuminance(rgb: { r: number; g: number; b: number }): number {
+	const [r, g, b] = [rgb.r, rgb.g, rgb.b].map((c) => {
+		const normalized = c / 255;
+		return normalized <= 0.03928
+			? normalized / 12.92
+			: Math.pow((normalized + 0.055) / 1.055, 2.4);
+	});
+
+	return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function getContrastRatio(
+	color1: string,
+	color2: string,
+): number {
+	const rgb1 = hexToRgb(color1);
+	const rgb2 = hexToRgb(color2);
+
+	const lum1 = getRelativeLuminance(rgb1);
+	const lum2 = getRelativeLuminance(rgb2);
+
+	const lighter = Math.max(lum1, lum2);
+	const darker = Math.min(lum1, lum2);
+
+	return (lighter + 0.05) / (darker + 0.05);
 }
 
 // Modular validation functions for each parameter type
@@ -235,6 +282,24 @@ function validateFilename(filename: string): ValidationError[] {
 	return errors;
 }
 
+function validateContrast(
+	backgroundColor: string,
+	textColor: string,
+): ValidationError[] {
+	const errors: ValidationError[] = [];
+
+	const ratio = getContrastRatio(backgroundColor, textColor);
+
+	if (ratio < WCAG_AA_CONTRAST_RATIO) {
+		errors.push({
+			field: "contrast",
+			message: `Color contrast ratio ${ratio.toFixed(2)}:1 does not meet WCAG AA standard (4.5:1). Please choose colors with better contrast.`,
+		});
+	}
+
+	return errors;
+}
+
 // Main validation function that composes all validators
 function validateParams(params: ImageParams): ValidationError[] {
 	const errors: ValidationError[] = [];
@@ -244,6 +309,9 @@ function validateParams(params: ImageParams): ValidationError[] {
 	errors.push(...validateFont(params.font));
 	errors.push(...validateTextLength(params.title, params.subtitle));
 	errors.push(...validateFilename(params.filename));
+	errors.push(
+		...validateContrast(params.backgroundColor, params.textColor),
+	);
 
 	return errors;
 }
