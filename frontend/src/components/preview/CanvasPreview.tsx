@@ -46,7 +46,13 @@ export default function CanvasPreview({
         <h1 style={{ fontWeight: 700, fontSize: `${headingFontSize}px` }}>
           {heading || "Heading Preview"}
         </h1>
-        <p style={{ fontWeight: 400, fontSize: `${subheadingFontSize}px`, marginTop: `${lineSpacing / 2}px` }}>
+        <p
+          style={{
+            fontWeight: 400,
+            fontSize: `${subheadingFontSize}px`,
+            marginTop: `${lineSpacing / 2}px`,
+          }}
+        >
           {subheading || "Subheading Preview"}
         </p>
       </div>
