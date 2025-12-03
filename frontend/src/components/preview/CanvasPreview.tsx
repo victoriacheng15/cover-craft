@@ -25,6 +25,12 @@ export default function CanvasPreview({
   width = 1200,
   height = 627,
 }: CanvasPreviewProps) {
+  // Calculate font sizes based on canvas height for responsiveness
+  // Solution #2: 9% heading (min 32px) and 7% subheading (min 24px) for better readability
+  const headingFontSize = Math.max(32, Math.round(height * 0.09)); // 9% of height
+  const subheadingFontSize = Math.max(24, Math.round(height * 0.07)); // 7% of height
+  const lineSpacing = headingFontSize * 1.2; // Space between heading and subheading
+
   return (
     <div
       className="w-full h-full flex justify-center items-center border border-gray-300"
@@ -36,11 +42,11 @@ export default function CanvasPreview({
         height: `${height}px`,
       }}
     >
-      <div className="text-center px-4">
-        <h1 className="text-4xl" style={{ fontWeight: 700 }}>
+      <div className="text-center px-10">
+        <h1 style={{ fontWeight: 700, fontSize: `${headingFontSize}px` }}>
           {heading || "Heading Preview"}
         </h1>
-        <p className="text-2xl mt-2" style={{ fontWeight: 400 }}>
+        <p style={{ fontWeight: 400, fontSize: `${subheadingFontSize}px`, marginTop: `${lineSpacing / 2}px` }}>
           {subheading || "Subheading Preview"}
         </p>
       </div>

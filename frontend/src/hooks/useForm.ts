@@ -103,9 +103,19 @@ export function useForm() {
       const timestamp = Math.floor(Date.now() / 1000);
       const downloadFilename = `${formData.filename || "cover"}-${timestamp}.png`;
       await downloadImage(generatedImage, downloadFilename);
+      // Auto-reset after successful download
+      handleReset();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to download image");
     }
+  };
+
+  const handleReset = () => {
+    setFormData(initialFormData);
+    setGeneratedImage(null);
+    setGeneratedImageUrl(null);
+    setError(null);
+    setIsGenerating(false);
   };
 
   return {
@@ -117,6 +127,7 @@ export function useForm() {
     getPreviewDimensions,
     handleGenerate,
     handleDownload,
+    handleReset,
   };
 }
 
