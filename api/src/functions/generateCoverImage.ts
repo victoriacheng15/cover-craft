@@ -336,20 +336,23 @@ async function generatePNG(params: ImageParams): Promise<Buffer> {
 	const subheadingFontSize = Math.max(24, Math.round(params.height * 0.07)); // 7% of height
 	const lineSpacing = headingFontSize * 1.2; // Space between heading and subheading
 
-	// Draw heading with bold font weight, positioned above center
+	// Draw heading with bold font weight
 	ctx.fillStyle = params.textColor;
 	ctx.font = `bold ${headingFontSize}px "${params.font}"`;
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
 
-	const headingY = centerY - lineSpacing / 2;
+	// If subtitle exists, position title above center; otherwise, center vertically
+	const headingY = params.subtitle ? centerY - lineSpacing / 2 : centerY;
 	ctx.fillText(params.title, centerX, headingY, maxTextWidth);
 
-	// Draw subheading with regular font weight, positioned below heading
-	ctx.font = `normal ${subheadingFontSize}px "${params.font}"`;
-	ctx.fillStyle = params.textColor;
-	const subheadingY = centerY + lineSpacing / 2;
-	ctx.fillText(params.subtitle || "", centerX, subheadingY, maxTextWidth);
+	// Draw subheading with regular font weight, positioned below heading (only if provided)
+	if (params.subtitle) {
+		ctx.font = `normal ${subheadingFontSize}px "${params.font}"`;
+		ctx.fillStyle = params.textColor;
+		const subheadingY = centerY + lineSpacing / 2;
+		ctx.fillText(params.subtitle, centerX, subheadingY, maxTextWidth);
+	}
 
 	// Convert canvas to PNG buffer
 	return canvas.toBuffer("image/png");
