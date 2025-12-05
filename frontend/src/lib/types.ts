@@ -31,7 +31,7 @@ export interface ApiError {
   details?: Array<{ field: string; message: string }>;
 }
 
-export interface HealthCheckResponse {
+export interface HealthResponse {
   status: string;
   timestamp: string;
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import CoverForm from "@/components/form/CoverForm";
 import MainLayout from "@/components/layout/MainLayout";
-import { healthCheck } from "@/lib/api";
+import { health } from "@/lib/api";
 
 export default function Home() {
   const [apiStatus, setApiStatus] = useState<string>("Checking...");
@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     async function checkHealth() {
       try {
-        const res = await healthCheck();
+        const res = await health();
         setApiStatus(res.status || "Healthy");
       } catch {
         setApiStatus("API Unreachable");

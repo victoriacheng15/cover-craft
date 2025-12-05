@@ -1,4 +1,4 @@
-import { downloadImage, generateCoverImage, healthCheck } from "./api";
+import { downloadImage, generateCoverImage, getAnalytics, health } from "./api";
 import {
   getContrastRatio,
   getContrastStatus,
@@ -7,7 +7,7 @@ import {
   hexToRgb,
   meetsWCAGAA,
 } from "./contrast";
-import type { ApiError, HealthCheckResponse, ImageParams } from "./types";
+import type { ApiError, HealthResponse, ImageParams } from "./types";
 import {
   cn,
   fontFamilyMap,
@@ -17,22 +17,23 @@ import {
   playfairDisplay,
   roboto,
   sendDownloadMetric,
-  sendGenericMetric,
+  sendMetric,
 } from "./utils";
 
 export {
   cn,
   downloadImage,
   generateCoverImage,
+  getAnalytics,
   getContrastRatio,
   getContrastStatus,
   getRelativeLuminance,
   getWCAGLevel,
-  healthCheck,
+  health,
   hexToRgb,
   meetsWCAGAA,
   sendDownloadMetric,
-  sendGenericMetric,
+  sendMetric,
   lato,
   montserrat,
   openSans,
@@ -40,4 +41,4 @@ export {
   roboto,
   fontFamilyMap,
 };
-export type { ApiError, HealthCheckResponse, ImageParams };
+export type { ApiError, HealthResponse, ImageParams };

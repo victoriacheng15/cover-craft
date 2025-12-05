@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { downloadImage, generateCoverImage, healthCheck } from "./api";
+import { downloadImage, generateCoverImage, health } from "./api";
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -9,7 +9,7 @@ describe("API functions", () => {
     vi.clearAllMocks();
   });
 
-  describe("healthCheck", () => {
+  describe("health", () => {
     it("calls the health check endpoint and returns response", async () => {
       const mockResponse = { status: "ok" };
       (global.fetch as any).mockResolvedValueOnce({
@@ -17,9 +17,9 @@ describe("API functions", () => {
         json: async () => mockResponse,
       });
 
-      const result = await healthCheck();
+      const result = await health();
 
-      expect(global.fetch).toHaveBeenCalledWith("/api/healthCheck");
+      expect(global.fetch).toHaveBeenCalledWith("/api/health");
       expect(result).toEqual(mockResponse);
     });
 
@@ -29,7 +29,7 @@ describe("API functions", () => {
         statusText: "Internal Server Error",
       });
 
-      await expect(healthCheck()).rejects.toThrow(
+      await expect(health()).rejects.toThrow(
         "Health check failed: Internal Server Error",
       );
     });

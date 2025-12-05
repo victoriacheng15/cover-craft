@@ -1,19 +1,42 @@
 import { useEffect, useState } from "react";
+import { getAnalytics } from "@/lib/api";
+
+interface UserEngagement {
+  totalCoversGenerated: number;
+  totalDownloads: number;
+  successRate: number;
+  dailyTrend: { date: string; count: number }[];
+}
+
+interface FeaturePopularity {
+  topFonts: { font: string; count: number }[];
+  topSizes: { size: string; count: number }[];
+  titleLengthStats: {
+    avgTitleLength: number;
+    minTitleLength: number;
+    maxTitleLength: number;
+  };
+  subtitleUsagePercent: number;
+}
+
+interface AccessibilityCompliance {
+  wcagDistribution: { level: string; count: number }[];
+  contrastStats: {
+    avgContrastRatio: number;
+    minContrastRatio: number;
+    maxContrastRatio: number;
+  };
+  wcagFailurePercent: number;
+  wcagTrend: Array<{
+    date: string;
+    [key: string]: number | string;
+  }>;
+}
 
 interface AnalyticsData {
-  eventCounts: { _id: string; count: number }[];
-  generateClickCount: number;
-  downloadClickCount: number;
-  generateClicksPerMonth: {
-    _id: { year: number; month: number };
-    count: number;
-  }[];
-  downloadClicksPerMonth: {
-    _id: { year: number; month: number };
-    count: number;
-  }[];
-  generateByFont: { _id: string; count: number }[];
-  generateBySize: { _id: string; count: number }[];
+  userEngagement: UserEngagement;
+  featurePopularity: FeaturePopularity;
+  accessibilityCompliance: AccessibilityCompliance;
 }
 
 export function useAnalytics() {
@@ -26,10 +49,8 @@ export function useAnalytics() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("/api/analytics");
-        if (!res.ok) throw new Error("Failed to fetch analytics");
-        const json = await res.json();
-        setData(json);
+        const json = await getAnalytics();
+        setData(json.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
@@ -52,51 +73,26 @@ export function useAnalytics() {
   ];
 
   // Prepare data for total clicks chart, including combined total
-  const totalGenerate = data?.generateClickCount || 0;
-  const totalDownload = data?.downloadClickCount || 0;
+  const totalGenerate = data?.userEngagement?.totalCoversGenerated || 0;
+  const totalDownload = data?.userEngagement?.totalDownloads || 0;
   const totalCombined = totalGenerate + totalDownload;
+  
   const totalClicksData = [
     { name: "Total", value: totalCombined },
     { name: "Generate", value: totalGenerate },
     { name: "Download", value: totalDownload },
   ];
 
-  // Prepare data for current month chart
-  const now = new Date();
+  // Prepare data for daily trend chart (last 7 days from available data)
+  const dailyTrendData = (data?.userEngagement?.dailyTrend || [])
+    .slice(-7)
+    .map((item) => ({
+      date: new Date(item.date).toLocaleDateString("default", {
+        month: "short",
+        day: "numeric",
+      }),
+      count: item.count,
+    }));
 
-  // Prepare data for monthly line chart (last 12 months)
-  function getLast12Months() {
-    const months = [];
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({
-        year: d.getFullYear(),
-        month: d.getMonth() + 1,
-        label:
-          d.toLocaleString("default", { month: "short" }) +
-          " " +
-          d.getFullYear(),
-      });
-    }
-    return months;
-  }
-
-  const last12Months = getLast12Months();
-  const monthlyLineData = last12Months.map(({ year, month, label }) => {
-    const generate =
-      data?.generateClicksPerMonth.find(
-        (row) => row._id.year === year && row._id.month === month,
-      )?.count || 0;
-    const download =
-      data?.downloadClicksPerMonth.find(
-        (row) => row._id.year === year && row._id.month === month,
-      )?.count || 0;
-    return {
-      month: label,
-      Generate: generate,
-      Download: download,
-    };
-  });
-
-  return { data, loading, error, COLORS, totalClicksData, monthlyLineData };
+  return { data, loading, error, COLORS, totalClicksData, dailyTrendData };
 }

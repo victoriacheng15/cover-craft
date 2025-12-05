@@ -7,14 +7,14 @@ vi.mock("@/lib", () => ({
   downloadImage: vi.fn(),
   generateCoverImage: vi.fn(),
   sendDownloadMetric: vi.fn(),
-  sendGenericMetric: vi.fn(),
+  sendMetric: vi.fn(),
 }));
 
 import {
   downloadImage,
   generateCoverImage,
   sendDownloadMetric,
-  sendGenericMetric,
+  sendMetric,
 } from "@/lib";
 
 // Mock FileReader
@@ -30,6 +30,10 @@ global.FileReader = class {
 describe("useForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe("initial state", () => {
@@ -201,10 +205,14 @@ describe("useForm", () => {
         filename: "test-file",
       });
 
-      expect(sendGenericMetric).toHaveBeenCalledWith(
+      expect(sendMetric).toHaveBeenCalledWith(
         "generate_click",
         "Post (1200 × 627)",
         "Montserrat",
+        10, // "Test Title".length
+        13, // "Test Subtitle".length
+        expect.any(Number), // contrastRatio
+        expect.any(String), // wcagLevel
       );
     });
 
@@ -275,6 +283,9 @@ describe("useForm", () => {
         new Error(errorMessage),
       );
 
+      // Mock console.error to suppress error output during test
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
       const { result } = renderHook(() => useForm());
 
       act(() => {
@@ -288,10 +299,15 @@ describe("useForm", () => {
       await waitFor(() => {
         expect(result.current.error).toBe(errorMessage);
       });
+
+      consoleErrorSpy.mockRestore();
     });
 
     it("handles generation error with non-Error object", async () => {
       (generateCoverImage as any).mockRejectedValueOnce("String error");
+
+      // Mock console.error to suppress error output during test
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       const { result } = renderHook(() => useForm());
 
@@ -306,6 +322,8 @@ describe("useForm", () => {
       await waitFor(() => {
         expect(result.current.error).toBe("Failed to generate image");
       });
+
+      consoleErrorSpy.mockRestore();
     });
 
     it("throws error for invalid size selection", async () => {
@@ -404,6 +422,9 @@ describe("useForm", () => {
       const errorMessage = "Custom download error";
       (downloadImage as any).mockRejectedValueOnce(new Error(errorMessage));
 
+      // Mock console.error to suppress error output during test
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
       const { result } = renderHook(() => useForm());
 
       act(() => {
@@ -420,6 +441,8 @@ describe("useForm", () => {
 
       // The error message should be extracted from the Error object
       expect(result.current.error).toBe(errorMessage);
+
+      consoleErrorSpy.mockRestore();
     });
   });
 

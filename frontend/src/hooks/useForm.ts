@@ -3,8 +3,9 @@ import {
   downloadImage,
   generateCoverImage,
   sendDownloadMetric,
-  sendGenericMetric,
+  sendMetric,
 } from "@/lib";
+import { useContrastCheck } from "./useContrastCheck";
 
 const SIZE_PRESETS = [
   { label: "Post (1200 × 627)", width: 1200, height: 627 },
@@ -48,6 +49,11 @@ export function useForm() {
     null,
   );
 
+  const contrastCheck = useContrastCheck(
+    formData.backgroundColor,
+    formData.textColor,
+  );
+
   const handleInputChange = (key: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
@@ -72,7 +78,15 @@ export function useForm() {
         (preset) => preset.label === formData.size,
       );
       if (!selectedSize) throw new Error("Invalid size selected");
-      sendGenericMetric("generate_click", formData.size, formData.font);
+      sendMetric(
+        "generate_click",
+        formData.size,
+        formData.font,
+        formData.title.length,
+        formData.subtitle ? formData.subtitle.length : null,
+        contrastCheck.ratio || 0,
+        contrastCheck.level || "FAIL",
+      );
       const imageBlob = await generateCoverImage({
         width: selectedSize.width,
         height: selectedSize.height,

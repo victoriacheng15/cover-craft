@@ -1,21 +1,33 @@
 import type {
   FileSystemFileHandle,
-  HealthCheckResponse,
+  HealthResponse,
   ImageParams,
   SaveFilePickerOptions,
 } from "./types";
 
 // Use Next.js API routes for frontend requests
-const HEALTH_CHECK_URL = "/api/healthCheck";
+const HEALTH_CHECK_URL = "/api/health";
 const GENERATE_COVER_IMAGE_URL = "/api/generateCoverImage";
+const ANALYTICS_URL = "/api/analytics";
 
 /**
  * Health check endpoint
  */
-export async function healthCheck(): Promise<HealthCheckResponse> {
+export async function health(): Promise<HealthResponse> {
   const response = await fetch(HEALTH_CHECK_URL);
   if (!response.ok) {
     throw new Error(`Health check failed: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+/**
+ * Get analytics data
+ */
+export async function getAnalytics() {
+  const response = await fetch(ANALYTICS_URL);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch analytics: ${response.statusText}`);
   }
   return response.json();
 }

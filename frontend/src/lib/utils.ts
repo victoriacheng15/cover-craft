@@ -49,21 +49,36 @@ export function cn(...classes: (string | undefined | null | false)[]) {
 }
 
 // Metrics helpers
-export async function sendGenericMetric(
+export async function sendMetric(
   event: string,
   sizePreset: string,
   font: string,
+  titleLength: number,
+  subtitleLength: number | null,
+  contrastRatio: number,
+  wcagLevel: string,
 ) {
   try {
+    const payload: Record<string, any> = {
+      event,
+      timestamp: new Date().toISOString(),
+      status: "success",
+      sizePreset,
+      font,
+      titleLength,
+      contrastRatio,
+      wcagLevel,
+    };
+
+    // Only include subtitleLength if subtitle exists
+    if (subtitleLength !== null && subtitleLength > 0) {
+      payload.subtitleLength = subtitleLength;
+    }
+
     await fetch("/api/metrics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        event,
-        sizePreset,
-        font,
-        timestamp: new Date().toISOString(),
-      }),
+      body: JSON.stringify(payload),
     });
   } catch (_err) {}
 }
@@ -76,6 +91,7 @@ export async function sendDownloadMetric() {
       body: JSON.stringify({
         event: "download_click",
         timestamp: new Date().toISOString(),
+        status: "success",
       }),
     });
   } catch (_err) {}
