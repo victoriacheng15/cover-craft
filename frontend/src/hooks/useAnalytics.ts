@@ -76,7 +76,7 @@ export function useAnalytics() {
   const totalGenerate = data?.userEngagement?.totalCoversGenerated || 0;
   const totalDownload = data?.userEngagement?.totalDownloads || 0;
   const totalCombined = totalGenerate + totalDownload;
-  
+
   const totalClicksData = [
     { name: "Total", value: totalCombined },
     { name: "Generate", value: totalGenerate },

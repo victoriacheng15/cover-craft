@@ -25,7 +25,6 @@ describe("useAnalytics", () => {
     expect(result.current.error).toBe(null);
   });
 
-
   it("fetches analytics data successfully", async () => {
     const mockData = {
       userEngagement: {
@@ -77,7 +76,6 @@ describe("useAnalytics", () => {
     expect(result.current.error).toBe(null);
   });
 
-
   it("handles fetch errors", async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: false,
@@ -90,7 +88,9 @@ describe("useAnalytics", () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(result.current.error).toBe("Failed to fetch analytics: Internal Server Error");
+    expect(result.current.error).toBe(
+      "Failed to fetch analytics: Internal Server Error",
+    );
     expect(result.current.data).toBe(null);
   });
 

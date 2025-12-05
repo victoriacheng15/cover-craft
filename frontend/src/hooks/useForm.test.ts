@@ -284,7 +284,9 @@ describe("useForm", () => {
       );
 
       // Mock console.error to suppress error output during test
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
       const { result } = renderHook(() => useForm());
 
@@ -307,7 +309,9 @@ describe("useForm", () => {
       (generateCoverImage as any).mockRejectedValueOnce("String error");
 
       // Mock console.error to suppress error output during test
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
       const { result } = renderHook(() => useForm());
 
@@ -423,7 +427,9 @@ describe("useForm", () => {
       (downloadImage as any).mockRejectedValueOnce(new Error(errorMessage));
 
       // Mock console.error to suppress error output during test
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
       const { result } = renderHook(() => useForm());
 

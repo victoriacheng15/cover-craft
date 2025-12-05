@@ -14,7 +14,7 @@ export async function GET() {
     console.error("Error fetching health:", error);
     return NextResponse.json(
       { success: false, error: "Failed to fetch health" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

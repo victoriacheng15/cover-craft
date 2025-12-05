@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       console.error("Failed to store metrics:", response.statusText);
       return NextResponse.json(
         { success: false, error: "Failed to store metrics" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     console.error("Error forwarding metrics:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

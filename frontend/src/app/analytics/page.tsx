@@ -59,7 +59,9 @@ export default function AnalyticsPage() {
 
               {/* Daily Trend */}
               <div className="w-full min-w-0 bg-slate-100 rounded-lg p-4">
-                <h4 className="text-sm font-semibold mb-4">Daily Trend (Last 7 Days)</h4>
+                <h4 className="text-sm font-semibold mb-4">
+                  Daily Trend (Last 7 Days)
+                </h4>
                 <ResponsiveContainer width="100%" height={250} minWidth={0}>
                   <LineChart
                     data={dailyTrendData}
@@ -145,12 +147,16 @@ export default function AnalyticsPage() {
 
               {/* Title Length Stats */}
               <div className="mt-6 bg-slate-100 rounded-lg p-4">
-                <h4 className="text-sm font-semibold mb-4">Title Length Statistics</h4>
+                <h4 className="text-sm font-semibold mb-4">
+                  Title Length Statistics
+                </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <p className="text-xs text-gray-600">Average</p>
                     <p className="text-2xl font-bold">
-                      {data.featurePopularity.titleLengthStats.avgTitleLength.toFixed(1)}
+                      {data.featurePopularity.titleLengthStats.avgTitleLength.toFixed(
+                        1,
+                      )}
                     </p>
                   </div>
                   <div>
@@ -185,7 +191,9 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 {/* WCAG Distribution */}
                 <div className="bg-slate-100 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold mb-4">WCAG Level Distribution</h4>
+                  <h4 className="text-sm font-semibold mb-4">
+                    WCAG Level Distribution
+                  </h4>
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
@@ -197,12 +205,14 @@ export default function AnalyticsPage() {
                         outerRadius={100}
                         label
                       >
-                        {data.accessibilityCompliance.wcagDistribution.map((entry, idx) => (
-                          <Cell
-                            key={`cell-wcag-${entry.level}`}
-                            fill={COLORS[idx % COLORS.length]}
-                          />
-                        ))}
+                        {data.accessibilityCompliance.wcagDistribution.map(
+                          (entry, idx) => (
+                            <Cell
+                              key={`cell-wcag-${entry.level}`}
+                              fill={COLORS[idx % COLORS.length]}
+                            />
+                          ),
+                        )}
                       </Pie>
                       <Tooltip />
                       <Legend />
@@ -212,18 +222,29 @@ export default function AnalyticsPage() {
 
                 {/* Contrast Ratio Stats */}
                 <div className="bg-slate-100 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold mb-4">Contrast Ratio Statistics</h4>
+                  <h4 className="text-sm font-semibold mb-4">
+                    Contrast Ratio Statistics
+                  </h4>
                   <div className="space-y-4 h-full flex flex-col justify-center">
                     <div className="bg-white rounded p-3">
-                      <p className="text-xs text-gray-600">Average Contrast Ratio</p>
+                      <p className="text-xs text-gray-600">
+                        Average Contrast Ratio
+                      </p>
                       <p className="text-3xl font-bold text-blue-600">
-                        {data.accessibilityCompliance.contrastStats.avgContrastRatio.toFixed(2)}
+                        {data.accessibilityCompliance.contrastStats.avgContrastRatio.toFixed(
+                          2,
+                        )}
                       </p>
                     </div>
                     <div className="bg-white rounded p-3">
-                      <p className="text-xs text-gray-600">Failure Rate (WCAG FAIL)</p>
+                      <p className="text-xs text-gray-600">
+                        Failure Rate (WCAG FAIL)
+                      </p>
                       <p className="text-3xl font-bold text-red-600">
-                        {data.accessibilityCompliance.wcagFailurePercent.toFixed(1)}%
+                        {data.accessibilityCompliance.wcagFailurePercent.toFixed(
+                          1,
+                        )}
+                        %
                       </p>
                     </div>
                   </div>
@@ -232,7 +253,9 @@ export default function AnalyticsPage() {
 
               {/* WCAG Trend */}
               <div className="mt-6 w-full min-w-0 bg-slate-100 rounded-lg p-4">
-                <h4 className="text-sm font-semibold mb-4">WCAG Trend (Last 30 Days)</h4>
+                <h4 className="text-sm font-semibold mb-4">
+                  WCAG Trend (Last 30 Days)
+                </h4>
                 <ResponsiveContainer width="100%" height={300} minWidth={0}>
                   <LineChart
                     data={data.accessibilityCompliance.wcagTrend}
@@ -243,7 +266,9 @@ export default function AnalyticsPage() {
                     <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Legend />
-                    {Object.keys(data.accessibilityCompliance.wcagTrend[0] || {})
+                    {Object.keys(
+                      data.accessibilityCompliance.wcagTrend[0] || {},
+                    )
                       .filter((key) => key !== "date")
                       .map((level, idx) => (
                         <Line

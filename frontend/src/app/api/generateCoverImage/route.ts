@@ -31,12 +31,13 @@ export async function POST(request: Request) {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error instanceof Error ? error.message : "Failed to generate image",
+        error:
+          error instanceof Error ? error.message : "Failed to generate image",
       }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }
