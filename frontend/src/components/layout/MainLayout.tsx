@@ -3,20 +3,20 @@ import Footer from "./Footer";
 import Header from "./Header";
 
 interface MainLayoutProps {
-  children: ReactNode;
+	children: ReactNode;
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
-  return (
-    <div className="flex flex-col min-h-screen bg-emerald-100 text-gray-900">
-      {/* Header */}
-      <Header />
+	return (
+		<div className="flex flex-col min-h-screen bg-emerald-100 text-gray-900">
+			{/* Header */}
+			<Header />
 
-      {/* Main content */}
-      <main className="flex-1 w-[90%] max-w-7xl mx-auto py-8">{children}</main>
+			{/* Main content */}
+			<main className="flex-1 w-[90%] max-w-7xl mx-auto py-8">{children}</main>
 
-      {/* Footer */}
-      <Footer />
-    </div>
-  );
+			{/* Footer */}
+			<Footer />
+		</div>
+	);
 }
