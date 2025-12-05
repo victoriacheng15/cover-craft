@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
 import type { InvocationContext } from "@azure/functions";
+import mongoose from "mongoose";
 
 let mongoConnected = false;
 
@@ -7,7 +7,11 @@ export const metricSchema = new mongoose.Schema({
 	// Core event data
 	event: { type: String, required: true, index: true },
 	timestamp: { type: Date, required: true, index: true },
-	status: { type: String, enum: ["success", "error", "validation_error"], required: true },
+	status: {
+		type: String,
+		enum: ["success", "error", "validation_error"],
+		required: true,
+	},
 	errorMessage: String,
 
 	// Cover generation data
@@ -30,9 +34,11 @@ export function getMetricModel() {
 		return mongoose.models.Metric;
 	}
 	return mongoose.model("Metric", metricSchema);
-};
+}
 
-export async function connectMongoDB(context: InvocationContext): Promise<void> {
+export async function connectMongoDB(
+	context: InvocationContext,
+): Promise<void> {
 	if (mongoConnected) return;
 
 	const mongoUri = process.env.MONGODB_URI;

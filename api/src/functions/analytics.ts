@@ -1,11 +1,19 @@
-import { app, type HttpRequest, type HttpResponseInit, type InvocationContext } from "@azure/functions";
+import {
+	app,
+	type HttpRequest,
+	type HttpResponseInit,
+	type InvocationContext,
+} from "@azure/functions";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
 
 // GET /api/analytics
 // Fetches aggregated analytics data from MongoDB
 // Returns engagement, feature popularity, and accessibility compliance metrics
 // Only exposes aggregated, non-sensitive summary data (safe for public)
-export async function analytics(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function analytics(
+	request: HttpRequest,
+	context: InvocationContext,
+): Promise<HttpResponseInit> {
 	context.log("analytics() function triggered");
 
 	try {
@@ -23,14 +31,19 @@ export async function analytics(request: HttpRequest, context: InvocationContext
 		context.error("Error fetching analytics:", error);
 		return {
 			status: 500,
-			body: JSON.stringify({ success: false, error: "Failed to fetch analytics" }),
+			body: JSON.stringify({
+				success: false,
+				error: "Failed to fetch analytics",
+			}),
 			headers: { "Content-Type": "application/json" },
 		};
 	}
 }
 
 // Fetch aggregated analytics from MongoDB
-async function fetchAggregatedAnalytics(context: InvocationContext): Promise<any> {
+async function fetchAggregatedAnalytics(
+	context: InvocationContext,
+): Promise<any> {
 	try {
 		const Metric = getMetricModel();
 
@@ -68,7 +81,9 @@ async function fetchAggregatedAnalytics(context: InvocationContext): Promise<any
 		});
 		const successRate =
 			totalGenerateEvents > 0
-				? parseFloat(((successfulGenerateEvents / totalGenerateEvents) * 100).toFixed(2))
+				? parseFloat(
+						((successfulGenerateEvents / totalGenerateEvents) * 100).toFixed(2),
+					)
 				: 0;
 
 		// Trend over time (daily counts for last 30 days, complete data only)
@@ -223,7 +238,8 @@ async function fetchAggregatedAnalytics(context: InvocationContext): Promise<any
 		]);
 
 		// WCAG failure rate (complete data only)
-		const failureCount = wcagDistribution.find((item) => item._id === "FAIL")?.count || 0;
+		const failureCount =
+			wcagDistribution.find((item) => item._id === "FAIL")?.count || 0;
 		const wcagFailurePercent =
 			totalCoversGenerated > 0
 				? parseFloat(((failureCount / totalCoversGenerated) * 100).toFixed(2))
@@ -277,7 +293,7 @@ async function fetchAggregatedAnalytics(context: InvocationContext): Promise<any
 					}
 					return acc;
 				},
-				[] as Array<{ date: string; [key: string]: number | string }>
+				[] as Array<{ date: string; [key: string]: number | string }>,
 			),
 		};
 

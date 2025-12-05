@@ -1,4 +1,9 @@
-import { app, type HttpRequest, type HttpResponseInit, type InvocationContext } from "@azure/functions";
+import {
+	app,
+	type HttpRequest,
+	type HttpResponseInit,
+	type InvocationContext,
+} from "@azure/functions";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
 
 interface MetricsData {
@@ -25,7 +30,10 @@ interface MetricsData {
 
 // POST /api/metrics
 // Receives metrics/events from the frontend and stores to MongoDB for persistence
-export async function metrics(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function metrics(
+	request: HttpRequest,
+	context: InvocationContext,
+): Promise<HttpResponseInit> {
 	context.log("metrics() function triggered");
 
 	try {
@@ -39,7 +47,10 @@ export async function metrics(request: HttpRequest, context: InvocationContext):
 			return {
 				status: 400,
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ success: false, error: "Missing required fields: event, timestamp" }),
+				body: JSON.stringify({
+					success: false,
+					error: "Missing required fields: event, timestamp",
+				}),
 			};
 		}
 
@@ -62,12 +73,18 @@ export async function metrics(request: HttpRequest, context: InvocationContext):
 		return {
 			status: 500,
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ success: false, error: "Failed to process metrics" }),
+			body: JSON.stringify({
+				success: false,
+				error: "Failed to process metrics",
+			}),
 		};
 	}
 }
 
-async function storeMetricsToMongoDB(metricsData: MetricsData, context: InvocationContext): Promise<void> {
+async function storeMetricsToMongoDB(
+	metricsData: MetricsData,
+	context: InvocationContext,
+): Promise<void> {
 	try {
 		const Metric = getMetricModel();
 		const metric = new Metric({
