@@ -21,7 +21,7 @@ export async function healthCheck(
 	};
 }
 
-app.http("healthCheck", {
+app.http("health", {
 	methods: ["GET"],
 	authLevel: "anonymous",
 	handler: healthCheck,
