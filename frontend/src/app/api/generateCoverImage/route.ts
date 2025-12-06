@@ -15,7 +15,27 @@ export async function POST(request: Request) {
 		});
 
 		if (!response.ok) {
-			throw new Error(`Failed to generate image: ${response.statusText}`);
+			// Try to parse JSON error body returned by backend (validation errors carry details)
+			let errorBody: any = null;
+			try {
+				errorBody = await response.json();
+			} catch (_err) {
+				// Not JSON - fall back to statusText
+			}
+
+			// If backend provided structured error info, forward it (maintain status code)
+			if (errorBody && typeof errorBody === "object") {
+				return new Response(JSON.stringify({ success: false, ...errorBody }), {
+					status: response.status,
+					headers: { "Content-Type": "application/json" },
+				});
+			}
+
+			// Otherwise fallback to status text or generic error
+			return new Response(
+				JSON.stringify({ success: false, error: response.statusText || "Failed to generate image" }),
+				{ status: response.status, headers: { "Content-Type": "application/json" } },
+			);
 		}
 
 		const blob = await response.blob();
@@ -31,8 +51,7 @@ export async function POST(request: Request) {
 		return new Response(
 			JSON.stringify({
 				success: false,
-				error:
-					error instanceof Error ? error.message : "Failed to generate image",
+				error: error instanceof Error ? error.message : "Failed to generate image",
 			}),
 			{
 				status: 500,
