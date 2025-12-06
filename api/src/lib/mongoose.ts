@@ -13,9 +13,6 @@ export const metricSchema = new mongoose.Schema({
 		required: true,
 	},
 	errorMessage: String,
-
-	// Cover generation data
-	sizePreset: { type: String }, // e.g., "1200x627"
 	size: {
 		width: { type: Number },
 		height: { type: Number },
