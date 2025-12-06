@@ -174,7 +174,7 @@ describe("useForm", () => {
 			const defaultPreset = {
 				width: SIZE_PRESETS[0].width * 0.5,
 				height: SIZE_PRESETS[0].height * 0.5,
-			}
+			};
 
 			expect(dimensions.width).toBe(defaultPreset.width);
 			expect(dimensions.height).toBe(defaultPreset.height);
