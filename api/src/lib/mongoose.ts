@@ -15,14 +15,14 @@ export const metricSchema = new mongoose.Schema({
 	errorMessage: String,
 
 	// Cover generation data
-	sizePreset: { type: String, required: true },
-	font: { type: String, required: true },
-	titleLength: { type: Number, required: true },
+	sizePreset: { type: String },
+	font: { type: String },
+	titleLength: { type: Number },
 	subtitleLength: { type: Number },
 
 	// Form/Validation data
-	contrastRatio: { type: Number, required: true },
-	wcagLevel: { type: String, required: true }, // "AAA" | "AA" | "FAIL"
+	contrastRatio: { type: Number },
+	wcagLevel: { type: String }, // "AAA" | "AA" | "FAIL"
 
 	// Performance/Timing data
 	duration: { type: Number },
