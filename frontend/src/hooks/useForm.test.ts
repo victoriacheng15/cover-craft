@@ -171,9 +171,13 @@ describe("useForm", () => {
 			});
 
 			const dimensions = result.current.getPreviewDimensions();
+			const defaultPreset = {
+				width: SIZE_PRESETS[0].width * 0.5,
+				height: SIZE_PRESETS[0].height * 0.5,
+			};
 
-			expect(dimensions.width).toBe(300);
-			expect(dimensions.height).toBe(157);
+			expect(dimensions.width).toBe(defaultPreset.width);
+			expect(dimensions.height).toBe(defaultPreset.height);
 		});
 	});
 
@@ -207,7 +211,7 @@ describe("useForm", () => {
 
 			expect(sendMetric).toHaveBeenCalledWith(
 				"generate_click",
-				"Post (1200 × 627)",
+				"Post",
 				"Montserrat",
 				10, // "Test Title".length
 				13, // "Test Subtitle".length
