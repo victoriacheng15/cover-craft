@@ -89,6 +89,11 @@ The application is organized into modular, reusable components:
 - **`Header`**: Displays "Cover Craft 🎨" centered with minimal design.
 - **`Footer`**: Displays copyright year and GitHub link, centered.
 
+### Pages
+
+- **`page.tsx`** (Home): Main cover image generation page with form and live preview.
+- **`analytics/page.tsx`**: Analytics dashboard page displaying aggregated metrics and insights.
+
 ### Form & Input Components
 
 - **`CoverForm`**: Main form component managing all user inputs and form state. Handles generation and download logic.
@@ -113,6 +118,12 @@ The application is organized into modular, reusable components:
 - **`CanvasPreview`**: Displays live preview while editing or generated image after API call.
   - Live Preview: Shows real-time rendering of form inputs using inline styles and CSS variables.
   - Generated Preview: Displays final high-quality PNG image from backend after generation.
+
+### Custom Hooks
+
+- **`useForm`**: Manages form state for cover generation (size, colors, text, font, etc.).
+- **`useContrastCheck`**: Real-time WCAG AA color contrast validation with 300ms debounce.
+- **`useAnalytics`**: Fetches and manages analytics data for the dashboard page.
 
 ## Data Model
 
@@ -182,10 +193,11 @@ type ImageResponse = Blob;       // PNG image as Blob
   - Response: PNG image blob
   - Error response: `{ error: string, details?: object }`
 
-- **`GET /api/healthCheck`**: Check API health and availability.
-  - Response: `{ status: "ok", timestamp: number }`
+- **`GET /api/health`**: Check API health and availability.
+  - Response: `{ localTime: string, isoTime: string }`
 
-### API Library (`lib/api.ts`)
+- **`POST /api/metrics`**: Store event metrics for analytics (proxies to backend).
+  - Request body: `MetricsData` (event, timestamp, status, performance data)
 
 ```typescript
 // Generate cover image
@@ -196,6 +208,12 @@ async function downloadImage(blob: Blob, filename: string): Promise<void>
 
 // Health check
 async function healthCheck(): Promise<HealthCheckResponse>
+
+// Store metrics for analytics
+async function storeMetrics(metricsData: MetricsData): Promise<void>
+
+// Fetch aggregated analytics
+async function getAnalytics(): Promise<AnalyticsData>
 ```
 
 ## Functional Flow
@@ -298,33 +316,3 @@ Built with accessibility support in mind. The app includes:
 - Contrast indicator card displays status with color-coded dot and message
 - Generate button disabled with tooltip when contrast is poor
 - Colors: Green (AAA), Yellow (AA), Red (FAIL)
-
-### Backend Implementation
-
-**Validation Functions** (in `generateCoverImage.ts`):
-
-- `hexToRgb()`: Parse hex color to RGB components
-- `getRelativeLuminance()`: Calculate relative luminance using WCAG formula
-- `getContrastRatio()`: Compute contrast ratio between background and text colors
-- `validateContrast()`: Check ratio ≥ 4.5:1 and return validation errors
-
-**Integration**:
-
-- `validateContrast()` called in `validateParams()` pipeline
-- Rejects requests with contrast < 4.5:1 WCAG AA threshold
-- Returns 400 error: `"Color contrast ratio X.X:1 does not meet WCAG AA standard (4.5:1)"`
-- Acts as safety net for direct API calls (e.g., curl, postman)
-
-## Potential Future Enhancements
-
-- **Template Presets**: Pre-built templates (Blog, YouTube, Social Media, Newsletter)
-- **Save/Load Designs**: LocalStorage or cloud backend to persist design drafts
-- **Image Upload**: Allow custom background images instead of solid colors
-- **Advanced Text Styling**: Text shadows, outlines, gradients, opacity
-- **Additional Formats**: Story size (1080×1920), banner (1600×400), custom dimensions
-- **Design History**: Track and restore previous designs
-- **Batch Generation**: Generate multiple variations with different text
-- **Export Options**: SVG, PDF, or other formats beyond PNG
-- **Dark Mode**: Add dark theme with proper color contrast maintenance
-- **Internationalization**: Support multiple languages with ARIA translations
-- **WCAG AAA Support**: Optional stricter contrast validation (≥ 7:1 ratio)
