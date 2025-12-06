@@ -184,7 +184,11 @@ describe("useForm", () => {
 	describe("handleGenerate", () => {
 		it("generates image successfully with all fields", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce(mockBlob);
+			(generateCoverImage as any).mockResolvedValueOnce({
+				blob: mockBlob,
+				clientDuration: 123,
+				duration: 50,
+			});
 
 			const { result } = renderHook(() => useForm());
 
@@ -209,20 +213,29 @@ describe("useForm", () => {
 				filename: "test-file",
 			});
 
-			expect(sendMetric).toHaveBeenCalledWith(
-				"generate_click",
-				"Post",
-				"Montserrat",
-				10, // "Test Title".length
-				13, // "Test Subtitle".length
-				expect.any(Number), // contrastRatio
-				expect.any(String), // wcagLevel
+			expect(sendMetric).toHaveBeenCalled();
+			const lastCall = (sendMetric as any).mock.calls[
+				(sendMetric as any).mock.calls.length - 1
+			][0];
+			expect(lastCall).toEqual(
+				expect.objectContaining({
+					event: "generate_click",
+					sizePreset: "1200x627",
+					font: "Montserrat",
+					titleLength: 10,
+					subtitleLength: 13,
+					clientDuration: expect.any(Number),
+				}),
 			);
 		});
 
 		it("generates image with default filename when not provided", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce(mockBlob);
+			(generateCoverImage as any).mockResolvedValueOnce({
+				blob: mockBlob,
+				clientDuration: 120,
+				duration: 30,
+			});
 
 			const { result } = renderHook(() => useForm());
 
@@ -243,7 +256,11 @@ describe("useForm", () => {
 
 		it("sets isGenerating to false after generation completes", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce(mockBlob);
+			(generateCoverImage as any).mockResolvedValueOnce({
+				blob: mockBlob,
+				clientDuration: 140,
+				duration: 45,
+			});
 
 			const { result } = renderHook(() => useForm());
 
@@ -260,7 +277,11 @@ describe("useForm", () => {
 
 		it("resets formData after successful generation", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce(mockBlob);
+			(generateCoverImage as any).mockResolvedValueOnce({
+				blob: mockBlob,
+				clientDuration: 160,
+				duration: 60,
+			});
 
 			const { result } = renderHook(() => useForm());
 
@@ -306,6 +327,9 @@ describe("useForm", () => {
 				expect(result.current.error).toBe(errorMessage);
 			});
 
+			expect(sendMetric).not.toHaveBeenCalled();
+			consoleErrorSpy.mockRestore();
+			// Clean up console stub
 			consoleErrorSpy.mockRestore();
 		});
 
@@ -331,12 +355,19 @@ describe("useForm", () => {
 				expect(result.current.error).toBe("Failed to generate image");
 			});
 
+			// We intentionally do not send a generate_click error metric from the client
+			expect(sendMetric).not.toHaveBeenCalled();
+
 			consoleErrorSpy.mockRestore();
 		});
 
 		it("throws error for invalid size selection", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce(mockBlob);
+			(generateCoverImage as any).mockResolvedValueOnce({
+				blob: mockBlob,
+				clientDuration: 110,
+				duration: 55,
+			});
 
 			const { result } = renderHook(() => useForm());
 
@@ -356,7 +387,11 @@ describe("useForm", () => {
 
 		it("generates image with Square preset", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce(mockBlob);
+			(generateCoverImage as any).mockResolvedValueOnce({
+				blob: mockBlob,
+				clientDuration: 130,
+				duration: 70,
+			});
 
 			const { result } = renderHook(() => useForm());
 
@@ -383,7 +418,11 @@ describe("useForm", () => {
 	describe("handleDownload", () => {
 		it("downloads generated image with custom filename", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce(mockBlob);
+			(generateCoverImage as any).mockResolvedValueOnce({
+				blob: mockBlob,
+				clientDuration: 99,
+				duration: 40,
+			});
 			(downloadImage as any).mockResolvedValueOnce(undefined);
 
 			const { result } = renderHook(() => useForm());
@@ -426,7 +465,11 @@ describe("useForm", () => {
 
 		it("handles download error", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce(mockBlob);
+			(generateCoverImage as any).mockResolvedValueOnce({
+				blob: mockBlob,
+				clientDuration: 200,
+				duration: 80,
+			});
 			const errorMessage = "Custom download error";
 			(downloadImage as any).mockRejectedValueOnce(new Error(errorMessage));
 

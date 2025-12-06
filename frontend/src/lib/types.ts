@@ -35,3 +35,26 @@ export interface HealthResponse {
 	status: string;
 	timestamp: string;
 }
+
+// Typings for analytics metrics
+export type MetricTimestamp = string | Date | number;
+export type WcagLevel = "AAA" | "AA" | "FAIL"; // WCAG compliance level
+
+export interface GenerateClickMetrics {
+	event: "generate_click";
+	timestamp: MetricTimestamp;
+	status: "success" | "error";
+	size: {
+		width: number;
+		height: number;
+	}
+	font: string;
+	titleLength: number;
+	subtitleLength?: number;
+	contrastRatio: number;
+	wcagLevel: WcagLevel;
+	clientDuration?: number;
+	errorMessage?: string;
+}
+
+// Error-specific metrics no longer used; keep GenerateClickMetrics and allow errorMessage optional

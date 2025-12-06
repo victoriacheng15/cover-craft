@@ -7,7 +7,12 @@ import {
 	hexToRgb,
 	meetsWCAGAA,
 } from "./contrast";
-import type { ApiError, HealthResponse, ImageParams } from "./types";
+import type {
+	ApiError,
+	GenerateClickMetrics,
+	HealthResponse,
+	ImageParams,
+} from "./types";
 import {
 	cn,
 	fontFamilyMap,
@@ -41,4 +46,10 @@ export {
 	roboto,
 	fontFamilyMap,
 };
-export type { ApiError, HealthResponse, ImageParams };
+export type {
+	ApiError,
+	HealthResponse,
+	ImageParams,
+	GenerateClickMetrics,
+	// GenerateClickErrorMetrics removed; no need to export
+};

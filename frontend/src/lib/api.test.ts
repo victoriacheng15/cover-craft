@@ -52,6 +52,10 @@ describe("API functions", () => {
 			(global.fetch as any).mockResolvedValueOnce({
 				ok: true,
 				blob: async () => mockBlob,
+				headers: {
+					get: (name: string) =>
+						name.toLowerCase() === "x-generation-duration" ? "123" : null,
+				},
 			});
 
 			const result = await generateCoverImage(params);
@@ -63,7 +67,10 @@ describe("API functions", () => {
 				},
 				body: JSON.stringify(params),
 			});
-			expect(result).toEqual(mockBlob);
+			expect((result as any).blob).toEqual(mockBlob);
+			expect((result as any).clientDuration).toEqual(expect.any(Number));
+			// duration is server-side only (backend 'image_generated' event) and is not returned to the frontend
+			expect((result as any).duration).toBeUndefined();
 		});
 
 		it("throws error with custom error message from response", async () => {
