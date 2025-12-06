@@ -1,7 +1,4 @@
-
 # Backend Architecture
-
-## Overview
 
 The backend is a modular, serverless API built on Azure Functions. It provides endpoints for health checks and dynamic cover image generation, with robust validation and extensibility.
 
@@ -13,19 +10,101 @@ The backend is a modular, serverless API built on Azure Functions. It provides e
 - **Extensible Design**: Adding new sizes, fonts, or validation rules requires minimal changes.
 - **Direct PNG Output**: Images are returned as binary PNG buffers for immediate use.
 
-## Main Endpoints
+## Architecture Diagrams
 
-- `POST /api/generateCoverImage`: Generate a PNG cover image with custom text, colors, font, and size.
-- `GET /api/healthCheck`: Check API health and availability.
+### 1. System Architecture (High-Level)
 
-## Data Flow
+```mermaid
+graph TB
+    subgraph Cloud["Azure Cloud"]
+        subgraph FuncApp["Function App"]
+            HC["GET /api/health<br/>Health Check"]
+            GCI["POST /api/generateCoverImage<br/>Generate Cover"]
+            M["POST /api/metrics<br/>Store Metrics"]
+            A["GET /api/analytics<br/>Get Analytics"]
+        end
+        
+        subgraph DB["Data Layer"]
+            Mongo["MongoDB<br/>Metrics Collection"]
+        end
+    end
+    
+    Client["🌐 Client/Frontend"]
+    
+    Client -->|Request| HC
+    Client -->|Request| GCI
+    Client -->|Request| M
+    Client -->|Request| A
+    
+    M -->|Write| Mongo
+    A -->|Read| Mongo
+    GCI -->|Response: PNG| Client
+    HC -->|Response: JSON| Client
+    A -->|Response: JSON| Client
+    M -->|Response: JSON| Client
+```
+
+### 2. Deployment Architecture
+
+```mermaid
+graph TB
+    subgraph Client["Client Layer"]
+        Browser["🌐 Web Browser / Client"]
+    end
+    
+    subgraph Frontend["Frontend - Vercel"]
+        FE["Next.js / React App"]
+        API["API Routes<br/>(proxy to backend)"]
+    end
+    
+    subgraph Backend["Backend - Azure Functions"]
+        GCI["generateCoverImage"]
+        HC["health"]
+        M["metrics"]
+        A["analytics"]
+    end
+    
+    subgraph Database["MongoDB"]
+        MetricsDB["Metrics Collection"]
+    end
+    
+    Browser -->|HTTPS| FE
+    FE -->|HTTP/REST| API
+    API -->|proxy| GCI
+    API -->|proxy| HC
+    API -->|proxy| M
+    API -->|proxy| A
+    M -->|write| MetricsDB
+    A -->|read| MetricsDB
+    GCI -->|PNG Buffer| API
+    API -->|PNG| FE
+    FE -->|PNG Download| Browser
+```
+
+## Data Flow Details
+
+### Image Generation Flow
 
 1. **Extraction**: Parse and extract parameters from the request.
 2. **Validation**: Validate all parameters (size, colors, font, text length) against rules.
 3. **Rendering**: Generate the image using validated parameters.
 4. **Response**: Return PNG image or error details.
 
-## Core Data Structures
+### Metrics Flow
+
+1. **Receive**: Frontend sends metrics data (event, timestamp, performance data).
+2. **Validate**: Verify required fields (event, timestamp).
+3. **Store**: Save to MongoDB for persistence.
+4. **Response**: Confirm storage success.
+
+### Analytics Flow
+
+1. **Connect**: Establish MongoDB connection.
+2. **Aggregate**: Query metrics collection for summary statistics.
+3. **Transform**: Calculate engagement, feature popularity, and WCAG compliance.
+4. **Response**: Return aggregated analytics data (non-sensitive, safe for public).
+
+### Data Structures
 
 ```mermaid
 classDiagram
@@ -78,12 +157,33 @@ classDiagram
         +number maxHeight
     }
 
+    class MetricsData {
+        +string event
+        +string timestamp
+        +string status
+        +string errorMessage
+        +string sizePreset
+        +string font
+        +number titleLength
+        +number subtitleLength
+        +number contrastRatio
+        +string wcagLevel
+        +number duration
+        +number clientDuration
+    }
+
+    class HealthResponse {
+        +string localTime
+        +string isoTime
+    }
+
     DefaultSizes --> SizePreset : contains
     ValidationRules --> SizeRange : uses
     ImageParams --> ValidationRules : validated against
+    MetricsData --> ImageParams : tracks usage of
 ```
 
-## Functional Architecture
+### Component Interactions
 
 ```mermaid
 classDiagram
@@ -120,6 +220,20 @@ classDiagram
         +message: string
     }
 
+    class Health{
+        +health(request, context): HttpResponseInit
+    }
+
+    class Metrics {
+        +metrics(request, context): HttpResponseInit
+        +validateMetricsData(data): ValidationError[]
+    }
+
+    class Analytics {
+        +analytics(request, context): HttpResponseInit
+        +fetchAggregatedAnalytics(context): object
+    }
+
     GenerateCoverImage --> Extraction : uses
     GenerateCoverImage --> Validation : uses
     GenerateCoverImage --> Rendering : uses
@@ -127,95 +241,103 @@ classDiagram
     Validation --> ValidationError : returns
     Rendering --> ImageParams : consumes
     Rendering --> FontSizes : calculates
+    Metrics --> Validation : uses
+    Analytics --> MetricsData : queries
 ```
 
-## Sequence Flow
+## Generate Cover Image System
+
+### Endpoint (`POST /api/generateCoverImage`)
+
+**Purpose**: Generate a PNG cover image with custom text, colors, font, and size.
+
+**Request Body**:
+
+```json
+{
+  "width": 1200,
+  "height": 627,
+  "backgroundColor": "#ffffff",
+  "textColor": "#000000",
+  "font": "Montserrat",
+  "title": "Cover Title",
+  "subtitle": "Subtitle text",
+  "filename": "my-cover"
+}
+```
+
+**Response** (Success - 200 OK):
+
+- Content-Type: `image/png`
+- Body: PNG image buffer
+
+**Response** (Validation Error - 400 Bad Request):
+
+```json
+{
+  "status": 400,
+  "error": "Validation failed",
+  "details": [
+    {
+      "field": "contrast",
+      "message": "Color contrast ratio does not meet WCAG AA standard"
+    }
+  ]
+}
+```
+
+**Validation Rules**:
+
+- Image dimensions: width (200-3840px), height (200-2160px)
+- Fonts: Montserrat, Roboto, Playfair Display
+- Text length: title (1-100 chars), subtitle (0-150 chars)
+- Color contrast: WCAG AA minimum (4.5:1 ratio)
+
+### Image Generation Sequence Flow
 
 ```mermaid
 sequenceDiagram
     actor Client
-    participant Handler as generateCoverImage
-    participant Extractor as extractParams
-    participant Validator as validateParams
-    participant Renderer as generatePNG
+    participant Frontend as Next.js Frontend
+    participant APIRoute as API Route<br/>/api/generateCoverImage
+    participant GenFunc as generateCoverImage() Function
+    participant Validator as Validation
+    participant Renderer as Rendering
 
-    Client->>Handler: HTTP POST/GET (request with params)
-    Handler->>Extractor: extract(request)
-    Extractor-->>Handler: ImageParams
+    Client->>Frontend: Fill cover form & click Generate
+    Frontend->>APIRoute: POST /api/generateCoverImage (ImageParams)
+    APIRoute->>GenFunc: proxy request
+    GenFunc->>Validator: validate(ImageParams)
     
-    Handler->>Validator: validate(ImageParams)
     alt Validation Success
-        Validator-->>Handler: ValidationError[] (empty)
-        Handler->>Renderer: generatePNG(ImageParams)
-        Renderer-->>Handler: Buffer (PNG)
-        Handler-->>Client: 200 OK (PNG image)
+        Validator-->>GenFunc: ValidationError[] (empty)
+        GenFunc->>Renderer: generatePNG(ImageParams)
+        Renderer->>Renderer: Calculate font sizes
+        Renderer->>Renderer: Draw on canvas
+        Renderer-->>GenFunc: PNG Buffer
+        GenFunc-->>APIRoute: 200 OK (PNG Buffer)
+        APIRoute-->>Frontend: PNG image data
+        Frontend->>Frontend: Display preview
+        Frontend-->>Client: Image shown in preview
     else Validation Failure
-        Validator-->>Handler: ValidationError[] (errors)
-        Handler-->>Client: 400 Bad Request (error details)
+        Validator-->>GenFunc: ValidationError[] (errors)
+        GenFunc-->>APIRoute: 400 Bad Request
+        APIRoute-->>Frontend: Error details
+        Frontend-->>Client: Error message displayed
     end
 ```
 
-## Deployment Overview
-
-```mermaid
-graph TB
-    subgraph Client["Client Layer"]
-        Browser["🌐 Web Browser / Client"]
-    end
-    
-    subgraph Frontend["Frontend - Vercel"]
-        FE["Next.js / React App"]
-    end
-    
-    subgraph Backend["Backend - Azure"]
-        FA["Azure Function App<br/>(generateCoverImage)"]
-    end
-    
-    subgraph Storage["Azure Storage"]
-        Blob["Blob Storage<br/>(optional)"]
-    end
-    
-    Browser -->|HTTPS| FE
-    FE -->|HTTP/REST| FA
-    FA -->|Read/Write| Blob
-    FA -->|Image Buffer| FE
-    FE -->|PNG Download| Browser
-```
-
-## Font Size Calculations
-
-The backend uses responsive font sizing based on canvas height to ensure optimal readability across different image dimensions.
-
-### Formula (Solution #2)
-
-- **Heading**: `Math.max(32, Math.round(height * 0.09))` - 9% of canvas height with minimum 32px
-- **Subheading**: `Math.max(24, Math.round(height * 0.07))` - 7% of canvas height with minimum 24px
-- **Line Spacing**: `headingFontSize * 1.2` - Space between heading and subheading
-
-### Size Presets
-
-| Preset | Dimensions | Heading | Subheading |
-|--------|-----------|---------|-----------|
-| Post | 1200 × 627 | 56px | 44px |
-| Square | 1080 × 1080 | 97px | 75px |
-
-This ensures text is:
-
-- Large enough for readability on all presets
-- Responsive to different canvas dimensions
-- Consistently scaled between backend rendering and frontend preview
-
-## Color Contrast Validation
+### Color Contrast Validation
 
 The backend validates color contrast using the WCAG formula to ensure generated images are accessible.
 
-### Validation Rule
+#### Validation Rule
 
 - **WCAG AA Standard**: Contrast ratio ≥ 4.5:1 for normal text
 - All generated images must meet this threshold
 - Backend rejects requests with insufficient contrast
 
-### Implementation
+#### Implementation
 
 **Contrast Calculation Process:**
 
@@ -245,7 +367,7 @@ The backend validates color contrast using the WCAG formula to ensure generated 
 }
 ```
 
-### Testing
+#### Testing
 
 **Test Cases:**
 
@@ -269,4 +391,148 @@ curl -X POST "http://localhost:7071/api/generateCoverImage" \
     "subtitle": "This will fail validation!",
     "filename": "test-contrast-fail"
   }'
+```
+
+## Metrics & Analytics System
+
+### Metrics Endpoint (`POST /api/metrics`)
+
+**Purpose**: Receive event data from the frontend and persist to MongoDB.
+
+**Request Body**:
+
+```json
+{
+  "event": "cover_generation",
+  "timestamp": "2025-12-05T10:30:00Z",
+  "status": "success",
+  "sizePreset": "post",
+  "font": "Montserrat",
+  "titleLength": 25,
+  "subtitleLength": 50,
+  "contrastRatio": 12.5,
+  "wcagLevel": "AAA",
+  "duration": 245,
+  "clientDuration": 120
+}
+```
+
+**Response**:
+
+```json
+{
+  "status": 201,
+  "body": {
+    "success": true,
+    "message": "Metrics stored successfully"
+  }
+}
+```
+
+**Validation Rules**:
+
+- `event` and `timestamp` are required
+- `status` must be one of: "success", "error", "validation_error"
+- All metrics are stored to MongoDB for historical analysis
+
+### Analytics Endpoint (`GET /api/analytics`)
+
+**Purpose**: Fetch aggregated, non-sensitive analytics data for dashboard display.
+
+**Response**:
+
+```json
+{
+  "status": 200,
+  "body": {
+    "success": true,
+    "data": {
+      "totalEvents": 1250,
+      "successRate": 95.2,
+      "averageGenerationTime": 234,
+      "popularFonts": ["Montserrat", "Roboto", "Playfair Display"],
+      "popularSizes": ["post", "square"],
+      "wcagCompliance": 98.5,
+      "contrastStats": {
+        "avgRatio": 8.3,
+        "minRatio": 4.5,
+        "maxRatio": 21
+      }
+    }
+  }
+}
+```
+
+**Data Privacy**:
+
+- Only aggregated summary statistics are exposed
+- Individual user interactions are not revealed
+- Metrics are safe for public consumption
+- No personally identifiable information is included
+
+### Data Storage
+
+All metrics are persisted in MongoDB with the following structure:
+
+- **Collection**: `metrics`
+- **Indexes**: Timestamp (for efficient querying), Event type
+- **Retention**: Unlimited (for historical analysis)
+- **Access**: Backend only (not directly accessible from frontend)
+
+### Metrics Collection Sequence Flow
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Frontend as Next.js Frontend
+    participant APIRoute as API Route<br/>/api/metrics
+    participant MetricsFunc as metrics() Function
+    participant MongoDB as MongoDB
+
+    Client->>Frontend: Form submitted with metrics
+    Frontend->>APIRoute: POST /api/metrics (MetricsData)
+    APIRoute->>MetricsFunc: proxy request
+    MetricsFunc->>MetricsFunc: Parse & validate required fields<br/>(event, timestamp)
+    
+    alt Validation Success
+        MetricsFunc->>MongoDB: connectMongoDB()
+        MongoDB-->>MetricsFunc: Connected
+        MetricsFunc->>MongoDB: storeMetricsToMongoDB(metricsData)
+        MongoDB-->>MetricsFunc: Document inserted
+        MetricsFunc-->>APIRoute: 200 OK
+        APIRoute-->>Frontend: Success response
+        Frontend-->>Client: Confirmation displayed
+    else Validation Failure
+        MetricsFunc-->>APIRoute: 400 Bad Request
+        APIRoute-->>Frontend: Error response
+        Frontend-->>Client: Error displayed
+    end
+```
+
+### Analytics Dashboard Display Sequence Flow
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Frontend as Next.js Frontend
+    participant APIRoute as API Route<br/>/api/analytics
+    participant AnalyticsFunc as analytics() Function
+    participant MongoDB as MongoDB
+
+    Client->>Frontend: Click on Analytics link
+    Frontend->>Frontend: Mount analytics page
+    Frontend->>APIRoute: GET /api/analytics
+    APIRoute->>AnalyticsFunc: proxy request
+    AnalyticsFunc->>MongoDB: connectMongoDB()
+    MongoDB-->>AnalyticsFunc: Connected
+    
+    AnalyticsFunc->>AnalyticsFunc: fetchAggregatedAnalytics()
+    AnalyticsFunc->>MongoDB: Query aggregated metrics<br/>(engagement, features,<br/>accessibility stats)
+    MongoDB-->>AnalyticsFunc: Aggregated results
+    
+    AnalyticsFunc-->>APIRoute: 200 OK (analytics data)
+    APIRoute-->>Frontend: JSON response
+    Frontend->>Frontend: Parse & transform data
+    Frontend->>Frontend: Render charts & tables
+    Frontend-->>Client: Analytics dashboard displayed
 ```
