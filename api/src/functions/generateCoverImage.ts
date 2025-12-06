@@ -184,7 +184,6 @@ function getWCAGLevelFromRatio(ratio: number): "AAA" | "AA" | "FAIL" {
 	return "FAIL";
 }
 
-
 // Modular validation functions for each parameter type
 function validateSize(
 	width: number | undefined,
@@ -403,7 +402,10 @@ export async function generateCoverImage(
 				const validationMessage = validationErrors
 					.map((e) => `${e.field}: ${e.message}`)
 					.join("; ");
-				const contrastRatio = getContrastRatio(params.backgroundColor, params.textColor);
+				const contrastRatio = getContrastRatio(
+					params.backgroundColor,
+					params.textColor,
+				);
 				const wcagLevel = getWCAGLevelFromRatio(contrastRatio);
 				const metric = new Metric({
 					event: "image_generated",
@@ -417,7 +419,10 @@ export async function generateCoverImage(
 					subtitleLength: params.subtitle ? params.subtitle.length : undefined,
 					contrastRatio,
 					wcagLevel,
-					errorMessage: (validationMessage || "validation failed").slice(0, 1000),
+					errorMessage: (validationMessage || "validation failed").slice(
+						0,
+						1000,
+					),
 				});
 				await metric.save();
 				context.log("Saved validation error metric", metric._id?.toString());
@@ -460,7 +465,10 @@ export async function generateCoverImage(
 		try {
 			await connectMongoDB(context);
 			const Metric = getMetricModel();
-			const contrastRatio = getContrastRatio(params.backgroundColor, params.textColor);
+			const contrastRatio = getContrastRatio(
+				params.backgroundColor,
+				params.textColor,
+			);
 			const wcagLevel = getWCAGLevelFromRatio(contrastRatio);
 			const metric = new Metric({
 				event: "image_generated",
@@ -502,20 +510,37 @@ export async function generateCoverImage(
 		try {
 			await connectMongoDB(context);
 			const Metric = getMetricModel();
-			const contrastRatio = extractedParams.backgroundColor && extractedParams.textColor
-				? getContrastRatio(extractedParams.backgroundColor, extractedParams.textColor)
-				: undefined;
-			const wcagLevel = contrastRatio !== undefined ? getWCAGLevelFromRatio(contrastRatio) : undefined;
+			const contrastRatio =
+				extractedParams.backgroundColor && extractedParams.textColor
+					? getContrastRatio(
+							extractedParams.backgroundColor,
+							extractedParams.textColor,
+						)
+					: undefined;
+			const wcagLevel =
+				contrastRatio !== undefined
+					? getWCAGLevelFromRatio(contrastRatio)
+					: undefined;
 			const metric = new Metric({
 				event: "image_generated",
 				timestamp: new Date().toISOString(),
 				status: "error",
 				duration: partialDuration,
-				size: extractedParams.width && extractedParams.height ? { width: extractedParams.width, height: extractedParams.height } : undefined,
-				sizePreset: extractedParams.width && extractedParams.height ? `${extractedParams.width}x${extractedParams.height}` : undefined,
+				size:
+					extractedParams.width && extractedParams.height
+						? { width: extractedParams.width, height: extractedParams.height }
+						: undefined,
+				sizePreset:
+					extractedParams.width && extractedParams.height
+						? `${extractedParams.width}x${extractedParams.height}`
+						: undefined,
 				font: extractedParams.font,
-				titleLength: extractedParams.title ? extractedParams.title.length : undefined,
-				subtitleLength: extractedParams.subtitle ? extractedParams.subtitle.length : undefined,
+				titleLength: extractedParams.title
+					? extractedParams.title.length
+					: undefined,
+				subtitleLength: extractedParams.subtitle
+					? extractedParams.subtitle.length
+					: undefined,
 				contrastRatio,
 				wcagLevel,
 				errorMessage: error instanceof Error ? error.message : String(error),

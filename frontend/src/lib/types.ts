@@ -47,7 +47,7 @@ export interface GenerateClickMetrics {
 	size: {
 		width: number;
 		height: number;
-	}
+	};
 	font: string;
 	titleLength: number;
 	subtitleLength?: number;

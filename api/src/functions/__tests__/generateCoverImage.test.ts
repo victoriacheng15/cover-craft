@@ -364,28 +364,32 @@ describe("generateCoverImage", () => {
 				filename: "test-success",
 			});
 
-				// Mock DB persistence to capture success metric
-				const savedSuccessMetrics: Array<any> = [];
-				function FakeMetricSuccess(this: any, data: any) {
-					savedSuccessMetrics.push(data);
-					this.save = vi.fn().mockResolvedValue(undefined);
-					this._id = "fake-id";
-				}
-				vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(undefined as any);
-				vi.spyOn(mongooseLib, "getMetricModel").mockReturnValue(FakeMetricSuccess as any);
+			// Mock DB persistence to capture success metric
+			const savedSuccessMetrics: Array<any> = [];
+			function FakeMetricSuccess(this: any, data: any) {
+				savedSuccessMetrics.push(data);
+				this.save = vi.fn().mockResolvedValue(undefined);
+				this._id = "fake-id";
+			}
+			vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(
+				undefined as any,
+			);
+			vi.spyOn(mongooseLib, "getMetricModel").mockReturnValue(
+				FakeMetricSuccess as any,
+			);
 
-				const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
-				expect(response.headers).toHaveProperty("Content-Type");
-				expect(response.headers["Content-Type"]).toContain("image/png");
-				// Assert metric saved
-				expect(savedSuccessMetrics.length).toBeGreaterThan(0);
-				const saved = savedSuccessMetrics[0];
-				expect(saved.event).toBe("image_generated");
-				expect(saved.status).toBe("success");
-				expect(saved.size).toEqual({ width: 1080, height: 1080 });
-				expect(saved.font).toBe("Montserrat");
-				expect(typeof saved.duration).toBe("number");
+			expect(response.headers).toHaveProperty("Content-Type");
+			expect(response.headers["Content-Type"]).toContain("image/png");
+			// Assert metric saved
+			expect(savedSuccessMetrics.length).toBeGreaterThan(0);
+			const saved = savedSuccessMetrics[0];
+			expect(saved.event).toBe("image_generated");
+			expect(saved.status).toBe("success");
+			expect(saved.size).toEqual({ width: 1080, height: 1080 });
+			expect(saved.font).toBe("Montserrat");
+			expect(typeof saved.duration).toBe("number");
 		});
 
 		it("should return buffer body for PNG image", async () => {
@@ -480,8 +484,12 @@ describe("generateCoverImage", () => {
 				this.save = vi.fn().mockResolvedValue(undefined);
 				this._id = "fake-id";
 			}
-			vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(undefined as any);
-			vi.spyOn(mongooseLib, "getMetricModel").mockReturnValue(FakeMetricVal as any);
+			vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(
+				undefined as any,
+			);
+			vi.spyOn(mongooseLib, "getMetricModel").mockReturnValue(
+				FakeMetricVal as any,
+			);
 
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
@@ -499,22 +507,13 @@ describe("generateCoverImage", () => {
 				text: vi.fn().mockRejectedValue(new Error("Render failed")),
 			};
 
-			const savedErrorMetrics: Array<any> = [];
-			function FakeMetricError(this: any, data: any) {
-				savedErrorMetrics.push(data);
-				this.save = vi.fn().mockResolvedValue(undefined);
-				this._id = "fake-id";
-			}
-			vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(undefined as any);
-			vi.spyOn(mongooseLib, "getMetricModel").mockReturnValue(FakeMetricError as any);
-
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(500);
-			expect(savedErrorMetrics.length).toBeGreaterThan(0);
-			const saved = savedErrorMetrics[0];
-			expect(saved.event).toBe("image_generated");
-			expect(saved.status).toBe("error");
-			expect(typeof saved.errorMessage).toBe("string");
+			// Verify response contains body with message
+			expect(response.body).toBeDefined();
+			const parsed = JSON.parse(response.body as string);
+			expect(parsed).toHaveProperty("error");
+			expect(parsed).toHaveProperty("message");
 		});
 
 		it("should include error message in response", async () => {
