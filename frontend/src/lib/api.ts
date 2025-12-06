@@ -35,7 +35,10 @@ export async function getAnalytics() {
 /**
  * Generate cover image
  */
-export async function generateCoverImage(params: ImageParams): Promise<Blob> {
+export async function generateCoverImage(
+	params: ImageParams,
+): Promise<{ blob: Blob; clientDuration: number; duration?: number }> {
+	const startTime = performance.now();
 	const response = await fetch(GENERATE_COVER_IMAGE_URL, {
 		method: "POST",
 		headers: {
@@ -43,11 +46,27 @@ export async function generateCoverImage(params: ImageParams): Promise<Blob> {
 		},
 		body: JSON.stringify(params),
 	});
+
+	const clientDuration = Math.round(performance.now() - startTime);
+
 	if (!response.ok) {
-		const error = await response.json();
-		throw new Error(error.error || "Failed to generate cover image");
+		// try to parse a helpful error body, but fall back gracefully
+		let errorBody: any = null;
+		try {
+			errorBody = await response.json();
+		} catch (_err) {
+			// ignore parse errors
+		}
+		const err = new Error(
+			(errorBody && errorBody.error) || "Failed to generate cover image",
+		);
+		// Attach timing info to the error for callers to inspect if needed
+		(err as any).clientDuration = clientDuration;
+		throw err;
 	}
-	return response.blob();
+
+	const blob = await response.blob();
+	return { blob, clientDuration };
 }
 
 /**

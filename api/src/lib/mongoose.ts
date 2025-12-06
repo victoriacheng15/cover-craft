@@ -13,9 +13,10 @@ export const metricSchema = new mongoose.Schema({
 		required: true,
 	},
 	errorMessage: String,
-
-	// Cover generation data
-	sizePreset: { type: String },
+	size: {
+		width: { type: Number },
+		height: { type: Number },
+	},
 	font: { type: String },
 	titleLength: { type: Number },
 	subtitleLength: { type: Number },

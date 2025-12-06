@@ -6,6 +6,8 @@ import {
 	type InvocationContext,
 } from "@azure/functions";
 import { Canvas, registerFont } from "canvas";
+import { performance } from "perf_hooks";
+import { connectMongoDB, getMetricModel } from "../lib/mongoose";
 
 // Validation constants
 const SIZE_RANGE = { min: 1, max: 1200 };
@@ -175,6 +177,13 @@ function getContrastRatio(color1: string, color2: string): number {
 	return (lighter + 0.05) / (darker + 0.05);
 }
 
+// Convert contrast ratio into a rough WCAG level
+function getWCAGLevelFromRatio(ratio: number): "AAA" | "AA" | "FAIL" {
+	if (ratio >= 7) return "AAA";
+	if (ratio >= 4.5) return "AA";
+	return "FAIL";
+}
+
 // Modular validation functions for each parameter type
 function validateSize(
 	width: number | undefined,
@@ -315,6 +324,64 @@ function validateParams(params: ImageParams): ValidationError[] {
 	return errors;
 }
 
+// Helper function to persist metrics consistently across all paths
+async function persistMetric(
+	context: InvocationContext,
+	metricData: {
+		status: "success" | "validation_error" | "error";
+		duration?: number;
+		width?: number;
+		height?: number;
+		font?: string;
+		title?: string;
+		subtitle?: string;
+		backgroundColor?: string;
+		textColor?: string;
+		errorMessage?: string;
+	},
+): Promise<void> {
+	try {
+		await connectMongoDB(context);
+		const Metric = getMetricModel();
+
+		// For success and validation_error paths, all params are validated, so they exist
+		// For error path, params may be partial, so we need nullish checks
+		const contrastRatio =
+			metricData.backgroundColor && metricData.textColor
+				? getContrastRatio(metricData.backgroundColor, metricData.textColor)
+				: undefined;
+		const wcagLevel =
+			contrastRatio !== undefined
+				? getWCAGLevelFromRatio(contrastRatio)
+				: undefined;
+
+		const metric = new Metric({
+			event: "image_generated",
+			timestamp: new Date().toISOString(),
+			status: metricData.status,
+			duration: metricData.duration,
+			size:
+				metricData.width != null && metricData.height != null
+					? { width: metricData.width, height: metricData.height }
+					: undefined,
+			font: metricData.font,
+			titleLength: metricData.title?.length,
+			subtitleLength: metricData.subtitle?.length,
+			contrastRatio,
+			wcagLevel,
+			...(metricData.errorMessage && { errorMessage: metricData.errorMessage }),
+		});
+
+		await metric.save();
+		context.log(`Saved ${metricData.status} metric`, metric._id?.toString());
+	} catch (err) {
+		context.error(
+			`Failed to persist ${metricData.status} metric for image_generated:`,
+			err,
+		);
+	}
+}
+
 // Generate PNG image
 async function generatePNG(params: ImageParams): Promise<Buffer> {
 	const canvas = new Canvas(params.width, params.height);
@@ -362,11 +429,14 @@ export async function generateCoverImage(
 	request: HttpRequest,
 	context: InvocationContext,
 ): Promise<HttpResponseInit> {
-	context.log(`Generating cover image for request: ${request.url}`);
+	// Declare startTime here so it's in scope for catch block as well
+	let startTime: number | undefined;
+	// keep a reference to extractedParams in outer scope so we can persist metrics on errors
+	let extractedParams: Partial<ImageParams> | undefined;
 
 	try {
 		// Extract parameters
-		const extractedParams = await extractParams(request);
+		extractedParams = await extractParams(request);
 
 		// All parameters are required - no defaults
 		const params: ImageParams = {
@@ -383,6 +453,22 @@ export async function generateCoverImage(
 		// Validate parameters
 		const validationErrors = validateParams(params);
 		if (validationErrors.length > 0) {
+			// Persist a minimal validation_error metric for observability, but do not block response on DB errors
+			const validationMessage = validationErrors
+				.map((e) => `${e.field}: ${e.message}`)
+				.join("; ");
+			await persistMetric(context, {
+				status: "validation_error",
+				width: params.width,
+				height: params.height,
+				font: params.font,
+				title: params.title,
+				subtitle: params.subtitle,
+				backgroundColor: params.backgroundColor,
+				textColor: params.textColor,
+				errorMessage: (validationMessage || "validation failed").slice(0, 1000),
+			});
+
 			return {
 				status: 400,
 				headers: { "Content-Type": "application/json" },
@@ -393,24 +479,78 @@ export async function generateCoverImage(
 			};
 		}
 
+		// Start server-side timing
+		startTime = performance.now();
+
 		// Generate PNG
 		const pngBuffer = await generatePNG(params);
+
+		// Calculate generation duration
+		const duration = Math.round(performance.now() - startTime);
+
+		// Build headers including Server-Timing and fallback X-Generation-Duration
+		const headers: Record<string, string> = {
+			"Content-Type": "image/png",
+			"Content-Disposition": `attachment; filename="${params.filename}-${Date.now()}.png"`,
+			"Cache-Control": "no-cache, no-store, must-revalidate",
+			"Server-Timing": `generation;dur=${duration}`,
+			"X-Generation-Duration": String(duration),
+		};
+
+		// Persist metric to MongoDB (does not block response beyond write time)
+		await persistMetric(context, {
+			status: "success",
+			duration,
+			width: params.width,
+			height: params.height,
+			font: params.font,
+			title: params.title,
+			subtitle: params.subtitle,
+			backgroundColor: params.backgroundColor,
+			textColor: params.textColor,
+		});
 
 		// Return response with PNG
 		return {
 			status: 200,
-			headers: {
-				"Content-Type": "image/png",
-				"Content-Disposition": `attachment; filename="${params.filename}-${Date.now()}.png"`,
-				"Cache-Control": "no-cache, no-store, must-revalidate",
-			},
+			headers,
 			body: pngBuffer,
 		};
 	} catch (error) {
 		context.error(`Error generating cover image: ${error}`);
+		// compute partial duration, if applicable
+		let partialDuration: number | undefined;
+		try {
+			if (typeof startTime === "number") {
+				partialDuration = Math.round(performance.now() - startTime);
+			}
+		} catch (_e) {
+			// ignore
+		}
+		// Persist an error metric to MongoDB, if possible
+		await persistMetric(context, {
+			status: "error",
+			duration: partialDuration,
+			width: extractedParams?.width,
+			height: extractedParams?.height,
+			font: extractedParams?.font,
+			title: extractedParams?.title,
+			subtitle: extractedParams?.subtitle,
+			backgroundColor: extractedParams?.backgroundColor,
+			textColor: extractedParams?.textColor,
+			errorMessage: error instanceof Error ? error.message : String(error),
+		});
+		// Include partial duration header if available
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+		if (partialDuration !== undefined) {
+			headers["X-Generation-Duration"] = String(partialDuration);
+			headers["Server-Timing"] = `generation;dur=${partialDuration}`;
+		}
 		return {
 			status: 500,
-			headers: { "Content-Type": "application/json" },
+			headers,
 			body: JSON.stringify({
 				error: "Internal server error",
 				message: error instanceof Error ? error.message : "Unknown error",

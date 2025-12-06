@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { GenerateClickMetrics } from "@/lib";
 import {
 	downloadImage,
 	generateCoverImage,
@@ -87,17 +88,7 @@ export function useForm() {
 
 			if (!selectedSize) throw new Error("Invalid size selected");
 
-			sendMetric(
-				"generate_click",
-				formData.size.split(" ")[0].trim(),
-				formData.font,
-				formData.title.length,
-				formData.subtitle ? formData.subtitle.length : null,
-				contrastCheck.ratio || 0,
-				contrastCheck.level || "FAIL",
-			);
-
-			const imageBlob = await generateCoverImage({
+			const { blob, clientDuration } = await generateCoverImage({
 				width: selectedSize.width,
 				height: selectedSize.height,
 				backgroundColor: formData.backgroundColor,
@@ -107,10 +98,32 @@ export function useForm() {
 				subtitle: formData.subtitle,
 				filename: formData.filename || "cover",
 			});
-			setGeneratedImage(imageBlob);
+			// Build typed metrics payload and log it to console before sending
+			const metricsPayload: GenerateClickMetrics = {
+				event: "generate_click",
+				timestamp: new Date().toISOString(),
+				status: "success",
+				size: {
+					width: selectedSize.width,
+					height: selectedSize.height,
+				},
+				font: formData.font,
+				titleLength: formData.title.length,
+				contrastRatio: contrastCheck.ratio || 0,
+				wcagLevel: contrastCheck.level || "FAIL",
+				clientDuration,
+			};
+			if (formData.subtitle && formData.subtitle.length > 0) {
+				metricsPayload.subtitleLength = formData.subtitle.length;
+			}
+
+			// Send typed payload as single argument for simplicity
+			sendMetric(metricsPayload);
+
+			setGeneratedImage(blob);
 			const reader = new FileReader();
 			reader.onload = () => setGeneratedImageUrl(reader.result as string);
-			reader.readAsDataURL(imageBlob);
+			reader.readAsDataURL(blob);
 			setFormData(initialFormData);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to generate image");
@@ -127,7 +140,6 @@ export function useForm() {
 			const timestamp = Math.floor(Date.now() / 1000);
 			const downloadFilename = `${formData.filename || "cover"}-${timestamp}.png`;
 			await downloadImage(generatedImage, downloadFilename);
-			// Auto-reset after successful download
 			handleReset();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to download image");

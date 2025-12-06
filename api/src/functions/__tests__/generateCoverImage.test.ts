@@ -1,5 +1,6 @@
 import type { HttpRequest, InvocationContext } from "@azure/functions";
 import { describe, expect, it, vi } from "vitest";
+import * as mongooseLib from "../../lib/mongoose";
 import { generateCoverImage } from "../generateCoverImage";
 
 describe("generateCoverImage", () => {
@@ -363,10 +364,32 @@ describe("generateCoverImage", () => {
 				filename: "test-success",
 			});
 
+			// Mock DB persistence to capture success metric
+			const savedSuccessMetrics: Array<any> = [];
+			function FakeMetricSuccess(this: any, data: any) {
+				savedSuccessMetrics.push(data);
+				this.save = vi.fn().mockResolvedValue(undefined);
+				this._id = "fake-id";
+			}
+			vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(
+				undefined as any,
+			);
+			vi.spyOn(mongooseLib, "getMetricModel").mockReturnValue(
+				FakeMetricSuccess as any,
+			);
+
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			expect(response.headers).toHaveProperty("Content-Type");
 			expect(response.headers["Content-Type"]).toContain("image/png");
+			// Assert metric saved
+			expect(savedSuccessMetrics.length).toBeGreaterThan(0);
+			const saved = savedSuccessMetrics[0];
+			expect(saved.event).toBe("image_generated");
+			expect(saved.status).toBe("success");
+			expect(saved.size).toEqual({ width: 1080, height: 1080 });
+			expect(saved.font).toBe("Montserrat");
+			expect(typeof saved.duration).toBe("number");
 		});
 
 		it("should return buffer body for PNG image", async () => {
@@ -435,6 +458,10 @@ describe("generateCoverImage", () => {
 
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.headers["Cache-Control"]).toBeDefined();
+			expect(response.headers["X-Generation-Duration"]).toBeDefined();
+			expect(Number(response.headers["X-Generation-Duration"])).toEqual(
+				expect.any(Number),
+			);
 		});
 	});
 
@@ -450,9 +477,28 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
+			// Mock DB persistence to capture validation metric saved and assert fields
+			const savedValidationMetrics: Array<any> = [];
+			function FakeMetricVal(this: any, data: any) {
+				savedValidationMetrics.push(data);
+				this.save = vi.fn().mockResolvedValue(undefined);
+				this._id = "fake-id";
+			}
+			vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(
+				undefined as any,
+			);
+			vi.spyOn(mongooseLib, "getMetricModel").mockReturnValue(
+				FakeMetricVal as any,
+			);
+
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 			expect(typeof response.body).toBe("string");
+			expect(savedValidationMetrics.length).toBeGreaterThan(0);
+			const saved = savedValidationMetrics[0];
+			expect(saved.event).toBe("image_generated");
+			expect(saved.status).toBe("validation_error");
+			expect(typeof saved.errorMessage).toBe("string");
 		});
 
 		it("should return 500 for internal rendering errors", async () => {
@@ -463,6 +509,11 @@ describe("generateCoverImage", () => {
 
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(500);
+			// Verify response contains body with message
+			expect(response.body).toBeDefined();
+			const parsed = JSON.parse(response.body as string);
+			expect(parsed).toHaveProperty("error");
+			expect(parsed).toHaveProperty("message");
 		});
 
 		it("should include error message in response", async () => {

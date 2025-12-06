@@ -49,31 +49,13 @@ export function cn(...classes: (string | undefined | null | false)[]) {
 }
 
 // Metrics helpers
-export async function sendMetric(
-	event: string,
-	sizePreset: string,
-	font: string,
-	titleLength: number,
-	subtitleLength: number | null,
-	contrastRatio: number,
-	wcagLevel: string,
-) {
+export async function sendMetric(payload: Record<string, any>) {
 	try {
-		const payload: Record<string, any> = {
-			event,
-			timestamp: new Date().toISOString(),
-			status: "success",
-			sizePreset,
-			font,
-			titleLength,
-			contrastRatio,
-			wcagLevel,
-		};
-
-		// Only include subtitleLength if subtitle exists
-		if (subtitleLength !== null && subtitleLength > 0) {
-			payload.subtitleLength = subtitleLength;
-		}
+		// Keep sanity checks - must be an event
+		if (!payload || typeof payload !== "object" || !payload.event) return;
+		// Ensure timestamp and status exist
+		if (!payload.timestamp) payload.timestamp = new Date().toISOString();
+		if (!payload.status) payload.status = "success";
 
 		await fetch("/api/metrics", {
 			method: "POST",
