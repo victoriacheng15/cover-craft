@@ -57,11 +57,18 @@ export async function generateCoverImage(
 		} catch (_err) {
 			// ignore parse errors
 		}
-		const err = new Error(
-			(errorBody && errorBody.error) || "Failed to generate cover image",
-		);
-		// Attach timing info to the error for callers to inspect if needed
+		let message = (errorBody && errorBody.error) || "Failed to generate cover image";
+		// If backend provides validation details, include them in the thrown message
+		if (errorBody && Array.isArray(errorBody.details) && errorBody.details.length > 0) {
+			const detailsText = errorBody.details
+				.map((d: any) => `${d.field}: ${d.message}`)
+				.join("; ");
+			message = `${message}: ${detailsText}`;
+		}
+		const err = new Error(message);
+		// Attach timing and structured error info to the error for callers to inspect if needed
 		(err as any).clientDuration = clientDuration;
+		(err as any).details = errorBody?.details;
 		throw err;
 	}
 
