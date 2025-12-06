@@ -187,7 +187,6 @@ describe("useForm", () => {
 			(generateCoverImage as any).mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 123,
-				duration: 50,
 			});
 
 			const { result } = renderHook(() => useForm());
@@ -220,7 +219,11 @@ describe("useForm", () => {
 			expect(lastCall).toEqual(
 				expect.objectContaining({
 					event: "generate_click",
-					sizePreset: "1200x627",
+					size: {
+						width: 1200,
+						height: 627,
+					},
+					status: "success",
 					font: "Montserrat",
 					titleLength: 10,
 					subtitleLength: 13,
