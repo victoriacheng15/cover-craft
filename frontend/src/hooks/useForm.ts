@@ -62,7 +62,14 @@ export function useForm() {
 		const selectedSize = SIZE_PRESETS.find(
 			(preset) => preset.label === formData.size,
 		);
-		if (!selectedSize) return { width: 300, height: 157 };
+
+		if (!selectedSize) {
+			return {
+				width: SIZE_PRESETS[0].width * 0.5,
+				height: SIZE_PRESETS[0].height * 0.5,
+			};
+		}
+
 		return {
 			width: selectedSize.width * 0.5,
 			height: selectedSize.height * 0.5,
@@ -77,16 +84,19 @@ export function useForm() {
 			const selectedSize = SIZE_PRESETS.find(
 				(preset) => preset.label === formData.size,
 			);
+
 			if (!selectedSize) throw new Error("Invalid size selected");
+
 			sendMetric(
 				"generate_click",
-				formData.size,
+				formData.size.split(" ")[0].trim(),
 				formData.font,
 				formData.title.length,
 				formData.subtitle ? formData.subtitle.length : null,
 				contrastCheck.ratio || 0,
 				contrastCheck.level || "FAIL",
 			);
+
 			const imageBlob = await generateCoverImage({
 				width: selectedSize.width,
 				height: selectedSize.height,
