@@ -82,6 +82,7 @@ export default function CoverForm() {
 						placeholder="Enter your cover title..."
 						value={formData.title}
 						onChange={(e) => handleInputChange("title", e.target.value)}
+						maxLength={55}
 						aria-label="Enter your cover title (required)"
 						aria-describedby={error ? errorId : undefined}
 					/>
@@ -93,6 +94,7 @@ export default function CoverForm() {
 						placeholder="Subtitle"
 						value={formData.subtitle}
 						onChange={(e) => handleInputChange("subtitle", e.target.value)}
+						maxLength={120}
 						aria-label="Enter your cover subtitle (optional)"
 					/>
 				</FormField>

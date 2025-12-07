@@ -77,6 +77,9 @@ export function useForm() {
 		};
 	};
 
+	const MAX_TITLE_LENGTH = 55;
+	const MAX_SUBTITLE_LENGTH = 120;
+
 	const handleGenerate = async () => {
 		try {
 			setIsGenerating(true);
@@ -87,6 +90,24 @@ export function useForm() {
 			);
 
 			if (!selectedSize) throw new Error("Invalid size selected");
+
+			// Client-side validation for title and subtitle length
+			if (formData.title && formData.title.length > MAX_TITLE_LENGTH) {
+				setError(`title must be ${MAX_TITLE_LENGTH} characters or less`);
+				setIsGenerating(false);
+				return;
+			}
+
+			if (
+				formData.subtitle &&
+				formData.subtitle.length > MAX_SUBTITLE_LENGTH
+			) {
+				setError(
+					`subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`,
+				);
+				setIsGenerating(false);
+				return;
+			}
 
 			const { blob, clientDuration } = await generateCoverImage({
 				width: selectedSize.width,
