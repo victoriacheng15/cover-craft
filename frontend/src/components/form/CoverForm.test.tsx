@@ -71,7 +71,9 @@ describe("CoverForm", () => {
 
 		expect(imageNameInput).toBeInTheDocument();
 		expect(titleInput).toBeInTheDocument();
+		expect((titleInput as HTMLInputElement).maxLength).toBe(55);
 		expect(subtitleInput).toBeInTheDocument();
+		expect((subtitleInput as HTMLInputElement).maxLength).toBe(120);
 
 		// Color pickers
 		const bgColorInput = within(formCard).getByLabelText(

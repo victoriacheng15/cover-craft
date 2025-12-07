@@ -388,6 +388,47 @@ describe("useForm", () => {
 			});
 		});
 
+		it("prevents generation when title exceeds max length", async () => {
+			const { result } = renderHook(() => useForm());
+			const longTitle = "A".repeat(56); // 56 > 55
+
+			act(() => {
+				result.current.handleInputChange("title", longTitle);
+			});
+
+			await act(async () => {
+				await result.current.handleGenerate();
+			});
+
+			await waitFor(() => {
+				expect(result.current.error).toBe("title must be 55 characters or less");
+			});
+
+			expect(generateCoverImage).not.toHaveBeenCalled();
+			expect(sendMetric).not.toHaveBeenCalled();
+		});
+
+		it("prevents generation when subtitle exceeds max length", async () => {
+			const { result } = renderHook(() => useForm());
+			const longSubtitle = "B".repeat(121); // 121 > 120
+
+			act(() => {
+				result.current.handleInputChange("title", "Valid Title");
+				result.current.handleInputChange("subtitle", longSubtitle);
+			});
+
+			await act(async () => {
+				await result.current.handleGenerate();
+			});
+
+			await waitFor(() => {
+				expect(result.current.error).toBe("subtitle must be 120 characters or less");
+			});
+
+			expect(generateCoverImage).not.toHaveBeenCalled();
+			expect(sendMetric).not.toHaveBeenCalled();
+		});
+
 		it("generates image with Square preset", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
 			(generateCoverImage as any).mockResolvedValueOnce({
