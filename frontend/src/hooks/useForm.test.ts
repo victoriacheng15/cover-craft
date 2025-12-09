@@ -17,15 +17,20 @@ import {
 	sendMetric,
 } from "@/lib";
 
+const downloadImageMock = vi.mocked(downloadImage);
+const generateCoverImageMock = vi.mocked(generateCoverImage);
+const sendMetricMock = vi.mocked(sendMetric);
 // Mock FileReader
-global.FileReader = class {
-	readAsDataURL = vi.fn(function (this: any, blob: Blob) {
-		this.onload?.();
-		this.result = "data:image/png;base64,test";
-	});
+class MockFileReader {
 	result = "";
 	onload: (() => void) | null = null;
-} as any;
+	readAsDataURL(_blob: Blob) {
+		this.onload?.();
+		this.result = "data:image/png;base64,test";
+	}
+}
+
+globalThis.FileReader = MockFileReader as unknown as typeof FileReader;
 
 describe("useForm", () => {
 	beforeEach(() => {
@@ -184,7 +189,7 @@ describe("useForm", () => {
 	describe("handleGenerate", () => {
 		it("generates image successfully with all fields", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce({
+			generateCoverImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 123,
 			});
@@ -213,9 +218,8 @@ describe("useForm", () => {
 			});
 
 			expect(sendMetric).toHaveBeenCalled();
-			const lastCall = (sendMetric as any).mock.calls[
-				(sendMetric as any).mock.calls.length - 1
-			][0];
+			const lastCall =
+				sendMetricMock.mock.calls[sendMetricMock.mock.calls.length - 1][0];
 			expect(lastCall).toEqual(
 				expect.objectContaining({
 					event: "generate_click",
@@ -234,7 +238,7 @@ describe("useForm", () => {
 
 		it("generates image with default filename when not provided", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce({
+			generateCoverImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 120,
 				duration: 30,
@@ -259,7 +263,7 @@ describe("useForm", () => {
 
 		it("sets isGenerating to false after generation completes", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce({
+			generateCoverImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 140,
 				duration: 45,
@@ -280,7 +284,7 @@ describe("useForm", () => {
 
 		it("resets formData after successful generation", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce({
+			generateCoverImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 160,
 				duration: 60,
@@ -307,9 +311,7 @@ describe("useForm", () => {
 
 		it("handles generation error with Error instance", async () => {
 			const errorMessage = "Generation failed";
-			(generateCoverImage as any).mockRejectedValueOnce(
-				new Error(errorMessage),
-			);
+			generateCoverImageMock.mockRejectedValueOnce(new Error(errorMessage));
 
 			// Mock console.error to suppress error output during test
 			const consoleErrorSpy = vi
@@ -337,7 +339,7 @@ describe("useForm", () => {
 		});
 
 		it("handles generation error with non-Error object", async () => {
-			(generateCoverImage as any).mockRejectedValueOnce("String error");
+			generateCoverImageMock.mockRejectedValueOnce("String error");
 
 			// Mock console.error to suppress error output during test
 			const consoleErrorSpy = vi
@@ -366,7 +368,7 @@ describe("useForm", () => {
 
 		it("throws error for invalid size selection", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce({
+			generateCoverImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 110,
 				duration: 55,
@@ -435,7 +437,7 @@ describe("useForm", () => {
 
 		it("generates image with Square preset", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce({
+			generateCoverImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 130,
 				duration: 70,
@@ -466,12 +468,12 @@ describe("useForm", () => {
 	describe("handleDownload", () => {
 		it("downloads generated image with custom filename", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce({
+			generateCoverImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 99,
 				duration: 40,
 			});
-			(downloadImage as any).mockResolvedValueOnce(undefined);
+			downloadImageMock.mockResolvedValueOnce(undefined);
 
 			const { result } = renderHook(() => useForm());
 
@@ -513,13 +515,13 @@ describe("useForm", () => {
 
 		it("handles download error", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			(generateCoverImage as any).mockResolvedValueOnce({
+			generateCoverImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 200,
 				duration: 80,
 			});
 			const errorMessage = "Custom download error";
-			(downloadImage as any).mockRejectedValueOnce(new Error(errorMessage));
+			downloadImageMock.mockRejectedValueOnce(new Error(errorMessage));
 
 			// Mock console.error to suppress error output during test
 			const consoleErrorSpy = vi

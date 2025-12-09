@@ -117,7 +117,7 @@ export default function CoverForm() {
 				<div className="p-3 bg-slate-50 rounded-md border border-slate-200">
 					<div className="flex items-center justify-between">
 						<p className="text-sm font-medium text-slate-700">Color Contrast</p>
-						<div
+						<p
 							className="flex items-center gap-2"
 							role="status"
 							aria-live="polite"
@@ -129,15 +129,17 @@ export default function CoverForm() {
 										className={`inline-block w-3 h-3 rounded-full ${getContrastColorClasses(contrastCheck.status).dot}`}
 										aria-hidden="true"
 									></span>
-									<span
+									<p
 										className={`text-sm font-semibold ${getContrastColorClasses(contrastCheck.status).text}`}
-										aria-label={`Contrast status: ${contrastCheck.status}. ${contrastCheck.message}`}
 									>
 										{contrastCheck.message}
+									</p>
+									<span className="sr-only">
+										Contrast status is {contrastCheck.status}
 									</span>
 								</>
 							)}
-						</div>
+						</p>
 					</div>
 				</div>
 

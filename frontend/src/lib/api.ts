@@ -35,6 +35,21 @@ export async function getAnalytics() {
 /**
  * Generate cover image
  */
+type GenerateCoverErrorDetail = {
+	field: string;
+	message: string;
+};
+
+type GenerateCoverErrorBody = {
+	error?: string;
+	details?: GenerateCoverErrorDetail[];
+};
+
+type GenerateCoverImageError = Error & {
+	clientDuration?: number;
+	details?: GenerateCoverErrorDetail[];
+};
+
 export async function generateCoverImage(
 	params: ImageParams,
 ): Promise<{ blob: Blob; clientDuration: number; duration?: number }> {
@@ -51,29 +66,26 @@ export async function generateCoverImage(
 
 	if (!response.ok) {
 		// try to parse a helpful error body, but fall back gracefully
-		let errorBody: any = null;
+		let errorBody: GenerateCoverErrorBody | null = null;
 		try {
 			errorBody = await response.json();
 		} catch (_err) {
 			// ignore parse errors
 		}
-		let message =
-			(errorBody && errorBody.error) || "Failed to generate cover image";
-		// If backend provides validation details, include them in the thrown message
-		if (
-			errorBody &&
-			Array.isArray(errorBody.details) &&
-			errorBody.details.length > 0
-		) {
-			const detailsText = errorBody.details
-				.map((d: any) => `${d.field}: ${d.message}`)
+		const baseMessage = errorBody?.error ?? "Failed to generate cover image";
+		const details =
+			errorBody && Array.isArray(errorBody.details) ? errorBody.details : [];
+		let message = baseMessage;
+		if (details.length > 0) {
+			const detailsText = details
+				.map((detail) => `${detail.field}: ${detail.message}`)
 				.join("; ");
 			message = `${message}: ${detailsText}`;
 		}
-		const err = new Error(message);
+		const err = new Error(message) as GenerateCoverImageError;
 		// Attach timing and structured error info to the error for callers to inspect if needed
-		(err as any).clientDuration = clientDuration;
-		(err as any).details = errorBody?.details;
+		err.clientDuration = clientDuration;
+		err.details = details;
 		throw err;
 	}
 

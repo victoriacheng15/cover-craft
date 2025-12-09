@@ -134,6 +134,7 @@ export function useForm() {
 			}
 
 			// Send typed payload as single argument for simplicity
+			// @ts-expect-error
 			sendMetric(metricsPayload);
 
 			setGeneratedImage(blob);

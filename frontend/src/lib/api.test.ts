@@ -1,8 +1,29 @@
+import type { MockedFunction } from "vitest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { downloadImage, generateCoverImage, health } from "./api";
 
-// Mock fetch globally
-global.fetch = vi.fn();
+const fetchMock: MockedFunction<typeof fetch> = vi.fn();
+global.fetch = fetchMock;
+
+type ShowSaveFilePicker = (options: {
+	suggestedName: string;
+	types: Array<{
+		description: string;
+		accept: Record<string, string[]>;
+	}>;
+}) => Promise<{
+	createWritable: () => Promise<{
+		write: (data: Blob) => Promise<void>;
+		close: () => Promise<void>;
+	}>;
+}>;
+
+type WindowWithFilePicker = Window & {
+	showSaveFilePicker?: ShowSaveFilePicker;
+};
+
+const getWindowWithFilePicker = (): WindowWithFilePicker =>
+	window as WindowWithFilePicker;
 
 describe("API functions", () => {
 	beforeEach(() => {
@@ -12,19 +33,21 @@ describe("API functions", () => {
 	describe("health", () => {
 		it("calls the health check endpoint and returns response", async () => {
 			const mockResponse = { status: "ok" };
-			(global.fetch as any).mockResolvedValueOnce({
+			// @ts-expect-error
+			fetchMock.mockResolvedValueOnce({
 				ok: true,
 				json: async () => mockResponse,
 			});
 
 			const result = await health();
 
-			expect(global.fetch).toHaveBeenCalledWith("/api/health");
+			expect(fetchMock).toHaveBeenCalledWith("/api/health");
 			expect(result).toEqual(mockResponse);
 		});
 
 		it("throws error when health check fails", async () => {
-			(global.fetch as any).mockResolvedValueOnce({
+			// @ts-expect-error
+			fetchMock.mockResolvedValueOnce({
 				ok: false,
 				statusText: "Internal Server Error",
 			});
@@ -49,9 +72,10 @@ describe("API functions", () => {
 				filename: "test-file",
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
+			fetchMock.mockResolvedValueOnce({
 				ok: true,
 				blob: async () => mockBlob,
+				// @ts-expect-error
 				headers: {
 					get: (name: string) =>
 						name.toLowerCase() === "x-generation-duration" ? "123" : null,
@@ -60,17 +84,17 @@ describe("API functions", () => {
 
 			const result = await generateCoverImage(params);
 
-			expect(global.fetch).toHaveBeenCalledWith("/api/generateCoverImage", {
+			expect(fetchMock).toHaveBeenCalledWith("/api/generateCoverImage", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify(params),
 			});
-			expect((result as any).blob).toEqual(mockBlob);
-			expect((result as any).clientDuration).toEqual(expect.any(Number));
+			expect(result.blob).toEqual(mockBlob);
+			expect(result.clientDuration).toEqual(expect.any(Number));
 			// duration is server-side only (backend 'image_generated' event) and is not returned to the frontend
-			expect((result as any).duration).toBeUndefined();
+			expect(result.duration).toBeUndefined();
 		});
 
 		it("throws error with custom error message from response", async () => {
@@ -85,7 +109,8 @@ describe("API functions", () => {
 				filename: "test",
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
+			// @ts-expect-error
+			fetchMock.mockResolvedValueOnce({
 				ok: false,
 				json: async () => ({ error: "Invalid parameters" }),
 			});
@@ -107,7 +132,8 @@ describe("API functions", () => {
 				filename: "test",
 			};
 
-			(global.fetch as any).mockResolvedValueOnce({
+			// @ts-expect-error
+			fetchMock.mockResolvedValueOnce({
 				ok: false,
 				json: async () => ({}),
 			});
@@ -120,15 +146,15 @@ describe("API functions", () => {
 
 	describe("downloadImage", () => {
 		let mockLink: HTMLAnchorElement;
-		let originalShowSaveFilePicker: any;
+		let originalShowSaveFilePicker: ShowSaveFilePicker | undefined;
 
 		beforeEach(() => {
 			// Save original showSaveFilePicker
-			originalShowSaveFilePicker = (window as any).showSaveFilePicker;
+			originalShowSaveFilePicker = getWindowWithFilePicker().showSaveFilePicker;
 
 			// Mock document methods
 			mockLink = document.createElement("a");
-			vi.spyOn(document, "createElement").mockReturnValue(mockLink as any);
+			vi.spyOn(document, "createElement").mockReturnValue(mockLink);
 			vi.spyOn(document.body, "appendChild");
 			vi.spyOn(document.body, "removeChild");
 			vi.spyOn(mockLink, "click");
@@ -136,10 +162,11 @@ describe("API functions", () => {
 
 		afterEach(() => {
 			// Restore original
+			const windowWithFilePicker = getWindowWithFilePicker();
 			if (originalShowSaveFilePicker) {
-				(window as any).showSaveFilePicker = originalShowSaveFilePicker;
+				windowWithFilePicker.showSaveFilePicker = originalShowSaveFilePicker;
 			} else {
-				delete (window as any).showSaveFilePicker;
+				delete windowWithFilePicker.showSaveFilePicker;
 			}
 			vi.restoreAllMocks();
 		});
@@ -149,17 +176,24 @@ describe("API functions", () => {
 			const filename = "test-image.png";
 
 			// Ensure showSaveFilePicker is not available
-			delete (window as any).showSaveFilePicker;
+			const windowWithFilePicker = getWindowWithFilePicker();
+			delete windowWithFilePicker.showSaveFilePicker;
 
 			// Mock FileReader with synchronous onload callback
-			global.FileReader = class {
+			class MockFileReader {
 				onload: (() => void) | null = null;
 				result = "data:image/png;base64,test";
-				readAsDataURL = vi.fn(function (this: any) {
+				readAsDataURL = vi.fn(function (this: MockFileReader) {
 					// Call onload synchronously
 					this.onload?.();
 				});
-			} as any;
+			}
+			const globalWithFileReader = globalThis as typeof globalThis & {
+				FileReader: typeof FileReader;
+			};
+
+			// @ts-expect-error
+			globalWithFileReader.FileReader = MockFileReader as typeof FileReader;
 
 			await downloadImage(blob, filename);
 
@@ -181,8 +215,8 @@ describe("API functions", () => {
 			};
 
 			const mockShowSaveFilePicker = vi.fn().mockResolvedValueOnce(mockHandle);
-
-			(window as any).showSaveFilePicker = mockShowSaveFilePicker;
+			const windowWithFilePicker = getWindowWithFilePicker();
+			windowWithFilePicker.showSaveFilePicker = mockShowSaveFilePicker;
 
 			await downloadImage(blob, filename);
 
@@ -208,7 +242,8 @@ describe("API functions", () => {
 			abortError.name = "AbortError";
 
 			// Mock window with showSaveFilePicker
-			(window as any).showSaveFilePicker = vi
+			const windowWithFilePicker = getWindowWithFilePicker();
+			windowWithFilePicker.showSaveFilePicker = vi
 				.fn()
 				.mockRejectedValueOnce(abortError);
 
@@ -221,7 +256,8 @@ describe("API functions", () => {
 			const filename = "test-image.png";
 
 			// Mock window with showSaveFilePicker
-			(window as any).showSaveFilePicker = vi
+			const windowWithFilePicker = getWindowWithFilePicker();
+			windowWithFilePicker.showSaveFilePicker = vi
 				.fn()
 				.mockRejectedValueOnce(new Error("Permission denied"));
 

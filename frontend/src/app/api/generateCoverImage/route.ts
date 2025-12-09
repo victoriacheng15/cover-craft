@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
 		if (!response.ok) {
 			// Try to parse JSON error body returned by backend (validation errors carry details)
-			let errorBody: any = null;
+			let errorBody: Record<string, unknown> | null = null;
 			try {
 				errorBody = await response.json();
 			} catch (_err) {
