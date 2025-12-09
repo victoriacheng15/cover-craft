@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
 		if (!response.ok) {
 			// Try to parse JSON error body returned by backend (validation errors carry details)
-			let errorBody: any = null;
+			let errorBody: Record<string, unknown> | null = null;
 			try {
 				errorBody = await response.json();
 			} catch (_err) {
@@ -33,8 +33,14 @@ export async function POST(request: Request) {
 
 			// Otherwise fallback to status text or generic error
 			return new Response(
-				JSON.stringify({ success: false, error: response.statusText || "Failed to generate image" }),
-				{ status: response.status, headers: { "Content-Type": "application/json" } },
+				JSON.stringify({
+					success: false,
+					error: response.statusText || "Failed to generate image",
+				}),
+				{
+					status: response.status,
+					headers: { "Content-Type": "application/json" },
+				},
 			);
 		}
 
@@ -51,7 +57,8 @@ export async function POST(request: Request) {
 		return new Response(
 			JSON.stringify({
 				success: false,
-				error: error instanceof Error ? error.message : "Failed to generate image",
+				error:
+					error instanceof Error ? error.message : "Failed to generate image",
 			}),
 			{
 				status: 500,

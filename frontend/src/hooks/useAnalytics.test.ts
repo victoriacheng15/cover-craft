@@ -1,9 +1,10 @@
 import { renderHook, waitFor } from "@testing-library/react";
+import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useAnalytics } from "./useAnalytics";
 
-// Mock fetch globally
-global.fetch = vi.fn();
+const fetchMock: MockedFunction<typeof fetch> = vi.fn();
+global.fetch = fetchMock;
 
 describe("useAnalytics", () => {
 	beforeEach(() => {
@@ -11,7 +12,7 @@ describe("useAnalytics", () => {
 	});
 
 	it("initializes with loading state", () => {
-		(global.fetch as any).mockImplementation(
+		fetchMock.mockImplementation(
 			() =>
 				new Promise(() => {
 					/* never resolves */
@@ -61,7 +62,8 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		(global.fetch as any).mockResolvedValueOnce({
+		// @ts-expect-error
+		fetchMock.mockResolvedValueOnce({
 			ok: true,
 			json: async () => ({ success: true, data: mockData }),
 		});
@@ -77,7 +79,8 @@ describe("useAnalytics", () => {
 	});
 
 	it("handles fetch errors", async () => {
-		(global.fetch as any).mockResolvedValueOnce({
+		// @ts-expect-error
+		fetchMock.mockResolvedValueOnce({
 			ok: false,
 			statusText: "Internal Server Error",
 		});
@@ -105,7 +108,8 @@ describe("useAnalytics", () => {
 			generateBySize: [],
 		};
 
-		(global.fetch as any).mockResolvedValueOnce({
+		// @ts-expect-error
+		fetchMock.mockResolvedValueOnce({
 			ok: true,
 			json: async () => mockData,
 		});
@@ -158,7 +162,8 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		(global.fetch as any).mockResolvedValueOnce({
+		// @ts-expect-error
+		fetchMock.mockResolvedValueOnce({
 			ok: true,
 			json: async () => ({ success: true, data: mockData }),
 		});
@@ -206,7 +211,8 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		(global.fetch as any).mockResolvedValueOnce({
+		// @ts-expect-error
+		fetchMock.mockResolvedValueOnce({
 			ok: true,
 			json: async () => ({ success: true, data: mockData }),
 		});
@@ -263,7 +269,8 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		(global.fetch as any).mockResolvedValueOnce({
+		// @ts-expect-error
+		fetchMock.mockResolvedValueOnce({
 			ok: true,
 			json: async () => ({ success: true, data: mockData }),
 		});
@@ -316,7 +323,8 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		(global.fetch as any).mockResolvedValueOnce({
+		// @ts-expect-error
+		fetchMock.mockResolvedValueOnce({
 			ok: true,
 			json: async () => ({ success: true, data: mockData }),
 		});
@@ -330,22 +338,6 @@ describe("useAnalytics", () => {
 		// Should have empty daily trend data
 		expect(result.current.dailyTrendData).toEqual([]);
 	});
-
-	// it("returns null data and sets error when no data in response", async () => {
-	//   (global.fetch as any).mockResolvedValueOnce({
-	//     ok: true,
-	//     json: async () => ({}),
-	//   });
-
-	//   const { result } = renderHook(() => useAnalytics());
-
-	//   await waitFor(() => {
-	//     expect(result.current.loading).toBe(false);
-	//   });
-
-	//   expect(result.current.data).toEqual({});
-	//   expect(result.current.error).toBe(null);
-	// });
 
 	it("handles partial daily trend data", async () => {
 		const mockData = {
@@ -380,7 +372,8 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		(global.fetch as any).mockResolvedValueOnce({
+		// @ts-expect-error
+		fetchMock.mockResolvedValueOnce({
 			ok: true,
 			json: async () => ({ success: true, data: mockData }),
 		});
@@ -402,7 +395,8 @@ describe("useAnalytics", () => {
 	});
 
 	it("calls fetch on component mount", async () => {
-		(global.fetch as any).mockResolvedValueOnce({
+		// @ts-expect-error
+		fetchMock.mockResolvedValueOnce({
 			ok: true,
 			json: async () => ({ success: true, data: {} }),
 		});
@@ -418,7 +412,7 @@ describe("useAnalytics", () => {
 
 	it("handles fetch network error", async () => {
 		const networkError = new Error("Network error");
-		(global.fetch as any).mockRejectedValueOnce(networkError);
+		fetchMock.mockRejectedValueOnce(networkError);
 
 		const { result } = renderHook(() => useAnalytics());
 
@@ -431,7 +425,7 @@ describe("useAnalytics", () => {
 	});
 
 	it("handles non-Error thrown values", async () => {
-		(global.fetch as any).mockRejectedValueOnce("String error thrown");
+		fetchMock.mockRejectedValueOnce("String error thrown");
 
 		const { result } = renderHook(() => useAnalytics());
 

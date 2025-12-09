@@ -13,12 +13,15 @@ vi.mock("@/hooks", async () => {
 
 import { useForm as useFormHook } from "@/hooks";
 
+type UseFormReturn = ReturnType<typeof useFormHook>;
+const mockUseFormHook = vi.mocked(useFormHook);
+
 describe("CoverForm", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	const createMockUseForm = (overrides = {}) => {
+	const createMockUseForm = (overrides: Partial<UseFormReturn> = {}) => {
 		return {
 			formData: {
 				size: "Post (1200 × 627)",
@@ -32,17 +35,32 @@ describe("CoverForm", () => {
 			isGenerating: false,
 			error: null,
 			generatedImageUrl: null,
-			handleInputChange: vi.fn(),
-			getPreviewDimensions: vi.fn(() => ({ width: 600, height: 313.5 })),
-			handleGenerate: vi.fn(),
-			handleDownload: vi.fn(),
+			handleInputChange: vi.fn() as UseFormReturn["handleInputChange"],
+			getPreviewDimensions: vi.fn(() => ({
+				width: 600,
+				height: 313.5,
+			})) as unknown as UseFormReturn["getPreviewDimensions"],
+			handleGenerate: vi.fn() as UseFormReturn["handleGenerate"],
+			handleDownload: vi.fn() as UseFormReturn["handleDownload"],
+			contrastCheck: {
+				status: "good",
+				message: "Contrast passes",
+				meetsWCAG: true,
+				ratio: 5,
+				level: "AA",
+			},
 			...overrides,
 		};
 	};
 
-	it("renders all form fields correctly", () => {
-		(useFormHook as any).mockReturnValue(createMockUseForm());
+	const renderCoverForm = (overrides: Partial<UseFormReturn> = {}) => {
+		//@ts-expect-error
+		mockUseFormHook.mockReturnValue(createMockUseForm(overrides));
 		render(<CoverForm />);
+	};
+
+	it("renders all form fields correctly", () => {
+		renderCoverForm();
 
 		// Scope to the form card
 		const formCardText = screen.getByText("Cover Details");
@@ -101,10 +119,7 @@ describe("CoverForm", () => {
 
 	it("calls handleInputChange when form fields are changed", () => {
 		const handleInputChange = vi.fn();
-		(useFormHook as any).mockReturnValue(
-			createMockUseForm({ handleInputChange }),
-		);
-		render(<CoverForm />);
+		renderCoverForm({ handleInputChange });
 
 		const inputs = screen.getAllByRole("textbox");
 		const titleInput = inputs.find(
@@ -117,24 +132,21 @@ describe("CoverForm", () => {
 	});
 
 	it("displays default preview text when no input provided", () => {
-		(useFormHook as any).mockReturnValue(createMockUseForm());
-		render(<CoverForm />);
+		renderCoverForm();
 
 		expect(screen.getByText("Title Preview")).toBeInTheDocument();
 		expect(screen.getByText("Subtitle Preview")).toBeInTheDocument();
 	});
 
 	it("renders live preview section", () => {
-		(useFormHook as any).mockReturnValue(createMockUseForm());
-		render(<CoverForm />);
+		renderCoverForm();
 
 		const previewText = screen.getByText("Live Preview");
 		expect(previewText).toBeInTheDocument();
 	});
 
 	it("renders all color picker inputs", () => {
-		(useFormHook as any).mockReturnValue(createMockUseForm());
-		render(<CoverForm />);
+		renderCoverForm();
 
 		const bgColor = screen.getByLabelText(/Background Color/i);
 		const textColor = screen.getByLabelText(/Text Color/i);
@@ -144,8 +156,7 @@ describe("CoverForm", () => {
 	});
 
 	it("has correct aria labels for accessibility", () => {
-		(useFormHook as any).mockReturnValue(createMockUseForm());
-		render(<CoverForm />);
+		renderCoverForm();
 
 		const formCard = screen.getByLabelText("Cover image generator form");
 		expect(formCard).toBeInTheDocument();
@@ -160,44 +171,36 @@ describe("CoverForm", () => {
 	});
 
 	it("displays generated image when generatedImageUrl is set", () => {
-		(useFormHook as any).mockReturnValue(
-			createMockUseForm({
-				formData: {
-					size: "Post (1200 × 627)",
-					filename: "test-cover",
-					title: "Generated Title",
-					subtitle: "",
-					backgroundColor: "#374151",
-					textColor: "#F9FAFB",
-					font: "Montserrat",
-				},
-				generatedImageUrl: "data:image/png;base64,test",
-			}),
-		);
-
-		render(<CoverForm />);
+		renderCoverForm({
+			formData: {
+				size: "Post (1200 × 627)",
+				filename: "test-cover",
+				title: "Generated Title",
+				subtitle: "",
+				backgroundColor: "#374151",
+				textColor: "#F9FAFB",
+				font: "Montserrat",
+			},
+			generatedImageUrl: "data:image/png;base64,test",
+		});
 
 		expect(screen.getByText("Generated Image")).toBeInTheDocument();
 		expect(screen.queryByText("Live Preview")).not.toBeInTheDocument();
 	});
 
 	it("displays download button when image is generated", () => {
-		(useFormHook as any).mockReturnValue(
-			createMockUseForm({
-				formData: {
-					size: "Post (1200 × 627)",
-					filename: "test-cover",
-					title: "Generated Title",
-					subtitle: "",
-					backgroundColor: "#374151",
-					textColor: "#F9FAFB",
-					font: "Montserrat",
-				},
-				generatedImageUrl: "data:image/png;base64,test",
-			}),
-		);
-
-		render(<CoverForm />);
+		renderCoverForm({
+			formData: {
+				size: "Post (1200 × 627)",
+				filename: "test-cover",
+				title: "Generated Title",
+				subtitle: "",
+				backgroundColor: "#374151",
+				textColor: "#F9FAFB",
+				font: "Montserrat",
+			},
+			generatedImageUrl: "data:image/png;base64,test",
+		});
 
 		const downloadBtn = screen.getByRole("button", { name: /Download/i });
 		expect(downloadBtn).toBeInTheDocument();
@@ -206,23 +209,19 @@ describe("CoverForm", () => {
 	it("calls handleDownload when download button is clicked", () => {
 		const handleDownloadMock = vi.fn();
 
-		(useFormHook as any).mockReturnValue(
-			createMockUseForm({
-				formData: {
-					size: "Post (1200 × 627)",
-					filename: "test-cover",
-					title: "Generated Title",
-					subtitle: "",
-					backgroundColor: "#374151",
-					textColor: "#F9FAFB",
-					font: "Montserrat",
-				},
-				generatedImageUrl: "data:image/png;base64,test",
-				handleDownload: handleDownloadMock,
-			}),
-		);
-
-		render(<CoverForm />);
+		renderCoverForm({
+			formData: {
+				size: "Post (1200 × 627)",
+				filename: "test-cover",
+				title: "Generated Title",
+				subtitle: "",
+				backgroundColor: "#374151",
+				textColor: "#F9FAFB",
+				font: "Montserrat",
+			},
+			generatedImageUrl: "data:image/png;base64,test",
+			handleDownload: handleDownloadMock,
+		});
 
 		const downloadBtn = screen.getByRole("button", { name: /Download/i });
 		fireEvent.click(downloadBtn);
@@ -231,65 +230,53 @@ describe("CoverForm", () => {
 	});
 
 	it("displays error message when error is present", () => {
-		(useFormHook as any).mockReturnValue(
-			createMockUseForm({
-				formData: {
-					size: "Post (1200 × 627)",
-					filename: "",
-					title: "Test Title",
-					subtitle: "",
-					backgroundColor: "#374151",
-					textColor: "#F9FAFB",
-					font: "Montserrat",
-				},
-				error: "Failed to generate image",
-			}),
-		);
-
-		render(<CoverForm />);
+		renderCoverForm({
+			formData: {
+				size: "Post (1200 × 627)",
+				filename: "",
+				title: "Test Title",
+				subtitle: "",
+				backgroundColor: "#374151",
+				textColor: "#F9FAFB",
+				font: "Montserrat",
+			},
+			error: "Failed to generate image",
+		});
 
 		expect(screen.getByText("Failed to generate image")).toBeInTheDocument();
 		expect(screen.getByRole("alert")).toBeInTheDocument();
 	});
 
 	it("shows loading state in generate button", () => {
-		(useFormHook as any).mockReturnValue(
-			createMockUseForm({
-				formData: {
-					size: "Post (1200 × 627)",
-					filename: "",
-					title: "Test Title",
-					subtitle: "",
-					backgroundColor: "#374151",
-					textColor: "#F9FAFB",
-					font: "Montserrat",
-				},
-				isGenerating: true,
-			}),
-		);
-
-		render(<CoverForm />);
+		renderCoverForm({
+			formData: {
+				size: "Post (1200 × 627)",
+				filename: "",
+				title: "Test Title",
+				subtitle: "",
+				backgroundColor: "#374151",
+				textColor: "#F9FAFB",
+				font: "Montserrat",
+			},
+			isGenerating: true,
+		});
 
 		const generateBtn = screen.getByRole("button", { name: /Generating/i });
 		expect(generateBtn).toBeDisabled();
 	});
 
 	it("enables generate button when title is provided", () => {
-		(useFormHook as any).mockReturnValue(
-			createMockUseForm({
-				formData: {
-					size: "Post (1200 × 627)",
-					filename: "",
-					title: "Test Title",
-					subtitle: "",
-					backgroundColor: "#374151",
-					textColor: "#F9FAFB",
-					font: "Montserrat",
-				},
-			}),
-		);
-
-		render(<CoverForm />);
+		renderCoverForm({
+			formData: {
+				size: "Post (1200 × 627)",
+				filename: "",
+				title: "Test Title",
+				subtitle: "",
+				backgroundColor: "#374151",
+				textColor: "#F9FAFB",
+				font: "Montserrat",
+			},
+		});
 
 		const generateBtn = screen.getByRole("button", { name: /Generate/i });
 		expect(generateBtn).not.toBeDisabled();
@@ -298,22 +285,18 @@ describe("CoverForm", () => {
 	it("calls handleGenerate when generate button is clicked", () => {
 		const handleGenerateMock = vi.fn();
 
-		(useFormHook as any).mockReturnValue(
-			createMockUseForm({
-				formData: {
-					size: "Post (1200 × 627)",
-					filename: "",
-					title: "Test Title",
-					subtitle: "",
-					backgroundColor: "#374151",
-					textColor: "#F9FAFB",
-					font: "Montserrat",
-				},
-				handleGenerate: handleGenerateMock,
-			}),
-		);
-
-		render(<CoverForm />);
+		renderCoverForm({
+			formData: {
+				size: "Post (1200 × 627)",
+				filename: "",
+				title: "Test Title",
+				subtitle: "",
+				backgroundColor: "#374151",
+				textColor: "#F9FAFB",
+				font: "Montserrat",
+			},
+			handleGenerate: handleGenerateMock,
+		});
 
 		const generateBtn = screen.getByRole("button", { name: /Generate/i });
 		fireEvent.click(generateBtn);

@@ -1,8 +1,6 @@
 "use client";
 
 import {
-	Bar,
-	BarChart,
 	CartesianGrid,
 	Cell,
 	Legend,
@@ -20,8 +18,7 @@ import { SectionTitle } from "@/components/ui";
 import { useAnalytics } from "@/hooks";
 
 export default function AnalyticsPage() {
-	const { data, loading, error, COLORS, totalClicksData, dailyTrendData } =
-		useAnalytics();
+	const { data, loading, error, COLORS, dailyTrendData } = useAnalytics();
 
 	return (
 		<MainLayout>

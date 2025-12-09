@@ -98,13 +98,8 @@ export function useForm() {
 				return;
 			}
 
-			if (
-				formData.subtitle &&
-				formData.subtitle.length > MAX_SUBTITLE_LENGTH
-			) {
-				setError(
-					`subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`,
-				);
+			if (formData.subtitle && formData.subtitle.length > MAX_SUBTITLE_LENGTH) {
+				setError(`subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`);
 				setIsGenerating(false);
 				return;
 			}
@@ -139,6 +134,7 @@ export function useForm() {
 			}
 
 			// Send typed payload as single argument for simplicity
+			// @ts-expect-error
 			sendMetric(metricsPayload);
 
 			setGeneratedImage(blob);
@@ -148,7 +144,6 @@ export function useForm() {
 			setFormData(initialFormData);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to generate image");
-			console.error("Error generating image:", err);
 		} finally {
 			setIsGenerating(false);
 		}
@@ -185,6 +180,7 @@ export function useForm() {
 		handleGenerate,
 		handleDownload,
 		handleReset,
+		contrastCheck,
 	};
 }
 

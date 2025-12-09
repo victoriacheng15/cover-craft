@@ -5,6 +5,7 @@ import {
 	Playfair_Display,
 	Roboto,
 } from "next/font/google";
+import type { MetricTimestamp } from "./types";
 
 export const montserrat = Montserrat({
 	variable: "--font-montserrat",
@@ -49,18 +50,32 @@ export function cn(...classes: (string | undefined | null | false)[]) {
 }
 
 // Metrics helpers
-export async function sendMetric(payload: Record<string, any>) {
+export type MetricPayload = {
+	event: string;
+	timestamp?: MetricTimestamp;
+	status?: string;
+} & Record<string, unknown>;
+
+export async function sendMetric(payload: MetricPayload) {
 	try {
-		// Keep sanity checks - must be an event
-		if (!payload || typeof payload !== "object" || !payload.event) return;
-		// Ensure timestamp and status exist
-		if (!payload.timestamp) payload.timestamp = new Date().toISOString();
-		if (!payload.status) payload.status = "success";
+		if (
+			!payload ||
+			typeof payload !== "object" ||
+			Array.isArray(payload) ||
+			typeof payload.event !== "string"
+		)
+			return;
+
+		const payloadToSend: MetricPayload = {
+			...payload,
+			timestamp: payload.timestamp ?? new Date().toISOString(),
+			status: payload.status ?? "success",
+		};
 
 		await fetch("/api/metrics", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(payload),
+			body: JSON.stringify(payloadToSend),
 		});
 	} catch (_err) {}
 }
