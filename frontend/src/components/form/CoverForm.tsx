@@ -117,9 +117,8 @@ export default function CoverForm() {
 				<div className="p-3 bg-slate-50 rounded-md border border-slate-200">
 					<div className="flex items-center justify-between">
 						<p className="text-sm font-medium text-slate-700">Color Contrast</p>
-						<p
+						<output
 							className="flex items-center gap-2"
-							role="status"
 							aria-live="polite"
 							aria-atomic="true"
 						>
@@ -139,7 +138,7 @@ export default function CoverForm() {
 									</span>
 								</>
 							)}
-						</p>
+						</output>
 					</div>
 				</div>
 
