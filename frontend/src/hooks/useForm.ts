@@ -98,13 +98,8 @@ export function useForm() {
 				return;
 			}
 
-			if (
-				formData.subtitle &&
-				formData.subtitle.length > MAX_SUBTITLE_LENGTH
-			) {
-				setError(
-					`subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`,
-				);
+			if (formData.subtitle && formData.subtitle.length > MAX_SUBTITLE_LENGTH) {
+				setError(`subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`);
 				setIsGenerating(false);
 				return;
 			}

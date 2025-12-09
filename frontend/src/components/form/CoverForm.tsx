@@ -37,7 +37,10 @@ export default function CoverForm() {
 	const errorId = "form-error-message";
 
 	function getContrastColorClasses(status: "good" | "warning" | "poor") {
-		const colorMap: Record<"good" | "warning" | "poor", { dot: string; text: string }> = {
+		const colorMap: Record<
+			"good" | "warning" | "poor",
+			{ dot: string; text: string }
+		> = {
 			good: { dot: "bg-green-500", text: "text-green-700" },
 			warning: { dot: "bg-yellow-500", text: "text-yellow-700" },
 			poor: { dot: "bg-red-500", text: "text-red-700" },
@@ -47,7 +50,8 @@ export default function CoverForm() {
 
 	function getGenerateButtonLabel() {
 		if (isGenerating) return "Generating your cover image";
-		if (!contrastCheck.meetsWCAG) return `Generate button disabled: ${contrastCheck.message}`;
+		if (!contrastCheck.meetsWCAG)
+			return `Generate button disabled: ${contrastCheck.message}`;
 		return "Generate cover image";
 	}
 
@@ -113,7 +117,12 @@ export default function CoverForm() {
 				<div className="p-3 bg-slate-50 rounded-md border border-slate-200">
 					<div className="flex items-center justify-between">
 						<p className="text-sm font-medium text-slate-700">Color Contrast</p>
-						<div className="flex items-center gap-2" role="status" aria-live="polite" aria-atomic="true">
+						<div
+							className="flex items-center gap-2"
+							role="status"
+							aria-live="polite"
+							aria-atomic="true"
+						>
 							{contrastCheck.status && (
 								<>
 									<span

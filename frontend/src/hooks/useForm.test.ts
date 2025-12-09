@@ -401,7 +401,9 @@ describe("useForm", () => {
 			});
 
 			await waitFor(() => {
-				expect(result.current.error).toBe("title must be 55 characters or less");
+				expect(result.current.error).toBe(
+					"title must be 55 characters or less",
+				);
 			});
 
 			expect(generateCoverImage).not.toHaveBeenCalled();
@@ -422,7 +424,9 @@ describe("useForm", () => {
 			});
 
 			await waitFor(() => {
-				expect(result.current.error).toBe("subtitle must be 120 characters or less");
+				expect(result.current.error).toBe(
+					"subtitle must be 120 characters or less",
+				);
 			});
 
 			expect(generateCoverImage).not.toHaveBeenCalled();

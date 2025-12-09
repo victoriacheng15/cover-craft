@@ -57,9 +57,14 @@ export async function generateCoverImage(
 		} catch (_err) {
 			// ignore parse errors
 		}
-		let message = (errorBody && errorBody.error) || "Failed to generate cover image";
+		let message =
+			(errorBody && errorBody.error) || "Failed to generate cover image";
 		// If backend provides validation details, include them in the thrown message
-		if (errorBody && Array.isArray(errorBody.details) && errorBody.details.length > 0) {
+		if (
+			errorBody &&
+			Array.isArray(errorBody.details) &&
+			errorBody.details.length > 0
+		) {
 			const detailsText = errorBody.details
 				.map((d: any) => `${d.field}: ${d.message}`)
 				.join("; ");
