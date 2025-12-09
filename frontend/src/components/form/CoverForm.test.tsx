@@ -36,6 +36,13 @@ describe("CoverForm", () => {
 			getPreviewDimensions: vi.fn(() => ({ width: 600, height: 313.5 })),
 			handleGenerate: vi.fn(),
 			handleDownload: vi.fn(),
+			contrastCheck: {
+				status: "good",
+				message: "Contrast passes",
+				meetsWCAG: true,
+				ratio: 5,
+				level: "AA",
+			},
 			...overrides,
 		};
 	};

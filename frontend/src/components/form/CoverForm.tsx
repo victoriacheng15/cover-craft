@@ -9,7 +9,7 @@ import {
 	SectionTitle,
 	Select,
 } from "@/components/ui";
-import { FONT_OPTIONS, SIZE_PRESETS, useContrastCheck, useForm } from "@/hooks";
+import { FONT_OPTIONS, SIZE_PRESETS, useForm } from "@/hooks";
 import {
 	fontFamilyMap,
 	lato,
@@ -31,14 +31,25 @@ export default function CoverForm() {
 		handleGenerate,
 		handleDownload,
 		handleReset,
+		contrastCheck,
 	} = useForm();
 
-	const contrastCheck = useContrastCheck(
-		formData.backgroundColor,
-		formData.textColor,
-	);
-
 	const errorId = "form-error-message";
+
+	function getContrastColorClasses(status: "good" | "warning" | "poor") {
+		const colorMap: Record<"good" | "warning" | "poor", { dot: string; text: string }> = {
+			good: { dot: "bg-green-500", text: "text-green-700" },
+			warning: { dot: "bg-yellow-500", text: "text-yellow-700" },
+			poor: { dot: "bg-red-500", text: "text-red-700" },
+		};
+		return colorMap[status];
+	}
+
+	function getGenerateButtonLabel() {
+		if (isGenerating) return "Generating your cover image";
+		if (!contrastCheck.meetsWCAG) return `Generate button disabled: ${contrastCheck.message}`;
+		return "Generate cover image";
+	}
 
 	return (
 		<div
@@ -102,27 +113,17 @@ export default function CoverForm() {
 				<div className="p-3 bg-slate-50 rounded-md border border-slate-200">
 					<div className="flex items-center justify-between">
 						<p className="text-sm font-medium text-slate-700">Color Contrast</p>
-						<div className="flex items-center gap-2">
-							{contrastCheck.status === "good" && (
+						<div className="flex items-center gap-2" role="status" aria-live="polite" aria-atomic="true">
+							{contrastCheck.status && (
 								<>
-									<span className="inline-block w-3 h-3 bg-green-500 rounded-full"></span>
-									<span className="text-sm font-semibold text-green-700">
-										{contrastCheck.message}
-									</span>
-								</>
-							)}
-							{contrastCheck.status === "warning" && (
-								<>
-									<span className="inline-block w-3 h-3 bg-yellow-500 rounded-full"></span>
-									<span className="text-sm font-semibold text-yellow-700">
-										{contrastCheck.message}
-									</span>
-								</>
-							)}
-							{contrastCheck.status === "poor" && (
-								<>
-									<span className="inline-block w-3 h-3 bg-red-500 rounded-full"></span>
-									<span className="text-sm font-semibold text-red-700">
+									<span
+										className={`inline-block w-3 h-3 rounded-full ${getContrastColorClasses(contrastCheck.status).dot}`}
+										aria-hidden="true"
+									></span>
+									<span
+										className={`text-sm font-semibold ${getContrastColorClasses(contrastCheck.status).text}`}
+										aria-label={`Contrast status: ${contrastCheck.status}. ${contrastCheck.message}`}
+									>
 										{contrastCheck.message}
 									</span>
 								</>
@@ -197,13 +198,7 @@ export default function CoverForm() {
 								? `Cannot generate: ${contrastCheck.message}`
 								: undefined
 						}
-						aria-label={
-							isGenerating
-								? "Generating your cover image"
-								: !contrastCheck.meetsWCAG
-									? `Generate button disabled: ${contrastCheck.message}`
-									: "Generate cover image"
-						}
+						aria-label={getGenerateButtonLabel()}
 					>
 						{isGenerating ? "Generating..." : "Generate"}
 					</Button>

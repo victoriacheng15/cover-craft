@@ -148,7 +148,6 @@ export function useForm() {
 			setFormData(initialFormData);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to generate image");
-			console.error("Error generating image:", err);
 		} finally {
 			setIsGenerating(false);
 		}
@@ -185,6 +184,7 @@ export function useForm() {
 		handleGenerate,
 		handleDownload,
 		handleReset,
+		contrastCheck,
 	};
 }
 
