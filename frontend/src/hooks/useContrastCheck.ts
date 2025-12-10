@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getContrastStatus } from "@/lib/contrast";
+import { getContrastStatus } from "@/shared/validators";
 
 export interface ContrastCheckResult {
 	status: "good" | "warning" | "poor";
@@ -9,11 +9,6 @@ export interface ContrastCheckResult {
 	meetsWCAG: boolean;
 }
 
-// Hook to check color contrast with debouncing for performance
-// backgroundColor: Background hex color
-// textColor: Text hex color
-// debounceMs: Debounce delay in milliseconds (default: 300ms)
-// Returns contrast status information
 export function useContrastCheck(
 	backgroundColor: string,
 	textColor: string,

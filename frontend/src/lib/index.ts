@@ -1,12 +1,4 @@
-import { downloadImage, generateCoverImage, getAnalytics, health } from "./api";
-import {
-	getContrastRatio,
-	getContrastStatus,
-	getRelativeLuminance,
-	getWCAGLevel,
-	hexToRgb,
-	meetsWCAGAA,
-} from "./contrast";
+import { downloadImage, generateCoverImage, getAnalytics } from "./api";
 import type {
 	ApiError,
 	GenerateClickMetrics,
@@ -30,13 +22,6 @@ export {
 	downloadImage,
 	generateCoverImage,
 	getAnalytics,
-	getContrastRatio,
-	getContrastStatus,
-	getRelativeLuminance,
-	getWCAGLevel,
-	health,
-	hexToRgb,
-	meetsWCAGAA,
 	sendDownloadMetric,
 	sendMetric,
 	lato,
@@ -46,10 +31,5 @@ export {
 	roboto,
 	fontFamilyMap,
 };
-export type {
-	ApiError,
-	HealthResponse,
-	ImageParams,
-	GenerateClickMetrics,
-	// GenerateClickErrorMetrics removed; no need to export
-};
+
+export type { ApiError, HealthResponse, ImageParams, GenerateClickMetrics };

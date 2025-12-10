@@ -6,8 +6,14 @@ import {
 	sendDownloadMetric,
 	sendMetric,
 } from "@/lib";
+import {
+	DEFAULT_FILENAME,
+	FONT_OPTIONS,
+	MAX_SUBTITLE_LENGTH,
+	MAX_TITLE_LENGTH,
+	SIZE_PRESETS,
+} from "@/shared/validators";
 import { useContrastCheck } from "./useContrastCheck";
-import { DEFAULT_FILENAME, SIZE_PRESETS, FONT_OPTIONS, MAX_TITLE_LENGTH, MAX_SUBTITLE_LENGTH } from "@/shared/validators";
 
 interface FormData {
 	size: string;
