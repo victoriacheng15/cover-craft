@@ -7,19 +7,7 @@ import {
 	sendMetric,
 } from "@/lib";
 import { useContrastCheck } from "./useContrastCheck";
-
-const SIZE_PRESETS = [
-	{ label: "Post (1200 × 627)", width: 1200, height: 627 },
-	{ label: "Square (1080 × 1080)", width: 1080, height: 1080 },
-];
-
-const FONT_OPTIONS = [
-	"Montserrat",
-	"Roboto",
-	"Lato",
-	"Playfair Display",
-	"Open Sans",
-];
+import { DEFAULT_FILENAME, SIZE_PRESETS, FONT_OPTIONS, MAX_TITLE_LENGTH, MAX_SUBTITLE_LENGTH } from "@/shared/validators";
 
 interface FormData {
 	size: string;
@@ -77,9 +65,6 @@ export function useForm() {
 		};
 	};
 
-	const MAX_TITLE_LENGTH = 55;
-	const MAX_SUBTITLE_LENGTH = 120;
-
 	const handleGenerate = async () => {
 		try {
 			setIsGenerating(true);
@@ -112,7 +97,7 @@ export function useForm() {
 				font: formData.font,
 				title: formData.title,
 				subtitle: formData.subtitle,
-				filename: formData.filename || "cover",
+				filename: formData.filename || DEFAULT_FILENAME,
 			});
 			// Build typed metrics payload and log it to console before sending
 			const metricsPayload: GenerateClickMetrics = {
