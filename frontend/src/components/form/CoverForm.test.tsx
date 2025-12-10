@@ -314,7 +314,10 @@ describe("CoverForm", () => {
 		fireEvent.change(bgColorInput, { target: { value: "#123456" } });
 		fireEvent.change(textColorInput, { target: { value: "#abcdef" } });
 
-		expect(handleInputChange).toHaveBeenCalledWith("backgroundColor", "#123456");
+		expect(handleInputChange).toHaveBeenCalledWith(
+			"backgroundColor",
+			"#123456",
+		);
 		expect(handleInputChange).toHaveBeenCalledWith("textColor", "#abcdef");
 	});
 
