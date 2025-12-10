@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getContrastStatus } from "@/shared/validators";
 
-export {
-	getContrastStatus,
-	getWCAGLevelFromRatio as getWCAGLevel,
-} from "@/shared/validators";
-
 export interface ContrastCheckResult {
 	status: "good" | "warning" | "poor";
 	ratio: number | null;
