@@ -5,7 +5,8 @@ import {
 	Playfair_Display,
 	Roboto,
 } from "next/font/google";
-import type { MetricTimestamp } from "./types";
+
+export type MetricTimestamp = string | Date | number;
 
 export const montserrat = Montserrat({
 	variable: "--font-montserrat",

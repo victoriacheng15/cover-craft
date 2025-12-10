@@ -303,4 +303,95 @@ describe("CoverForm", () => {
 
 		expect(handleGenerateMock).toHaveBeenCalled();
 	});
+
+	it("updates form data when color pickers change", () => {
+		const handleInputChange = vi.fn();
+		renderCoverForm({ handleInputChange });
+
+		const bgColorInput = screen.getByLabelText(/Background Color/i);
+		const textColorInput = screen.getByLabelText(/Text Color/i);
+
+		fireEvent.change(bgColorInput, { target: { value: "#123456" } });
+		fireEvent.change(textColorInput, { target: { value: "#abcdef" } });
+
+		expect(handleInputChange).toHaveBeenCalledWith("backgroundColor", "#123456");
+		expect(handleInputChange).toHaveBeenCalledWith("textColor", "#abcdef");
+	});
+
+	it("renders preview aria label with custom title and subtitle", () => {
+		renderCoverForm({
+			formData: {
+				size: "Post (1200 × 627)",
+				filename: "",
+				title: "Preview Title",
+				subtitle: "Preview Subtitle",
+				backgroundColor: "#000000",
+				textColor: "#ffffff",
+				font: "Montserrat",
+			},
+		});
+
+		const previewRegion = screen.getByRole("img", {
+			name: /Preview: Preview Title - Preview Subtitle/i,
+		});
+
+		expect(previewRegion).toHaveStyle({
+			backgroundColor: "#000000",
+			color: "#ffffff",
+		});
+	});
+
+	it("renders contrast indicator when status is provided", () => {
+		renderCoverForm({
+			contrastCheck: {
+				status: "warning",
+				message: "Contrast needs work",
+				meetsWCAG: true,
+				ratio: 2,
+				level: "AA",
+			},
+		});
+
+		const contrastMessage = screen.getByText("Contrast needs work");
+		expect(contrastMessage).toBeInTheDocument();
+		const statusTag = screen.getByText(/Contrast status is warning/i);
+		expect(statusTag).toBeInTheDocument();
+	});
+
+	it("disables generate button and surfaces reason when contrast fails", () => {
+		const handleGenerateMock = vi.fn();
+		renderCoverForm({
+			contrastCheck: {
+				status: "poor",
+				message: "Contrast low",
+				meetsWCAG: false,
+				ratio: 1.2,
+				level: "AA",
+			},
+			handleGenerate: handleGenerateMock,
+		});
+
+		const generateBtn = screen.getByRole("button", { name: /Generate/i });
+		expect(generateBtn).toBeDisabled();
+		expect(generateBtn).toHaveAttribute(
+			"aria-label",
+			"Generate button disabled: Contrast low",
+		);
+		expect(generateBtn).toHaveAttribute(
+			"title",
+			"Cannot generate: Contrast low",
+		);
+	});
+
+	it("calls handleReset when reset button clicked", () => {
+		const handleResetMock = vi.fn();
+		renderCoverForm({ handleReset: handleResetMock });
+
+		const resetBtn = screen.getByRole("button", {
+			name: /Reset/i,
+		});
+		fireEvent.click(resetBtn);
+
+		expect(handleResetMock).toHaveBeenCalled();
+	});
 });

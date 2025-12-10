@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import CoverForm from "@/components/form/CoverForm";
 import MainLayout from "@/components/layout/MainLayout";
-import { health } from "@/lib/api";
+import { health } from "@/app/api/_utils/health";
 
 export default function Home() {
 	const [apiStatus, setApiStatus] = useState<string>("Checking...");

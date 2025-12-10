@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAnalytics } from "@/lib/api";
+import { getAnalytics } from "@/app/api/_utils/analytics";
 
 interface UserEngagement {
 	totalCoversGenerated: number;

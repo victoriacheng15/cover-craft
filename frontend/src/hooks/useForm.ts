@@ -1,8 +1,6 @@
 import { useState } from "react";
-import type { GenerateClickMetrics } from "@/lib";
+import {generateCoverImage, downloadImage, type GenerateClickMetrics} from "@/app/api/_utils/";
 import {
-	downloadImage,
-	generateCoverImage,
 	sendDownloadMetric,
 	sendMetric,
 } from "@/lib";

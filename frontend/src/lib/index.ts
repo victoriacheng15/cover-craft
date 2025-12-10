@@ -1,10 +1,3 @@
-import { downloadImage, generateCoverImage, getAnalytics } from "./api";
-import type {
-	ApiError,
-	GenerateClickMetrics,
-	HealthResponse,
-	ImageParams,
-} from "./types";
 import {
 	cn,
 	fontFamilyMap,
@@ -19,9 +12,6 @@ import {
 
 export {
 	cn,
-	downloadImage,
-	generateCoverImage,
-	getAnalytics,
 	sendDownloadMetric,
 	sendMetric,
 	lato,
@@ -31,5 +21,3 @@ export {
 	roboto,
 	fontFamilyMap,
 };
-
-export type { ApiError, HealthResponse, ImageParams, GenerateClickMetrics };
