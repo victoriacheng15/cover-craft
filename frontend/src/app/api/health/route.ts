@@ -1,20 +1,12 @@
 import { NextResponse } from "next/server";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:7071/api";
+import { proxyHealth } from "../_utils/health";
+import { handleApiError } from "../_utils/errorHandler";
 
 export async function GET() {
 	try {
-		const response = await fetch(`${API_URL}/health`);
-		if (!response.ok) {
-			throw new Error(`Health check failed: ${response.statusText}`);
-		}
-		const data = await response.json();
+		const data = await proxyHealth();
 		return NextResponse.json(data);
 	} catch (error) {
-		console.error("Error fetching health:", error);
-		return NextResponse.json(
-			{ success: false, error: "Failed to fetch health" },
-			{ status: 500 },
-		);
+		return handleApiError(error, "fetching health");
 	}
 }

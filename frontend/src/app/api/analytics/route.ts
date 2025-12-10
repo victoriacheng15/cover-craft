@@ -1,20 +1,12 @@
 import { NextResponse } from "next/server";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:7071/api";
+import { proxyAnalytics } from "../_utils/analytics";
+import { handleApiError } from "../_utils/errorHandler";
 
 export async function GET() {
 	try {
-		const response = await fetch(`${API_URL}/analytics`);
-		if (!response.ok) {
-			throw new Error(`Failed to fetch analytics: ${response.statusText}`);
-		}
-		const data = await response.json();
+		const data = await proxyAnalytics();
 		return NextResponse.json(data);
 	} catch (error) {
-		console.error("Error fetching analytics:", error);
-		return NextResponse.json(
-			{ success: false, error: "Internal server error" },
-			{ status: 500 },
-		);
+		return handleApiError(error, "fetching analytics");
 	}
 }

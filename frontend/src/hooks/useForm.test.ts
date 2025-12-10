@@ -2,20 +2,20 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FONT_OPTIONS, SIZE_PRESETS, useForm } from "./useForm";
 
-// Mock the lib functions
-vi.mock("@/lib", () => ({
+// Mock the API utilities
+vi.mock("@/_utils", () => ({
 	downloadImage: vi.fn(),
 	generateCoverImage: vi.fn(),
+}));
+
+// Mock lib utilities
+vi.mock("@/lib", () => ({
 	sendDownloadMetric: vi.fn(),
 	sendMetric: vi.fn(),
 }));
 
-import {
-	downloadImage,
-	generateCoverImage,
-	sendDownloadMetric,
-	sendMetric,
-} from "@/lib";
+import { downloadImage, generateCoverImage } from "@/_utils";
+import { sendDownloadMetric, sendMetric } from "@/lib";
 
 const downloadImageMock = vi.mocked(downloadImage);
 const generateCoverImageMock = vi.mocked(generateCoverImage);
