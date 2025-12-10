@@ -6,12 +6,95 @@ import {
 } from "@azure/functions";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
 
+type DailyTrendAggregate = {
+	_id: string;
+	count: number;
+};
+
+type FontAggregate = {
+	_id: string;
+	count: number;
+};
+
+type SizeAggregate = {
+	_id: string;
+	count: number;
+};
+
+type TitleStatsAggregate = {
+	_id: null;
+	avgTitleLength: number;
+	minTitleLength: number;
+	maxTitleLength: number;
+};
+
+type ContrastStatsAggregate = {
+	_id: null;
+	avgContrastRatio: number;
+	minContrastRatio: number;
+	maxContrastRatio: number;
+};
+
+type WcagDistributionAggregate = {
+	_id: string;
+	count: number;
+};
+
+type WcagLevel = "AAA" | "AA" | "FAIL";
+
+type WcagTrendAggregate = {
+	_id: {
+		date: string;
+		wcagLevel: WcagLevel;
+	};
+	count: number;
+};
+
+type WcagTrendItem = {
+	date: string;
+} & Partial<Record<WcagLevel, number>>;
+
+type UserEngagement = {
+	totalCoversGenerated: number;
+	totalDownloads: number;
+	successRate: number;
+	dailyTrend: Array<{ date: string; count: number }>;
+};
+
+type FeaturePopularity = {
+	topFonts: Array<{ font: string; count: number }>;
+	topSizes: Array<{ size: string; count: number }>;
+	titleLengthStats: {
+		avgTitleLength: number;
+		minTitleLength: number;
+		maxTitleLength: number;
+	};
+	subtitleUsagePercent: number;
+};
+
+type AccessibilityCompliance = {
+	wcagDistribution: Array<{ level: string; count: number }>;
+	contrastStats: {
+		avgContrastRatio: number;
+		minContrastRatio: number;
+		maxContrastRatio: number;
+	};
+	wcagFailurePercent: number;
+	wcagTrend: WcagTrendItem[];
+};
+
+type AnalyticsResult = {
+	userEngagement: UserEngagement;
+	featurePopularity: FeaturePopularity;
+	accessibilityCompliance: AccessibilityCompliance;
+};
+
 // GET /api/analytics
 // Fetches aggregated analytics data from MongoDB
 // Returns engagement, feature popularity, and accessibility compliance metrics
 // Only exposes aggregated, non-sensitive summary data (safe for public)
 export async function analytics(
-	request: HttpRequest,
+	_request: HttpRequest,
 	context: InvocationContext,
 ): Promise<HttpResponseInit> {
 	context.log("analytics() function triggered");
@@ -43,7 +126,7 @@ export async function analytics(
 // Fetch aggregated analytics from MongoDB
 async function fetchAggregatedAnalytics(
 	context: InvocationContext,
-): Promise<any> {
+): Promise<AnalyticsResult> {
 	try {
 		const Metric = getMetricModel();
 
@@ -90,7 +173,7 @@ async function fetchAggregatedAnalytics(
 		const thirtyDaysAgo = new Date();
 		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-		const dailyTrend = await Metric.aggregate([
+		const dailyTrend = await Metric.aggregate<DailyTrendAggregate>([
 			{
 				$match: {
 					timestamp: { $gte: thirtyDaysAgo },
@@ -121,7 +204,7 @@ async function fetchAggregatedAnalytics(
 
 		// ===== 2. FEATURE POPULARITY =====
 		// Most used fonts (complete data only)
-		const topFonts = await Metric.aggregate([
+		const topFonts = await Metric.aggregate<FontAggregate>([
 			{
 				$match: {
 					event: "generate_click",
@@ -139,7 +222,7 @@ async function fetchAggregatedAnalytics(
 		]);
 
 		// Most used sizes (complete data only)
-		const topSizes = await Metric.aggregate([
+		const topSizes = await Metric.aggregate<SizeAggregate>([
 			{
 				$match: {
 					event: "generate_click",
@@ -157,7 +240,7 @@ async function fetchAggregatedAnalytics(
 		]);
 
 		// Title length statistics (complete data only)
-		const titleStats = await Metric.aggregate([
+		const titleStats = await Metric.aggregate<TitleStatsAggregate>([
 			{
 				$match: {
 					event: "generate_click",
@@ -204,7 +287,7 @@ async function fetchAggregatedAnalytics(
 
 		// ===== 3. ACCESSIBILITY COMPLIANCE =====
 		// WCAG level distribution (complete data only)
-		const wcagDistribution = await Metric.aggregate([
+		const wcagDistribution = await Metric.aggregate<WcagDistributionAggregate>([
 			{
 				$match: {
 					event: "generate_click",
@@ -220,7 +303,7 @@ async function fetchAggregatedAnalytics(
 		]);
 
 		// Average contrast ratio (complete data only)
-		const contrastStats = await Metric.aggregate([
+		const contrastStats = await Metric.aggregate<ContrastStatsAggregate>([
 			{
 				$match: {
 					event: "generate_click",
@@ -246,7 +329,7 @@ async function fetchAggregatedAnalytics(
 				: 0;
 
 		// WCAG trend over time (last 30 days, complete data only)
-		const wcagTrend = await Metric.aggregate([
+		const wcagTrend = await Metric.aggregate<WcagTrendAggregate>([
 			{
 				$match: {
 					timestamp: { $gte: thirtyDaysAgo },
@@ -268,7 +351,7 @@ async function fetchAggregatedAnalytics(
 			{ $sort: { "_id.date": 1 } },
 		]);
 
-		const accessibilityCompliance = {
+		const accessibilityCompliance: AccessibilityCompliance = {
 			wcagDistribution: wcagDistribution.map((item) => ({
 				level: item._id,
 				count: item.count,
@@ -279,21 +362,21 @@ async function fetchAggregatedAnalytics(
 				maxContrastRatio: 0,
 			},
 			wcagFailurePercent,
-			wcagTrend: wcagTrend.reduce(
+			wcagTrend: wcagTrend.reduce<WcagTrendItem[]>(
 				(acc, item) => {
 					const date = item._id.date;
+					const level = item._id.wcagLevel;
 					const existing = acc.find((d) => d.date === date);
 					if (existing) {
-						existing[item._id.wcagLevel] = item.count;
+						existing[level] = item.count;
 					} else {
-						acc.push({
-							date,
-							[item._id.wcagLevel]: item.count,
-						});
+						const entry: WcagTrendItem = { date };
+						entry[level] = item.count;
+						acc.push(entry);
 					}
 					return acc;
 				},
-				[] as Array<{ date: string; [key: string]: number | string }>,
+				[],
 			),
 		};
 
