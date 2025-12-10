@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { proxyMetrics } from "../_utils/metrics";
 import { handleApiError } from "../_utils/errorHandler";
+import { proxyMetrics } from "../_utils/metrics";
 
 export async function POST(req: NextRequest) {
 	try {

@@ -1,6 +1,6 @@
 import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { sendMetrics, proxyMetrics } from "./metrics";
+import { proxyMetrics, sendMetrics } from "./metrics";
 
 const fetchMock: MockedFunction<typeof fetch> = vi.fn();
 global.fetch = fetchMock;

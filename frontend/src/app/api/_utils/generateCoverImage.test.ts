@@ -1,6 +1,9 @@
 import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { generateCoverImage, proxyGenerateCoverImage } from "./generateCoverImage";
+import {
+	generateCoverImage,
+	proxyGenerateCoverImage,
+} from "./generateCoverImage";
 
 const fetchMock: MockedFunction<typeof fetch> = vi.fn();
 global.fetch = fetchMock;

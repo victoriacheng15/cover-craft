@@ -1,9 +1,9 @@
+import { handleApiError } from "../_utils";
 import type { ImageParams } from "../_utils/generateCoverImage";
 import {
-	proxyGenerateCoverImage,
 	type GenerateCoverImageError,
+	proxyGenerateCoverImage,
 } from "../_utils/generateCoverImage";
-import { handleApiError } from "../_utils";
 
 export async function POST(request: Request) {
 	try {

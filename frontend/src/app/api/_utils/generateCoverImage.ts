@@ -12,7 +12,7 @@ export interface ImageParams {
 	title: string;
 	subtitle?: string;
 	filename: string;
-};
+}
 
 // Error types for generateCoverImage
 export type GenerateCoverErrorDetail = {
@@ -54,8 +54,7 @@ export async function generateCoverImage(
 		} catch (_err) {
 			// ignore parse errors
 		}
-		const baseMessage =
-			errorBody?.error ?? "Failed to generate cover image";
+		const baseMessage = errorBody?.error ?? "Failed to generate cover image";
 		const details =
 			errorBody && Array.isArray(errorBody.details) ? errorBody.details : [];
 		let message = baseMessage;

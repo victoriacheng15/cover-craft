@@ -1,9 +1,10 @@
 import { useState } from "react";
-import {generateCoverImage, downloadImage, type GenerateClickMetrics} from "@/app/api/_utils/";
 import {
-	sendDownloadMetric,
-	sendMetric,
-} from "@/lib";
+	downloadImage,
+	type GenerateClickMetrics,
+	generateCoverImage,
+} from "@/_utils";
+import { sendDownloadMetric, sendMetric } from "@/lib";
 import {
 	DEFAULT_FILENAME,
 	FONT_OPTIONS,

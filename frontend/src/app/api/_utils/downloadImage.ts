@@ -71,7 +71,6 @@ export async function downloadImage(blob: Blob, filename: string) {
 			throw new Error(`Failed to save file: ${err.message}`);
 		}
 	}
-
 }
 
 if (process.env.NODE_ENV === "production") {
