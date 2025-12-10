@@ -14,7 +14,10 @@
   "author": "",
   "scripts": {
     "lint": "biome check --write frontend/ api/ shared/",
-    "format": "biome format --write frontend/ api/ shared/"
+    "format": "biome format --write frontend/ api/ shared/",
+    "test": "npm run test:api && npm run test:frontend",
+    "test:api": "npm run test --prefix api",
+    "test:frontend": "npm run test --prefix frontend"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.8"

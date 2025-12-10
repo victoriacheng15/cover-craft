@@ -1,4 +1,5 @@
 import path from "node:path";
+import { performance } from "node:perf_hooks";
 import {
 	app,
 	type HttpRequest,
@@ -6,7 +7,6 @@ import {
 	type InvocationContext,
 } from "@azure/functions";
 import { Canvas, registerFont } from "canvas";
-import { performance } from "perf_hooks";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
 
 // Validation constants

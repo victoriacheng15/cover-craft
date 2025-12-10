@@ -115,7 +115,13 @@ export function hexToRgb(
 		return null;
 	}
 
-	const hexValue = cleaned.length === 3 ? cleaned.split("").map((c) => c + c).join("") : cleaned;
+	const hexValue =
+		cleaned.length === 3
+			? cleaned
+					.split("")
+					.map((c) => c + c)
+					.join("")
+			: cleaned;
 
 	const num = parseInt(hexValue, 16);
 	return {

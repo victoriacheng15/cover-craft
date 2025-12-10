@@ -3,6 +3,24 @@ import { describe, expect, it, vi } from "vitest";
 import * as mongooseLib from "../../lib/mongoose";
 import { generateCoverImage } from "../generateCoverImage";
 
+type MetricStatus = "success" | "validation_error" | "error";
+
+interface MetricDocument {
+	event: string;
+	status: MetricStatus;
+	size?: { width: number; height: number };
+	font?: string;
+	duration?: number;
+	errorMessage?: string;
+}
+
+interface MetricInstance {
+	save: () => Promise<void>;
+	_id?: string;
+}
+
+type MetricModelConstructor = new (doc: MetricDocument) => MetricInstance;
+
 describe("generateCoverImage", () => {
 	// Mock InvocationContext
 	const mockContext = {
@@ -365,17 +383,18 @@ describe("generateCoverImage", () => {
 			});
 
 			// Mock DB persistence to capture success metric
-			const savedSuccessMetrics: Array<any> = [];
-			function FakeMetricSuccess(this: any, data: any) {
-				savedSuccessMetrics.push(data);
-				this.save = vi.fn().mockResolvedValue(undefined);
-				this._id = "fake-id";
+			const savedSuccessMetrics: MetricDocument[] = [];
+			class FakeMetricSuccessModel implements MetricInstance {
+				_id = "fake-id";
+				save = vi.fn().mockResolvedValue(undefined);
+				constructor(data: MetricDocument) {
+					savedSuccessMetrics.push(data);
+				}
 			}
-			vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(
-				undefined as any,
-			);
+			vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(undefined);
 			vi.spyOn(mongooseLib, "getMetricModel").mockReturnValue(
-				FakeMetricSuccess as any,
+				// @ts-expect-error
+				FakeMetricSuccessModel as MetricModelConstructor,
 			);
 
 			const response = await generateCoverImage(mockRequest, mockContext);
@@ -478,17 +497,18 @@ describe("generateCoverImage", () => {
 			});
 
 			// Mock DB persistence to capture validation metric saved and assert fields
-			const savedValidationMetrics: Array<any> = [];
-			function FakeMetricVal(this: any, data: any) {
-				savedValidationMetrics.push(data);
-				this.save = vi.fn().mockResolvedValue(undefined);
-				this._id = "fake-id";
+			const savedValidationMetrics: MetricDocument[] = [];
+			class FakeValidationMetricModel implements MetricInstance {
+				_id = "fake-id";
+				save = vi.fn().mockResolvedValue(undefined);
+				constructor(data: MetricDocument) {
+					savedValidationMetrics.push(data);
+				}
 			}
-			vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(
-				undefined as any,
-			);
+			vi.spyOn(mongooseLib, "connectMongoDB").mockResolvedValue(undefined);
 			vi.spyOn(mongooseLib, "getMetricModel").mockReturnValue(
-				FakeMetricVal as any,
+				// @ts-expect-error
+				FakeValidationMetricModel as MetricModelConstructor,
 			);
 
 			const response = await generateCoverImage(mockRequest, mockContext);
