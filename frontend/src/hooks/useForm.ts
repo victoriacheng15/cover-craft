@@ -42,6 +42,9 @@ export function useForm() {
 	const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(
 		null,
 	);
+	const [generatedFilename, setGeneratedFilename] = useState<string>(
+		DEFAULT_FILENAME,
+	);
 
 	const contrastCheck = useContrastCheck(
 		formData.backgroundColor,
@@ -128,6 +131,7 @@ export function useForm() {
 			sendMetric(metricsPayload);
 
 			setGeneratedImage(blob);
+			setGeneratedFilename(formData.filename || DEFAULT_FILENAME);
 			const reader = new FileReader();
 			reader.onload = () => setGeneratedImageUrl(reader.result as string);
 			reader.readAsDataURL(blob);
@@ -144,7 +148,7 @@ export function useForm() {
 		try {
 			sendDownloadMetric();
 			const timestamp = Math.floor(Date.now() / 1000);
-			const downloadFilename = `${formData.filename || "cover"}-${timestamp}.png`;
+			const downloadFilename = `${generatedFilename}-${timestamp}.png`;
 			await downloadImage(generatedImage, downloadFilename);
 			handleReset();
 		} catch (err) {
@@ -156,6 +160,7 @@ export function useForm() {
 		setFormData(initialFormData);
 		setGeneratedImage(null);
 		setGeneratedImageUrl(null);
+		setGeneratedFilename(DEFAULT_FILENAME);
 		setError(null);
 		setIsGenerating(false);
 	};
