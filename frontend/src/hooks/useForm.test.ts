@@ -493,10 +493,10 @@ describe("useForm", () => {
 
 			expect(sendDownloadMetric).toHaveBeenCalled();
 			expect(downloadImage).toHaveBeenCalled();
-			// Verify it was called (filename will be "cover" because formData is reset after generation)
+			// Verify it was called with custom filename (preserved in generatedFilename state)
 			expect(downloadImage).toHaveBeenCalledWith(
 				expect.any(Blob),
-				expect.stringMatching(/^cover-\d+\.png$/),
+				expect.stringMatching(/^my-cover-\d+\.png$/),
 			);
 		});
 
