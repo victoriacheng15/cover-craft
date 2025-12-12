@@ -1,46 +1,6 @@
 /**
  * Shared validation constants and functions for Cover Craft.
  * Used by both backend (API) and frontend for consistent validation rules.
- *
- * ===================================================================================
- * CENTRALIZATION PLAN
- * ===================================================================================
- *
- * CURRENT STATE:
- * - Backend (API): Uses all validation functions and constants from this file
- * - Frontend: Has duplicate implementations of contrast functions and outdated constants
- *
- * DUPLICATE FUNCTIONS IN FRONTEND (frontend/src/lib/contrast.ts):
- * - hexToRgb() - convert hex to RGB
- * - getRelativeLuminance() - calculate color luminance
- * - getContrastRatio() - calculate contrast ratio between colors
- * - getWCAGLevel() - determine WCAG compliance level (similar to getWCAGLevelFromRatio)
- * - meetsWCAGAA() - check if ratio meets WCAG AA standard
- * - getContrastStatus() - return status object with ratio, level, and message
- *
- * DUPLICATE CONSTANTS IN FRONTEND:
- * - WCAG_LEVELS = { AA: 4.5, AAA: 7 } (frontend/src/lib/contrast.ts)
- * - FONT_OPTIONS array (frontend/src/hooks/useForm.ts) - mirrors ALLOWED_FONTS
- * - MAX_TITLE_LENGTH = 55 (frontend/src/hooks/useForm.ts) - OUTDATED, should be 40
- * - MAX_SUBTITLE_LENGTH = 120 (frontend/src/hooks/useForm.ts) - OUTDATED, should be 80
- *
- * NEXT STEPS (Phase 2 - Future):
- * 1. Update frontend tsconfig.json to add path alias for @/shared imports
- * 2. Frontend imports from shared/validations:
- *    - Replace contrast.ts functions with imports from shared
- *    - Use ALLOWED_FONTS instead of FONT_OPTIONS
- *    - Use MAX_TITLE_LENGTH and MAX_SUBTITLE_LENGTH from shared
- *    - Use WCAG_AA_THRESHOLD instead of WCAG_LEVELS
- * 3. Update frontend tests to use shared constants
- * 4. Delete duplicate contrast.ts implementations from frontend/src/lib/
- * 5. Ensure API can import from ../../../shared/validations (via copy:shared script)
- *
- * BENEFITS:
- * - Single source of truth for all validation logic and constants
- * - No more outdated frontend limits (55/120 vs 40/80)
- * - Reduced code duplication across frontend and backend
- * - Easier maintenance and bulk updates
- * - Consistent validation behavior across the entire application
  */
 
 // ===================================================================================
@@ -58,8 +18,6 @@ export const SIZE_PRESETS = [
 	{ label: "Square (1080 × 1080)", width: 1080, height: 1080 },
 ];
 
-// FONT_OPTIONS
-// note: backend uses this as ALLOWED_FONTS, and  will be renamed to FONT_OPTIONS
 export const FONT_OPTIONS = [
 	"Montserrat",
 	"Roboto",
@@ -69,7 +27,6 @@ export const FONT_OPTIONS = [
 ] as const;
 
 // WCAG contrast ratio threshold
-// note: backend uses WCAG_AA_CONTRAST_RATIO, and will be renamed to WCAG_AA_THRESHOLD
 export const WCAG_AA_THRESHOLD = 4.5;
 
 // HEX color regex (3 or 6 digit with #)
@@ -84,24 +41,6 @@ export const DEFAULT_FILENAME = "cover";
 // ===================================================================================
 
 export type AllowedFont = (typeof FONT_OPTIONS)[number];
-
-// ===================================================================================
-// Validation Messages
-// ===================================================================================
-
-/**
- * Validation messages for consistent UX across frontend and backend.
- */
-export const VALIDATION_MESSAGES = {
-	TITLE_REQUIRED: "Title is required",
-	TITLE_TOO_LONG: `Title must be ${MAX_TITLE_LENGTH} characters or less`,
-	SUBTITLE_TOO_LONG: `Subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`,
-	INVALID_WIDTH: `Width must be between ${SIZE_RANGE.min} and ${SIZE_RANGE.max}`,
-	INVALID_HEIGHT: `Height must be between ${SIZE_RANGE.min} and ${SIZE_RANGE.max}`,
-	INVALID_COLOR: "Color must be a valid HEX format (e.g., #FFFFFF or #FFF)",
-	INVALID_FONT: `Font must be one of: ${FONT_OPTIONS.join(", ")}`,
-	INVALID_CONTRAST: `Contrast ratio must be at least ${WCAG_AA_THRESHOLD} for WCAG AA compliance`,
-} as const;
 
 // ===================================================================================
 // Validation Functions (Color & Contrast)
@@ -215,8 +154,19 @@ export function getContrastStatus(
 }
 
 // ===================================================================================
-// Field Validation Functions
+// Validation Messages and Field Validation Functions
 // ===================================================================================
+
+export const VALIDATION_MESSAGES = {
+	TITLE_REQUIRED: "Title is required",
+	TITLE_TOO_LONG: `Title must be ${MAX_TITLE_LENGTH} characters or less`,
+	SUBTITLE_TOO_LONG: `Subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`,
+	INVALID_WIDTH: `Width must be between ${SIZE_RANGE.min} and ${SIZE_RANGE.max}`,
+	INVALID_HEIGHT: `Height must be between ${SIZE_RANGE.min} and ${SIZE_RANGE.max}`,
+	INVALID_COLOR: "Color must be a valid HEX format (e.g., #FFFFFF or #FFF)",
+	INVALID_FONT: `Font must be one of: ${FONT_OPTIONS.join(", ")}`,
+	INVALID_CONTRAST: `Contrast ratio must be at least ${WCAG_AA_THRESHOLD} for WCAG AA compliance`,
+} as const;
 
 export interface ValidationError {
 	field: string;
@@ -238,7 +188,7 @@ export function validateSize(
 	) {
 		errors.push({
 			field: "width",
-			message: `Width must be an integer between ${SIZE_RANGE.min} and ${SIZE_RANGE.max}`,
+			message: VALIDATION_MESSAGES.INVALID_WIDTH,
 		});
 	}
 
@@ -251,7 +201,7 @@ export function validateSize(
 	) {
 		errors.push({
 			field: "height",
-			message: `Height must be an integer between ${SIZE_RANGE.min} and ${SIZE_RANGE.max}`,
+			message: VALIDATION_MESSAGES.INVALID_HEIGHT,
 		});
 	}
 
@@ -267,14 +217,14 @@ export function validateColors(
 	if (!HEX_COLOR_REGEX.test(backgroundColor)) {
 		errors.push({
 			field: "backgroundColor",
-			message: "backgroundColor must be a valid hex color (e.g., #ffffff)",
+			message: VALIDATION_MESSAGES.INVALID_COLOR,
 		});
 	}
 
 	if (!HEX_COLOR_REGEX.test(textColor)) {
 		errors.push({
 			field: "textColor",
-			message: "textColor must be a valid hex color (e.g., #000000)",
+			message: VALIDATION_MESSAGES.INVALID_COLOR,
 		});
 	}
 
@@ -287,7 +237,7 @@ export function validateFont(font: string): ValidationError[] {
 	if (!FONT_OPTIONS.includes(font as AllowedFont)) {
 		errors.push({
 			field: "font",
-			message: `font must be one of: ${FONT_OPTIONS.join(", ")}`,
+			message: VALIDATION_MESSAGES.INVALID_FONT,
 		});
 	}
 
@@ -303,32 +253,29 @@ export function validateTextLength(
 	if (title && title.length > MAX_TITLE_LENGTH) {
 		errors.push({
 			field: "title",
-			message: `title must be ${MAX_TITLE_LENGTH} characters or less`,
+			message: VALIDATION_MESSAGES.TITLE_TOO_LONG,
 		});
 	}
 
 	if (subtitle && subtitle.length > MAX_SUBTITLE_LENGTH) {
 		errors.push({
 			field: "subtitle",
-			message: `subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`,
+			message: VALIDATION_MESSAGES.SUBTITLE_TOO_LONG,
 		});
 	}
 
 	return errors;
 }
 
-// the backend doesnt have a default filename like cover-timestamp.png from frontend (check useForm.ts handleDownload method), so move the default name from frontend to the backend
-export function validateFilename(filename: string): ValidationError[] {
-	const errors: ValidationError[] = [];
-
+export function generateFilename(
+	filename?: string,
+	defaultName: string = DEFAULT_FILENAME,
+): string {
 	if (!filename || filename.trim().length === 0) {
-		errors.push({
-			field: "filename",
-			message: "Filename is required and cannot be empty",
-		});
+		const timestamp = Math.floor(Date.now() / 1000);
+		return `${defaultName}-${timestamp}.png`;
 	}
-
-	return errors;
+	return filename;
 }
 
 export function validateContrast(
@@ -340,10 +287,9 @@ export function validateContrast(
 	const ratio = getContrastRatio(backgroundColor, textColor);
 
 	if (ratio === null || ratio < WCAG_AA_THRESHOLD) {
-		const ratioStr = ratio ? ratio.toFixed(2) : "invalid";
 		errors.push({
 			field: "contrast",
-			message: `Color contrast ratio ${ratioStr}:1 does not meet WCAG AA standard (4.5:1). Please choose colors with better contrast.`,
+			message: VALIDATION_MESSAGES.INVALID_CONTRAST,
 		});
 	}
 
