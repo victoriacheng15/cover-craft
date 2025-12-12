@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { handleApiError } from "../_utils/errorHandler";
-import { proxyHealth } from "../_utils/health";
+import { handleApiError, proxyHealth } from "@/_utils";
 
 export async function GET() {
 	try {

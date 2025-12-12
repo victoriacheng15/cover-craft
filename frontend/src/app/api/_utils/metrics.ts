@@ -1,30 +1,26 @@
 /**
  * Utility for sending metrics to the backend API
+ * Re-exports canonical types from shared/metricPayload.ts
  */
 
+import {
+	DOWNLOAD_CLICK_EVENT,
+	type EventType,
+	GENERATE_CLICK_EVENT,
+	type MetricPayload,
+	type MetricStatus,
+	type WcagLevel,
+} from "@/shared/metricPayload";
+export {
+	DOWNLOAD_CLICK_EVENT,
+	GENERATE_CLICK_EVENT,
+	type MetricStatus,
+	type WcagLevel,
+	type EventType,
+	type MetricPayload,
+};
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-// Types for metrics
-export type MetricsPayload = Record<string, unknown>;
-export type MetricTimestamp = string | Date | number;
-export type WcagLevel = "AAA" | "AA" | "FAIL"; // WCAG compliance level
-
-export interface GenerateClickMetrics {
-	event: "generate_click";
-	timestamp: MetricTimestamp;
-	status: "success" | "error";
-	size: {
-		width: number;
-		height: number;
-	};
-	font: string;
-	titleLength: number;
-	subtitleLength?: number;
-	contrastRatio: number;
-	wcagLevel: WcagLevel;
-	clientDuration?: number;
-	errorMessage?: string;
-}
 
 /**
  * Client-side function to send metrics to the backend
@@ -58,4 +54,66 @@ export async function proxyMetrics(data: Record<string, unknown>) {
 	});
 
 	return response;
+}
+
+/**
+ * Client-side function to send generate cover event
+ */
+export async function sendGenerateEvent(payload: Partial<MetricPayload>) {
+	try {
+		const payloadToSend: MetricPayload = {
+			event: GENERATE_CLICK_EVENT,
+			timestamp: new Date().toISOString(),
+			status: "success",
+			...payload,
+		};
+
+		if (
+			!payloadToSend ||
+			typeof payloadToSend !== "object" ||
+			Array.isArray(payloadToSend) ||
+			typeof payloadToSend.event !== "string"
+		) {
+			return;
+		}
+
+		await fetch("/api/metrics", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(payloadToSend),
+		});
+	} catch (_err) {
+		// Silently fail - metrics are not critical to app functionality
+	}
+}
+
+/**
+ * Client-side function to send download event
+ */
+export async function sendDownloadEvent(payload?: Partial<MetricPayload>) {
+	try {
+		const payloadToSend: MetricPayload = {
+			event: DOWNLOAD_CLICK_EVENT,
+			timestamp: new Date().toISOString(),
+			status: "success",
+			...payload,
+		};
+
+		if (
+			!payloadToSend ||
+			typeof payloadToSend !== "object" ||
+			Array.isArray(payloadToSend) ||
+			typeof payloadToSend.event !== "string"
+		) {
+			return;
+		}
+
+		await fetch("/api/metrics", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(payloadToSend),
+		});
+	} catch (_err) {
+		// Silently fail - metrics are not critical to app functionality
+	}
 }

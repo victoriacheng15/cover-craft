@@ -1,37 +1,32 @@
-/**
- * Barrel export for all API utilities
- */
-
 export { getAnalytics, proxyAnalytics } from "./analytics";
-export type {
-	FileSystemFileHandle,
-	FileSystemWritableFileStream,
-	SaveFilePickerOptions,
-} from "./downloadImage";
-export { downloadImage } from "./downloadImage";
-// Re-export types
-export type {
-	ApiError,
-	ApiErrorResponse,
-} from "./errorHandler";
-// Re-export functions
-export { handleApiError } from "./errorHandler";
-export type {
-	GenerateCoverErrorBody,
-	GenerateCoverErrorDetail,
-	GenerateCoverImageError,
-	ImageParams,
-} from "./generateCoverImage";
 export {
+	downloadImage,
+	type FileSystemFileHandle,
+	type FileSystemWritableFileStream,
+	type SaveFilePickerOptions,
+} from "./downloadImage";
+export {
+	type ApiError,
+	type ApiErrorResponse,
+	handleApiError,
+} from "./errorHandler";
+export {
+	type GenerateCoverErrorBody,
+	type GenerateCoverErrorDetail,
 	generateCoverImage,
+	type ImageParams,
 	proxyGenerateCoverImage,
 } from "./generateCoverImage";
-export type { HealthResponse } from "./health";
-export { health, proxyHealth } from "./health";
-export type {
-	GenerateClickMetrics,
-	MetricsPayload,
-	MetricTimestamp,
-	WcagLevel,
+export { type HealthResponse, health, proxyHealth } from "./health";
+export {
+	DOWNLOAD_CLICK_EVENT,
+	type EventType,
+	GENERATE_CLICK_EVENT,
+	type MetricPayload,
+	type MetricStatus,
+	proxyMetrics,
+	sendDownloadEvent,
+	sendGenerateEvent,
+	sendMetrics,
+	type WcagLevel,
 } from "./metrics";
-export { proxyMetrics, sendMetrics } from "./metrics";

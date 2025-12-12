@@ -1,10 +1,11 @@
 import { useState } from "react";
 import {
 	downloadImage,
-	type GenerateClickMetrics,
 	generateCoverImage,
+	type MetricPayload,
+	sendDownloadEvent,
+	sendGenerateEvent,
 } from "@/_utils";
-import { sendDownloadMetric, sendMetric } from "@/lib";
 import {
 	DEFAULT_FILENAME,
 	FONT_OPTIONS,
@@ -42,9 +43,8 @@ export function useForm() {
 	const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(
 		null,
 	);
-	const [generatedFilename, setGeneratedFilename] = useState<string>(
-		DEFAULT_FILENAME,
-	);
+	const [generatedFilename, setGeneratedFilename] =
+		useState<string>(DEFAULT_FILENAME);
 
 	const contrastCheck = useContrastCheck(
 		formData.backgroundColor,
@@ -108,10 +108,7 @@ export function useForm() {
 				filename: formData.filename || DEFAULT_FILENAME,
 			});
 			// Build typed metrics payload and log it to console before sending
-			const metricsPayload: GenerateClickMetrics = {
-				event: "generate_click",
-				timestamp: new Date().toISOString(),
-				status: "success",
+			const metricsPayload: Partial<MetricPayload> = {
 				size: {
 					width: selectedSize.width,
 					height: selectedSize.height,
@@ -127,8 +124,7 @@ export function useForm() {
 			}
 
 			// Send typed payload as single argument for simplicity
-			// @ts-expect-error
-			sendMetric(metricsPayload);
+			sendGenerateEvent(metricsPayload);
 
 			setGeneratedImage(blob);
 			setGeneratedFilename(formData.filename || DEFAULT_FILENAME);
@@ -146,7 +142,7 @@ export function useForm() {
 	const handleDownload = async () => {
 		if (!generatedImage) return;
 		try {
-			sendDownloadMetric();
+			sendDownloadEvent();
 			const timestamp = Math.floor(Date.now() / 1000);
 			const downloadFilename = `${generatedFilename}-${timestamp}.png`;
 			await downloadImage(generatedImage, downloadFilename);

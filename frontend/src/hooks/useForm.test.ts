@@ -6,20 +6,16 @@ import { FONT_OPTIONS, SIZE_PRESETS, useForm } from "./useForm";
 vi.mock("@/_utils", () => ({
 	downloadImage: vi.fn(),
 	generateCoverImage: vi.fn(),
+	sendDownloadEvent: vi.fn(),
+	sendGenerateEvent: vi.fn(),
 }));
 
-// Mock lib utilities
-vi.mock("@/lib", () => ({
-	sendDownloadMetric: vi.fn(),
-	sendMetric: vi.fn(),
-}));
-
-import { downloadImage, generateCoverImage } from "@/_utils";
-import { sendDownloadMetric, sendMetric } from "@/lib";
+import { downloadImage, generateCoverImage, sendGenerateEvent, sendDownloadEvent } from "@/_utils";
 
 const downloadImageMock = vi.mocked(downloadImage);
 const generateCoverImageMock = vi.mocked(generateCoverImage);
-const sendMetricMock = vi.mocked(sendMetric);
+const sendGenerateEventMock = vi.mocked(sendGenerateEvent);
+const sendDownloadEventMock = vi.mocked(sendDownloadEvent);
 // Mock FileReader
 class MockFileReader {
 	result = "";
@@ -217,21 +213,21 @@ describe("useForm", () => {
 				filename: "test-file",
 			});
 
-			expect(sendMetric).toHaveBeenCalled();
+			expect(sendGenerateEvent).toHaveBeenCalled();
 			const lastCall =
-				sendMetricMock.mock.calls[sendMetricMock.mock.calls.length - 1][0];
+				sendGenerateEventMock.mock.calls[sendGenerateEventMock.mock.calls.length - 1][0];
 			expect(lastCall).toEqual(
 				expect.objectContaining({
-					event: "generate_click",
 					size: {
 						width: 1200,
 						height: 627,
 					},
-					status: "success",
 					font: "Montserrat",
 					titleLength: 10,
 					subtitleLength: 13,
-					clientDuration: expect.any(Number),
+					clientDuration: 123,
+					contrastRatio: 9.863254791756054,
+					wcagLevel: "AAA",
 				}),
 			);
 		});
@@ -332,7 +328,7 @@ describe("useForm", () => {
 				expect(result.current.error).toBe(errorMessage);
 			});
 
-			expect(sendMetric).not.toHaveBeenCalled();
+			expect(sendGenerateEvent).not.toHaveBeenCalled();
 			consoleErrorSpy.mockRestore();
 			// Clean up console stub
 			consoleErrorSpy.mockRestore();
@@ -361,7 +357,7 @@ describe("useForm", () => {
 			});
 
 			// We intentionally do not send a generate_click error metric from the client
-			expect(sendMetric).not.toHaveBeenCalled();
+			expect(sendGenerateEventMock).not.toHaveBeenCalled();
 
 			consoleErrorSpy.mockRestore();
 		});
@@ -409,7 +405,7 @@ describe("useForm", () => {
 			});
 
 			expect(generateCoverImage).not.toHaveBeenCalled();
-			expect(sendMetric).not.toHaveBeenCalled();
+			expect(sendGenerateEventMock).not.toHaveBeenCalled();
 		});
 
 		it("prevents generation when subtitle exceeds max length", async () => {
@@ -432,7 +428,7 @@ describe("useForm", () => {
 			});
 
 			expect(generateCoverImage).not.toHaveBeenCalled();
-			expect(sendMetric).not.toHaveBeenCalled();
+			expect(sendGenerateEventMock).not.toHaveBeenCalled();
 		});
 
 		it("generates image with Square preset", async () => {
@@ -491,7 +487,7 @@ describe("useForm", () => {
 				await result.current.handleDownload();
 			});
 
-			expect(sendDownloadMetric).toHaveBeenCalled();
+			expect(sendDownloadEventMock).toHaveBeenCalled();
 			expect(downloadImage).toHaveBeenCalled();
 			// Verify it was called with custom filename (preserved in generatedFilename state)
 			expect(downloadImage).toHaveBeenCalledWith(
@@ -509,7 +505,7 @@ describe("useForm", () => {
 
 			await waitFor(() => {
 				expect(downloadImage).not.toHaveBeenCalled();
-				expect(sendDownloadMetric).not.toHaveBeenCalled();
+				expect(sendDownloadEventMock).not.toHaveBeenCalled();
 			});
 		});
 
