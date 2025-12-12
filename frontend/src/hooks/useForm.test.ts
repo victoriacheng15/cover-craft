@@ -10,7 +10,12 @@ vi.mock("@/_utils", () => ({
 	sendGenerateEvent: vi.fn(),
 }));
 
-import { downloadImage, generateCoverImage, sendGenerateEvent, sendDownloadEvent } from "@/_utils";
+import {
+	downloadImage,
+	generateCoverImage,
+	sendDownloadEvent,
+	sendGenerateEvent,
+} from "@/_utils";
 
 const downloadImageMock = vi.mocked(downloadImage);
 const generateCoverImageMock = vi.mocked(generateCoverImage);
@@ -215,7 +220,9 @@ describe("useForm", () => {
 
 			expect(sendGenerateEvent).toHaveBeenCalled();
 			const lastCall =
-				sendGenerateEventMock.mock.calls[sendGenerateEventMock.mock.calls.length - 1][0];
+				sendGenerateEventMock.mock.calls[
+					sendGenerateEventMock.mock.calls.length - 1
+				][0];
 			expect(lastCall).toEqual(
 				expect.objectContaining({
 					size: {
