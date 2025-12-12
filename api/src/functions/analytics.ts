@@ -362,22 +362,19 @@ async function fetchAggregatedAnalytics(
 				maxContrastRatio: 0,
 			},
 			wcagFailurePercent,
-			wcagTrend: wcagTrend.reduce<WcagTrendItem[]>(
-				(acc, item) => {
-					const date = item._id.date;
-					const level = item._id.wcagLevel;
-					const existing = acc.find((d) => d.date === date);
-					if (existing) {
-						existing[level] = item.count;
-					} else {
-						const entry: WcagTrendItem = { date };
-						entry[level] = item.count;
-						acc.push(entry);
-					}
-					return acc;
-				},
-				[],
-			),
+			wcagTrend: wcagTrend.reduce<WcagTrendItem[]>((acc, item) => {
+				const date = item._id.date;
+				const level = item._id.wcagLevel;
+				const existing = acc.find((d) => d.date === date);
+				if (existing) {
+					existing[level] = item.count;
+				} else {
+					const entry: WcagTrendItem = { date };
+					entry[level] = item.count;
+					acc.push(entry);
+				}
+				return acc;
+			}, []),
 		};
 
 		context.log("Analytics aggregations complete");

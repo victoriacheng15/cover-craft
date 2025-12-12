@@ -1,9 +1,9 @@
-export { cn } from "./utils";
 export {
+	fontFamilyMap,
 	lato,
 	montserrat,
 	openSans,
 	playfairDisplay,
 	roboto,
-	fontFamilyMap,
 } from "./fonts";
+export { cn } from "./utils";

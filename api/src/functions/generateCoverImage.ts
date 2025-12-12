@@ -8,20 +8,17 @@ import {
 } from "@azure/functions";
 import { Canvas, registerFont } from "canvas";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
-
-// Validation constants
-const SIZE_RANGE = { min: 1, max: 1200 };
-const ALLOWED_FONTS = [
-	"Montserrat",
-	"Roboto",
-	"Lato",
-	"Playfair Display",
-	"Open Sans",
-];
-const MAX_TITLE_LENGTH = 55;
-const MAX_SUBTITLE_LENGTH = 120;
-const HEX_COLOR_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-const WCAG_AA_CONTRAST_RATIO = 4.5;
+import {
+	generateFilename,
+	getRelativeLuminance,
+	getWCAGLevelFromRatio,
+	hexToRgb,
+	validateColors,
+	validateContrast,
+	validateFont,
+	validateSize,
+	validateTextLength,
+} from "../shared/validators";
 
 // Register fonts
 const fontDir = path.join(__dirname, "../assets/fonts");
@@ -65,7 +62,7 @@ interface ImageParams {
 	font: string;
 	title: string;
 	subtitle?: string;
-	filename: string;
+	filename?: string;
 }
 
 interface ValidationError {
@@ -130,40 +127,6 @@ async function extractParams(
 	return params;
 }
 
-// Contrast utility functions for WCAG validation
-function hexToRgb(hex: string): { r: number; g: number; b: number } {
-	const cleaned = hex.replace("#", "");
-	const expanded =
-		cleaned.length === 3
-			? cleaned
-					.split("")
-					.map((c) => c + c)
-					.join("")
-			: cleaned;
-
-	const num = parseInt(expanded, 16);
-	return {
-		r: (num >> 16) & 255,
-		g: (num >> 8) & 255,
-		b: num & 255,
-	};
-}
-
-function getRelativeLuminance(rgb: {
-	r: number;
-	g: number;
-	b: number;
-}): number {
-	const [r, g, b] = [rgb.r, rgb.g, rgb.b].map((c) => {
-		const normalized = c / 255;
-		return normalized <= 0.03928
-			? normalized / 12.92
-			: ((normalized + 0.055) / 1.055) ** 2.4;
-	});
-
-	return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
 function getContrastRatio(color1: string, color2: string): number {
 	const rgb1 = hexToRgb(color1);
 	const rgb2 = hexToRgb(color2);
@@ -177,139 +140,6 @@ function getContrastRatio(color1: string, color2: string): number {
 	return (lighter + 0.05) / (darker + 0.05);
 }
 
-// Convert contrast ratio into a rough WCAG level
-function getWCAGLevelFromRatio(ratio: number): "AAA" | "AA" | "FAIL" {
-	if (ratio >= 7) return "AAA";
-	if (ratio >= 4.5) return "AA";
-	return "FAIL";
-}
-
-// Modular validation functions for each parameter type
-function validateSize(
-	width: number | undefined,
-	height: number | undefined,
-): ValidationError[] {
-	const errors: ValidationError[] = [];
-
-	if (
-		width === undefined ||
-		!Number.isInteger(width) ||
-		Number.isNaN(width) ||
-		width < SIZE_RANGE.min ||
-		width > SIZE_RANGE.max
-	) {
-		errors.push({
-			field: "width",
-			message: `Width must be an integer between ${SIZE_RANGE.min} and ${SIZE_RANGE.max}`,
-		});
-	}
-
-	if (
-		height === undefined ||
-		!Number.isInteger(height) ||
-		Number.isNaN(height) ||
-		height < SIZE_RANGE.min ||
-		height > SIZE_RANGE.max
-	) {
-		errors.push({
-			field: "height",
-			message: `Height must be an integer between ${SIZE_RANGE.min} and ${SIZE_RANGE.max}`,
-		});
-	}
-
-	return errors;
-}
-
-function validateColors(
-	backgroundColor: string,
-	textColor: string,
-): ValidationError[] {
-	const errors: ValidationError[] = [];
-
-	if (!HEX_COLOR_REGEX.test(backgroundColor)) {
-		errors.push({
-			field: "backgroundColor",
-			message: "backgroundColor must be a valid hex color (e.g., #ffffff)",
-		});
-	}
-
-	if (!HEX_COLOR_REGEX.test(textColor)) {
-		errors.push({
-			field: "textColor",
-			message: "textColor must be a valid hex color (e.g., #000000)",
-		});
-	}
-
-	return errors;
-}
-
-function validateFont(font: string): ValidationError[] {
-	const errors: ValidationError[] = [];
-
-	if (!ALLOWED_FONTS.includes(font)) {
-		errors.push({
-			field: "font",
-			message: `font must be one of: ${ALLOWED_FONTS.join(", ")}`,
-		});
-	}
-
-	return errors;
-}
-
-function validateTextLength(
-	title: string,
-	subtitle?: string,
-): ValidationError[] {
-	const errors: ValidationError[] = [];
-
-	if (title && title.length > MAX_TITLE_LENGTH) {
-		errors.push({
-			field: "title",
-			message: `title must be ${MAX_TITLE_LENGTH} characters or less`,
-		});
-	}
-
-	if (subtitle && subtitle.length > MAX_SUBTITLE_LENGTH) {
-		errors.push({
-			field: "subtitle",
-			message: `subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`,
-		});
-	}
-
-	return errors;
-}
-
-function validateFilename(filename: string): ValidationError[] {
-	const errors: ValidationError[] = [];
-
-	if (!filename || filename.trim().length === 0) {
-		errors.push({
-			field: "filename",
-			message: "filename is required and cannot be empty",
-		});
-	}
-
-	return errors;
-}
-
-function validateContrast(
-	backgroundColor: string,
-	textColor: string,
-): ValidationError[] {
-	const errors: ValidationError[] = [];
-
-	const ratio = getContrastRatio(backgroundColor, textColor);
-
-	if (ratio < WCAG_AA_CONTRAST_RATIO) {
-		errors.push({
-			field: "contrast",
-			message: `Color contrast ratio ${ratio.toFixed(2)}:1 does not meet WCAG AA standard (4.5:1). Please choose colors with better contrast.`,
-		});
-	}
-
-	return errors;
-}
-
 // Main validation function that composes all validators
 function validateParams(params: ImageParams): ValidationError[] {
 	const errors: ValidationError[] = [];
@@ -318,7 +148,6 @@ function validateParams(params: ImageParams): ValidationError[] {
 	errors.push(...validateColors(params.backgroundColor, params.textColor));
 	errors.push(...validateFont(params.font));
 	errors.push(...validateTextLength(params.title, params.subtitle));
-	errors.push(...validateFilename(params.filename));
 	errors.push(...validateContrast(params.backgroundColor, params.textColor));
 
 	return errors;
@@ -447,7 +276,7 @@ export async function generateCoverImage(
 			font: extractedParams.font as string,
 			title: extractedParams.title as string,
 			subtitle: extractedParams.subtitle as string,
-			filename: extractedParams.filename as string,
+			filename: generateFilename(extractedParams.filename),
 		};
 
 		// Validate parameters
