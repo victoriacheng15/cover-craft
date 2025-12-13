@@ -16,6 +16,7 @@ import {
 	sendDownloadEvent,
 	sendGenerateEvent,
 } from "@/_utils";
+import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@/shared/validators";
 
 const downloadImageMock = vi.mocked(downloadImage);
 const generateCoverImageMock = vi.mocked(generateCoverImage);
@@ -395,7 +396,7 @@ describe("useForm", () => {
 
 		it("prevents generation when title exceeds max length", async () => {
 			const { result } = renderHook(() => useForm());
-			const longTitle = "A".repeat(56); // 56 > 55
+			const longTitle = "A".repeat(MAX_TITLE_LENGTH + 1);
 
 			act(() => {
 				result.current.handleInputChange("title", longTitle);
@@ -407,7 +408,7 @@ describe("useForm", () => {
 
 			await waitFor(() => {
 				expect(result.current.error).toBe(
-					"title must be 55 characters or less",
+					`title must be ${MAX_TITLE_LENGTH} characters or less`,
 				);
 			});
 
@@ -417,7 +418,7 @@ describe("useForm", () => {
 
 		it("prevents generation when subtitle exceeds max length", async () => {
 			const { result } = renderHook(() => useForm());
-			const longSubtitle = "B".repeat(121); // 121 > 120
+			const longSubtitle = "B".repeat(MAX_SUBTITLE_LENGTH + 1);
 
 			act(() => {
 				result.current.handleInputChange("title", "Valid Title");
@@ -430,7 +431,7 @@ describe("useForm", () => {
 
 			await waitFor(() => {
 				expect(result.current.error).toBe(
-					"subtitle must be 120 characters or less",
+					`subtitle must be ${MAX_SUBTITLE_LENGTH} characters or less`,
 				);
 			});
 

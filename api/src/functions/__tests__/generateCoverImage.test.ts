@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import * as mongooseLib from "../../lib/mongoose";
 import type { MetricStatus } from "../../shared/metricPayload";
 import * as validators from "../../shared/validators";
+import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "../../shared/validators";
 import { generateCoverImage } from "../generateCoverImage";
 
 interface MetricDocument {
@@ -295,8 +296,8 @@ describe("generateCoverImage", () => {
 			expect([400, 500]).toContain(response.status);
 		});
 
-		it("should accept heading up to 55 characters", async () => {
-			const title = "a".repeat(55);
+		it(`should accept title up to ${MAX_TITLE_LENGTH} characters`, async () => {
+			const title = "a".repeat(MAX_TITLE_LENGTH);
 			const mockRequest = createMockRequest({
 				title,
 				width: "400",
@@ -312,8 +313,8 @@ describe("generateCoverImage", () => {
 			expect(response.status).toBe(200);
 		});
 
-		it("should reject heading longer than 55 characters", async () => {
-			const longTitle = "a".repeat(56);
+		it(`should reject title longer than ${MAX_TITLE_LENGTH} characters`, async () => {
+			const longTitle = "a".repeat(MAX_TITLE_LENGTH + 1);
 			const mockRequest = createMockRequest({
 				width: "400",
 				height: "400",
@@ -328,8 +329,8 @@ describe("generateCoverImage", () => {
 			expect(response.status).toBe(400);
 		});
 
-		it("should accept subheading up to 120 characters", async () => {
-			const subtitle = "b".repeat(120);
+		it(`should accept subtitle up to ${MAX_SUBTITLE_LENGTH} characters`, async () => {
+			const subtitle = "b".repeat(MAX_SUBTITLE_LENGTH);
 			const mockRequest = createMockRequest({
 				subtitle,
 				width: "400",
@@ -345,8 +346,8 @@ describe("generateCoverImage", () => {
 			expect(response.status).toBe(200);
 		});
 
-		it("should reject subheading longer than 120 characters", async () => {
-			const longSubtitle = "b".repeat(121);
+		it(`should reject subtitle longer than ${MAX_SUBTITLE_LENGTH} characters`, async () => {
+			const longSubtitle = "b".repeat(MAX_SUBTITLE_LENGTH + 1);
 			const mockRequest = createMockRequest({
 				width: "400",
 				height: "400",
