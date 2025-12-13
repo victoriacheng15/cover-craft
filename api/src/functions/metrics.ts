@@ -60,11 +60,12 @@ export async function metrics(
 	}
 }
 
-async function storeMetricsToMongoDB(
+export async function storeMetricsToMongoDB(
 	metricsData: MetricPayload,
 	context: InvocationContext,
 ): Promise<void> {
 	try {
+		await connectMongoDB(context);
 		const Metric = getMetricModel();
 		const metric = new Metric({
 			...metricsData,
