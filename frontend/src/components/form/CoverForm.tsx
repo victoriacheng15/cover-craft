@@ -19,6 +19,7 @@ import {
 	roboto,
 } from "@/lib";
 import FormField from "./FormField";
+import {MAX_TITLE_LENGTH, MAX_SUBTITLE_LENGTH} from "@/shared/validators";
 
 export default function CoverForm() {
 	const {
@@ -97,21 +98,49 @@ export default function CoverForm() {
 						placeholder="Enter your cover title..."
 						value={formData.title}
 						onChange={(e) => handleInputChange("title", e.target.value)}
-						maxLength={55}
+						maxLength={40}
 						aria-label="Enter your cover title (required)"
 						aria-describedby={error ? errorId : undefined}
 					/>
+					<div className="flex justify-between items-center mt-1">
+						<span className="text-xs text-slate-500"></span>
+						<span
+							className={`text-xs font-medium ${
+								formData.title.length > MAX_TITLE_LENGTH - 4
+									? "text-red-600"
+									: formData.title.length > MAX_TITLE_LENGTH - 8
+										? "text-orange-600"
+										: "text-slate-500"
+							}`}
+						>
+							{formData.title.length} / {MAX_TITLE_LENGTH}
+						</span>
+					</div>
 				</FormField>
 
 				<FormField label="Subtitle" htmlFor="subtitle">
 					<Input
 						id="subtitle"
 						placeholder="Subtitle"
-						value={formData.subtitle}
+						value={formData.subtitle || ""}
 						onChange={(e) => handleInputChange("subtitle", e.target.value)}
-						maxLength={120}
+						maxLength={70}
 						aria-label="Enter your cover subtitle (optional)"
 					/>
+					<div className="flex justify-between items-center mt-1">
+						<span className="text-xs text-slate-500"></span>
+						<span
+							className={`text-xs font-medium ${
+								(formData.subtitle?.length ?? 0) > MAX_SUBTITLE_LENGTH - 4
+									? "text-red-600"
+									: (formData.subtitle?.length ?? 0) > MAX_SUBTITLE_LENGTH - 14
+										? "text-orange-600"
+										: "text-slate-500"
+							}`}
+						>
+							{formData.subtitle?.length ?? 0} / {MAX_SUBTITLE_LENGTH}
+						</span>
+					</div>
 				</FormField>
 
 				<div className="p-3 bg-slate-50 rounded-md border border-slate-200">

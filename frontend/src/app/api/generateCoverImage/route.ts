@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
 			// If backend provided structured error info, forward it (maintain status code)
 			if (errorBody && typeof errorBody === "object") {
-				return new Response(JSON.stringify({ success: false, ...errorBody }), {
+				return new Response(JSON.stringify(errorBody), {
 					status: response.status,
 					headers: { "Content-Type": "application/json" },
 				});
@@ -30,7 +30,6 @@ export async function POST(request: Request) {
 			// Otherwise fallback to status text or generic error
 			return new Response(
 				JSON.stringify({
-					success: false,
 					error: response.statusText || "Failed to generate image",
 				}),
 				{
