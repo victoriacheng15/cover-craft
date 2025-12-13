@@ -1,9 +1,9 @@
 import type { HttpRequest, InvocationContext } from "@azure/functions";
+import { Canvas } from "canvas";
 import { describe, expect, it, vi } from "vitest";
 import * as mongooseLib from "../../lib/mongoose";
 import * as validators from "../../shared/validators";
 import { generateCoverImage } from "../generateCoverImage";
-import { Canvas } from "canvas";
 
 type MetricStatus = "success" | "validation_error" | "error";
 
@@ -432,11 +432,15 @@ describe("generateCoverImage", () => {
 				filename: "test-persist-error",
 			});
 
-			vi.spyOn(mongooseLib, "connectMongoDB").mockRejectedValue(new Error("db down"));
+			vi.spyOn(mongooseLib, "connectMongoDB").mockRejectedValue(
+				new Error("db down"),
+			);
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			expect(mockContext.error).toHaveBeenCalledWith(
-				expect.stringContaining("Failed to persist success metric for image_generated"),
+				expect.stringContaining(
+					"Failed to persist success metric for image_generated",
+				),
 				expect.any(Error),
 			);
 		});
@@ -581,11 +585,15 @@ describe("generateCoverImage", () => {
 				filename: "fail",
 			});
 
-			vi.spyOn(mongooseLib, "connectMongoDB").mockRejectedValue(new Error("db down"));
+			vi.spyOn(mongooseLib, "connectMongoDB").mockRejectedValue(
+				new Error("db down"),
+			);
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 			expect(mockContext.error).toHaveBeenCalledWith(
-				expect.stringContaining("Failed to persist validation_error metric for image_generated"),
+				expect.stringContaining(
+					"Failed to persist validation_error metric for image_generated",
+				),
 				expect.any(Error),
 			);
 		});
