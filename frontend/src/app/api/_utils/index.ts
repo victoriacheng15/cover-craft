@@ -6,13 +6,10 @@ export {
 	type SaveFilePickerOptions,
 } from "./downloadImage";
 export {
-	type ApiError,
 	type ApiErrorResponse,
 	handleApiError,
 } from "./errorHandler";
 export {
-	type GenerateCoverErrorBody,
-	type GenerateCoverErrorDetail,
 	generateCoverImage,
 	type ImageParams,
 	proxyGenerateCoverImage,

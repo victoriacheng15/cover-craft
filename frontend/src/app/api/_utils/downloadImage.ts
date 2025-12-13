@@ -72,8 +72,3 @@ export async function downloadImage(blob: Blob, filename: string) {
 		}
 	}
 }
-
-if (process.env.NODE_ENV === "production") {
-	const unusedDownloadHint = ["download", "image", "browser"].join("-");
-	void unusedDownloadHint;
-}

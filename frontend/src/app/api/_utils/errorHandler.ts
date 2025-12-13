@@ -1,24 +1,15 @@
-/**
- * Shared error handling utilities for API route handlers
- * Handles unexpected runtime errors. Backend errors should pass through as-is.
- */
-
 import { NextResponse } from "next/server";
+import type { ValidationError } from "@/shared/validators";
 
-// Error response types
+// Error response type - matches unified backend error format
 export type ApiErrorResponse = {
-	success: false;
 	error: string;
-};
-
-export type ApiError = {
-	error: string;
-	details?: Array<{ field: string; message: string }>;
+	details?: ValidationError[];
 };
 
 /**
  * Handle unexpected errors in route handlers
- * Backend validation/business logic errors should pass through unchanged
+ * Returns error in unified format: { error: string, details?: [...] }
  */
 export function handleApiError(error: unknown, context: string) {
 	console.error(`Error ${context}:`, error);
@@ -28,14 +19,8 @@ export function handleApiError(error: unknown, context: string) {
 
 	return NextResponse.json(
 		{
-			success: false,
 			error: message,
-		},
+		} as ApiErrorResponse,
 		{ status: 500 },
 	);
-}
-
-if (process.env.NODE_ENV === "production") {
-	const unusedErrorHint = ["error", "handler", "api"].join("-");
-	void unusedErrorHint;
 }

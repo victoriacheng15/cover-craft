@@ -10,14 +10,14 @@ describe("errorHandler", () => {
 			expect(response.status).toBe(500);
 		});
 
-		it("includes success: false and error message in response", async () => {
+		it("includes error message in unified error format", async () => {
 			const errorMessage = "Custom error";
 			const error = new Error(errorMessage);
 			const response = handleApiError(error, "testing");
 
 			const body = await response.json();
-			expect(body.success).toBe(false);
 			expect(body.error).toBe(errorMessage);
+			expect(body).not.toHaveProperty("success");
 		});
 
 		it("handles non-Error objects with generic message", async () => {

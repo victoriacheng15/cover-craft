@@ -68,7 +68,7 @@ describe("metrics", () => {
 		const result = await proxyMetrics(metricsData);
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			`${process.env.NEXT_PUBLIC_API_URL}/metrics`,
+			`${process.env.AZURE_FUNCTION_URL}/metrics`,
 			{
 				method: "POST",
 				headers: {

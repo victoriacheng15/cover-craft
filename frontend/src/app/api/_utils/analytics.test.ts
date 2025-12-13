@@ -73,7 +73,7 @@ describe("getAnalytics", () => {
 		const result = await proxyAnalytics();
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			`${process.env.NEXT_PUBLIC_API_URL}/analytics`,
+			`${process.env.AZURE_FUNCTION_URL}/analytics`,
 		);
 		expect(result).toEqual(mockAnalyticsData);
 	});
