@@ -1,37 +1,10 @@
 import { useEffect, useState } from "react";
 import { getAnalytics } from "@/_utils";
-
-interface UserEngagement {
-	totalCoversGenerated: number;
-	totalDownloads: number;
-	successRate: number;
-	dailyTrend: { date: string; count: number }[];
-}
-
-interface FeaturePopularity {
-	topFonts: { font: string; count: number }[];
-	topSizes: { size: string; count: number }[];
-	titleLengthStats: {
-		avgTitleLength: number;
-		minTitleLength: number;
-		maxTitleLength: number;
-	};
-	subtitleUsagePercent: number;
-}
-
-interface AccessibilityCompliance {
-	wcagDistribution: { level: string; count: number }[];
-	contrastStats: {
-		avgContrastRatio: number;
-		minContrastRatio: number;
-		maxContrastRatio: number;
-	};
-	wcagFailurePercent: number;
-	wcagTrend: Array<{
-		date: string;
-		[key: string]: number | string;
-	}>;
-}
+import type {
+	AccessibilityCompliance,
+	FeaturePopularity,
+	UserEngagement,
+} from "@/shared/analytics";
 
 interface AnalyticsData {
 	userEngagement: UserEngagement;
