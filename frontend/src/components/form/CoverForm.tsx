@@ -18,8 +18,8 @@ import {
 	playfairDisplay,
 	roboto,
 } from "@/lib";
+import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@/shared/validators";
 import FormField from "./FormField";
-import {MAX_TITLE_LENGTH, MAX_SUBTITLE_LENGTH} from "@/shared/validators";
 
 export default function CoverForm() {
 	const {
