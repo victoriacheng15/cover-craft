@@ -111,7 +111,7 @@ export async function analytics(
 
 		return {
 			status: 200,
-			body: JSON.stringify({ success: true, data: analyticsData }),
+			body: JSON.stringify({ data: analyticsData }),
 			headers: { "Content-Type": "application/json" },
 		};
 	} catch (error) {
@@ -119,7 +119,6 @@ export async function analytics(
 		return {
 			status: 500,
 			body: JSON.stringify({
-				success: false,
 				error: "Failed to fetch analytics",
 			}),
 			headers: { "Content-Type": "application/json" },
