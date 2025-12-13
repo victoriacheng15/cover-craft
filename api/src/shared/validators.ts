@@ -11,7 +11,25 @@
 export const MAX_TITLE_LENGTH = 40;
 export const MAX_SUBTITLE_LENGTH = 70;
 
-// Size constraints (in pixels)
+// Title length distribution percentages for analytics
+export const LENGTH_DISTRIBUTION = {
+	SHORT_PERCENT: 0.25, // 25% of MAX_TITLE_LENGTH
+	MEDIUM_PERCENT: 0.625, // 62.5% of MAX_TITLE_LENGTH
+	LONG_PERCENT: 1.25, // 125% of MAX_TITLE_LENGTH (can exceed max)
+} as const;
+
+export const TITLE_LENGTH_THRESHOLDS = {
+	SHORT_MAX: Math.floor(MAX_TITLE_LENGTH * LENGTH_DISTRIBUTION.SHORT_PERCENT),
+	MEDIUM_MAX: Math.floor(MAX_TITLE_LENGTH * LENGTH_DISTRIBUTION.MEDIUM_PERCENT),
+	LONG_MAX: Math.floor(MAX_TITLE_LENGTH * LENGTH_DISTRIBUTION.LONG_PERCENT),
+} as const;
+
+export const SUBTITLE_LENGTH_THRESHOLDS = {
+	SHORT_MAX: Math.floor(MAX_SUBTITLE_LENGTH * LENGTH_DISTRIBUTION.SHORT_PERCENT),
+	MEDIUM_MAX: Math.floor(MAX_SUBTITLE_LENGTH * LENGTH_DISTRIBUTION.MEDIUM_PERCENT),
+	LONG_MAX: Math.floor(MAX_SUBTITLE_LENGTH * LENGTH_DISTRIBUTION.LONG_PERCENT),
+} as const;
+
 export const SIZE_RANGE = { min: 1, max: 1200 };
 export const SIZE_PRESETS = [
 	{ label: "Post (1200 × 627)", width: 1200, height: 627 },
@@ -26,14 +44,8 @@ export const FONT_OPTIONS = [
 	"Open Sans",
 ] as const;
 
-// WCAG contrast ratio threshold
 export const WCAG_AA_THRESHOLD = 4.5;
-
-// HEX color regex (3 or 6 digit with #)
 export const HEX_COLOR_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-
-// Default filename if not provided
-// the auto generate file name is in handleDownload in frontend/src/hooks/useForm.ts
 export const DEFAULT_FILENAME = "cover";
 
 // ===================================================================================
