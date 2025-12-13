@@ -2,6 +2,7 @@
  * Utility for generating cover images via the backend API
  */
 import type { ImageParams, ValidationError } from "@/shared/validators";
+export type { ImageParams };
 
 export type ApiErrorResponse = {
 	error: string;

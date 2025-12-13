@@ -1,7 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { health } from "@/_utils";
 import CoverForm from "@/components/form/CoverForm";
 import MainLayout from "@/components/layout/MainLayout";
 
