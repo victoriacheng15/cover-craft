@@ -4,8 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import * as mongooseLib from "../../lib/mongoose";
 import * as validators from "../../shared/validators";
 import { generateCoverImage } from "../generateCoverImage";
-
-type MetricStatus = "success" | "validation_error" | "error";
+import { type MetricStatus } from "../../shared/metricPayload";
 
 interface MetricDocument {
 	event: string;

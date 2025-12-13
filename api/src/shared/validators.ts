@@ -42,6 +42,22 @@ export const DEFAULT_FILENAME = "cover";
 
 export type AllowedFont = (typeof FONT_OPTIONS)[number];
 
+export interface ImageParams {
+	width: number;
+	height: number;
+	backgroundColor: string;
+	textColor: string;
+	font: string;
+	title: string;
+	subtitle?: string;
+	filename: string;
+}
+
+export interface ValidationError {
+	field: string;
+	message: string;
+}
+
 // ===================================================================================
 // Validation Functions (Color & Contrast)
 // ===================================================================================

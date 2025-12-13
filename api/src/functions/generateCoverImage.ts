@@ -24,6 +24,8 @@ import {
 	validateFont,
 	validateSize,
 	validateTextLength,
+	type ImageParams,
+	type ValidationError,
 } from "../shared/validators";
 import { storeMetricsToMongoDB } from "./metrics";
 
@@ -60,22 +62,6 @@ registerFont(path.join(fontDir, "OpenSans-Bold.ttf"), {
 	family: "Open Sans",
 	weight: "bold",
 });
-
-interface ImageParams {
-	width: number;
-	height: number;
-	backgroundColor: string;
-	textColor: string;
-	font: string;
-	title: string;
-	subtitle?: string;
-	filename?: string;
-}
-
-interface ValidationError {
-	field: string;
-	message: string;
-}
 
 // Extract parameters from query and body
 async function extractParams(
