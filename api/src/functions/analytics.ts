@@ -6,8 +6,8 @@ import {
 } from "@azure/functions";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
 import {
-	GENERATE_CLICK_EVENT,
 	DOWNLOAD_CLICK_EVENT,
+	GENERATE_CLICK_EVENT,
 	METRIC_STATUS_SUCCESS,
 	type WcagLevel,
 } from "../shared/metricPayload";

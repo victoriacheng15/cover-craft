@@ -2,9 +2,9 @@ import type { HttpRequest, InvocationContext } from "@azure/functions";
 import { Canvas } from "canvas";
 import { describe, expect, it, vi } from "vitest";
 import * as mongooseLib from "../../lib/mongoose";
+import type { MetricStatus } from "../../shared/metricPayload";
 import * as validators from "../../shared/validators";
 import { generateCoverImage } from "../generateCoverImage";
-import { type MetricStatus } from "../../shared/metricPayload";
 
 interface MetricDocument {
 	event: string;

@@ -19,13 +19,13 @@ import {
 	getRelativeLuminance,
 	getWCAGLevelFromRatio,
 	hexToRgb,
+	type ImageParams,
+	type ValidationError,
 	validateColors,
 	validateContrast,
 	validateFont,
 	validateSize,
 	validateTextLength,
-	type ImageParams,
-	type ValidationError,
 } from "../shared/validators";
 import { storeMetricsToMongoDB } from "./metrics";
 
