@@ -7,13 +7,12 @@ import {
 	type InvocationContext,
 } from "@azure/functions";
 import { Canvas, registerFont } from "canvas";
-import { storeMetricsToMongoDB } from "./metrics";
 import {
 	IMAGE_GENERATED_EVENT,
-	type MetricPayload,
-	METRIC_STATUS_SUCCESS,
 	METRIC_STATUS_ERROR,
+	METRIC_STATUS_SUCCESS,
 	METRIC_STATUS_VALIDATION_ERROR,
+	type MetricPayload,
 } from "../shared/metricPayload";
 import {
 	generateFilename,
@@ -26,6 +25,7 @@ import {
 	validateSize,
 	validateTextLength,
 } from "../shared/validators";
+import { storeMetricsToMongoDB } from "./metrics";
 
 // Register fonts
 const fontDir = path.join(__dirname, "../assets/fonts");
@@ -258,7 +258,10 @@ export async function generateCoverImage(
 						subtitleLength: params.subtitle?.length,
 						contrastRatio: contrastRatioResult,
 						wcagLevel: getWCAGLevelFromRatio(contrastRatioResult),
-						errorMessage: (validationMessage || "validation failed").slice(0, 1000),
+						errorMessage: (validationMessage || "validation failed").slice(
+							0,
+							1000,
+						),
 					}),
 					context,
 				);

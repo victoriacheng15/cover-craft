@@ -589,9 +589,7 @@ describe("generateCoverImage", () => {
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 			expect(mockContext.error).toHaveBeenCalledWith(
-				expect.stringContaining(
-					"Failed to store validation_error metric:",
-				),
+				expect.stringContaining("Failed to store validation_error metric:"),
 				expect.any(Error),
 			);
 		});

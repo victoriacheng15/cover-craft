@@ -6,7 +6,10 @@ export const METRIC_STATUS_ERROR = "error";
 export const METRIC_STATUS_VALIDATION_ERROR = "validation_error";
 
 export type WcagLevel = "AAA" | "AA" | "FAIL";
-export type MetricStatus = typeof METRIC_STATUS_SUCCESS | typeof METRIC_STATUS_ERROR | typeof METRIC_STATUS_VALIDATION_ERROR;
+export type MetricStatus =
+	| typeof METRIC_STATUS_SUCCESS
+	| typeof METRIC_STATUS_ERROR
+	| typeof METRIC_STATUS_VALIDATION_ERROR;
 
 export type EventType =
 	| typeof GENERATE_CLICK_EVENT
