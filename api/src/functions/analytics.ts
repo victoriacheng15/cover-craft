@@ -6,8 +6,8 @@ import {
 } from "@azure/functions";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
 import {
-	GENERATE_CLICK_EVENT,
 	DOWNLOAD_CLICK_EVENT,
+	GENERATE_CLICK_EVENT,
 	METRIC_STATUS_SUCCESS,
 	type WcagLevel,
 } from "../shared/metricPayload";
@@ -111,7 +111,7 @@ export async function analytics(
 
 		return {
 			status: 200,
-			body: JSON.stringify({ success: true, data: analyticsData }),
+			body: JSON.stringify({ data: analyticsData }),
 			headers: { "Content-Type": "application/json" },
 		};
 	} catch (error) {
@@ -119,7 +119,6 @@ export async function analytics(
 		return {
 			status: 500,
 			body: JSON.stringify({
-				success: false,
 				error: "Failed to fetch analytics",
 			}),
 			headers: { "Content-Type": "application/json" },

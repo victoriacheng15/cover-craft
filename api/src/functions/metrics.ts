@@ -27,7 +27,6 @@ export async function metrics(
 				status: 400,
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					success: false,
 					error: "Missing required fields: event, timestamp",
 				}),
 			};
@@ -39,8 +38,6 @@ export async function metrics(
 			status: 200,
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
-				success: true,
-				message: "Metrics received",
 				data: {
 					received: metricsData,
 					serverTime: new Date().toISOString(),
@@ -53,7 +50,6 @@ export async function metrics(
 			status: 500,
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
-				success: false,
 				error: "Failed to process metrics",
 			}),
 		};
