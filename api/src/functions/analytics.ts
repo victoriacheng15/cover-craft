@@ -5,6 +5,12 @@ import {
 	type InvocationContext,
 } from "@azure/functions";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
+import {
+	GENERATE_CLICK_EVENT,
+	DOWNLOAD_CLICK_EVENT,
+	METRIC_STATUS_SUCCESS,
+	type WcagLevel,
+} from "../shared/metricPayload";
 
 type DailyTrendAggregate = {
 	_id: string;
@@ -39,8 +45,6 @@ type WcagDistributionAggregate = {
 	_id: string;
 	count: number;
 };
-
-type WcagLevel = "AAA" | "AA" | "FAIL";
 
 type WcagTrendAggregate = {
 	_id: {
@@ -134,7 +138,7 @@ async function fetchAggregatedAnalytics(
 		// Old migrated documents have titleLength: 0 and contrastRatio: 0 as defaults
 		// Real data will have meaningful values
 		const completeDataFilter = {
-			status: "success",
+			status: METRIC_STATUS_SUCCESS,
 			titleLength: { $gt: 0 },
 			contrastRatio: { $gt: 0 },
 			wcagLevel: { $in: ["AAA", "AA", "FAIL"] },
@@ -143,23 +147,23 @@ async function fetchAggregatedAnalytics(
 		// ===== 1. USER ENGAGEMENT =====
 		// Total covers generated (only with complete data)
 		const totalCoversGenerated = await Metric.countDocuments({
-			event: "generate_click",
+			event: GENERATE_CLICK_EVENT,
 			...completeDataFilter,
 		});
 
 		// Total downloads (only download_click events with status success)
 		const totalDownloads = await Metric.countDocuments({
-			event: "download_click",
-			status: "success",
+			event: DOWNLOAD_CLICK_EVENT,
+			status: METRIC_STATUS_SUCCESS,
 		});
 
 		// Overall success rate (from complete data only, counting only generate_click)
 		const totalGenerateEvents = await Metric.countDocuments({
-			event: "generate_click",
-			status: "success",
+			event: GENERATE_CLICK_EVENT,
+			status: METRIC_STATUS_SUCCESS,
 		});
 		const successfulGenerateEvents = await Metric.countDocuments({
-			event: "generate_click",
+			event: GENERATE_CLICK_EVENT,
 			...completeDataFilter,
 		});
 		const successRate =
@@ -177,7 +181,7 @@ async function fetchAggregatedAnalytics(
 			{
 				$match: {
 					timestamp: { $gte: thirtyDaysAgo },
-					event: "generate_click",
+					event: GENERATE_CLICK_EVENT,
 					...completeDataFilter,
 				},
 			},
@@ -207,7 +211,7 @@ async function fetchAggregatedAnalytics(
 		const topFonts = await Metric.aggregate<FontAggregate>([
 			{
 				$match: {
-					event: "generate_click",
+					event: GENERATE_CLICK_EVENT,
 					...completeDataFilter,
 				},
 			},
@@ -225,7 +229,7 @@ async function fetchAggregatedAnalytics(
 		const topSizes = await Metric.aggregate<SizeAggregate>([
 			{
 				$match: {
-					event: "generate_click",
+					event: GENERATE_CLICK_EVENT,
 					...completeDataFilter,
 				},
 			},
@@ -243,7 +247,7 @@ async function fetchAggregatedAnalytics(
 		const titleStats = await Metric.aggregate<TitleStatsAggregate>([
 			{
 				$match: {
-					event: "generate_click",
+					event: GENERATE_CLICK_EVENT,
 					...completeDataFilter,
 				},
 			},
@@ -259,7 +263,7 @@ async function fetchAggregatedAnalytics(
 
 		// Subtitle usage (percentage with subtitles, complete data only)
 		const withSubtitle = await Metric.countDocuments({
-			event: "generate_click",
+			event: GENERATE_CLICK_EVENT,
 			...completeDataFilter,
 			subtitleLength: { $gt: 0 },
 		});
@@ -290,7 +294,7 @@ async function fetchAggregatedAnalytics(
 		const wcagDistribution = await Metric.aggregate<WcagDistributionAggregate>([
 			{
 				$match: {
-					event: "generate_click",
+					event: GENERATE_CLICK_EVENT,
 					...completeDataFilter,
 				},
 			},
@@ -306,7 +310,7 @@ async function fetchAggregatedAnalytics(
 		const contrastStats = await Metric.aggregate<ContrastStatsAggregate>([
 			{
 				$match: {
-					event: "generate_click",
+					event: GENERATE_CLICK_EVENT,
 					...completeDataFilter,
 				},
 			},
@@ -333,7 +337,7 @@ async function fetchAggregatedAnalytics(
 			{
 				$match: {
 					timestamp: { $gte: thirtyDaysAgo },
-					event: "generate_click",
+					event: GENERATE_CLICK_EVENT,
 					...completeDataFilter,
 				},
 			},
