@@ -47,9 +47,9 @@ export default function AnalyticsPage() {
 									</p>
 								</div>
 								<div className="bg-purple-50 rounded-lg p-4">
-									<p className="text-sm text-gray-600">Success Rate</p>
+									<p className="text-sm text-gray-600">Download Rate</p>
 									<p className="text-3xl font-bold text-purple-600">
-										{data.userEngagement.successRate.toFixed(1)}%
+										{data.userEngagement.downloadRate.toFixed(1)}%
 									</p>
 								</div>
 							</div>
