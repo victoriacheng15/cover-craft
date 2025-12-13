@@ -22,8 +22,8 @@ import {
 } from "../shared/metricPayload";
 import {
 	SIZE_PRESETS,
-	TITLE_LENGTH_THRESHOLDS,
 	SUBTITLE_LENGTH_THRESHOLDS,
+	TITLE_LENGTH_THRESHOLDS,
 } from "../shared/validators";
 
 type DailyTrendAggregate = {
@@ -200,7 +200,9 @@ async function fetchUserEngagement(
 	const apiUsagePercent =
 		totalImagesGenerated > 0
 			? parseFloat(
-					((imageGeneratedWithoutClick / totalImagesGenerated) * 100).toFixed(2),
+					((imageGeneratedWithoutClick / totalImagesGenerated) * 100).toFixed(
+						2,
+					),
 				)
 			: 0;
 
@@ -351,10 +353,7 @@ async function fetchFeaturePopularity(
 						{
 							$cond: [
 								{
-									$lt: [
-										"$titleLength",
-										TITLE_LENGTH_THRESHOLDS.MEDIUM_MAX + 1,
-									],
+									$lt: ["$titleLength", TITLE_LENGTH_THRESHOLDS.MEDIUM_MAX + 1],
 								},
 								"medium",
 								"long",
@@ -375,7 +374,8 @@ async function fetchFeaturePopularity(
 	};
 	titleDistribution.forEach((bucket) => {
 		if (bucket._id === "short") titleDistributionMap.short = bucket.count;
-		else if (bucket._id === "medium") titleDistributionMap.medium = bucket.count;
+		else if (bucket._id === "medium")
+			titleDistributionMap.medium = bucket.count;
 		else if (bucket._id === "long") titleDistributionMap.long = bucket.count;
 	});
 
@@ -443,8 +443,10 @@ async function fetchFeaturePopularity(
 	};
 	subtitleDistribution.forEach((bucket) => {
 		if (bucket._id === "none") subtitleDistributionMap.none = bucket.count;
-		else if (bucket._id === "short") subtitleDistributionMap.short = bucket.count;
-		else if (bucket._id === "medium") subtitleDistributionMap.medium = bucket.count;
+		else if (bucket._id === "short")
+			subtitleDistributionMap.short = bucket.count;
+		else if (bucket._id === "medium")
+			subtitleDistributionMap.medium = bucket.count;
 		else if (bucket._id === "long") subtitleDistributionMap.long = bucket.count;
 	});
 
@@ -477,7 +479,12 @@ async function fetchFeaturePopularity(
 						{ $gt: ["$totalCount", 0] },
 						{
 							$round: [
-								{ $multiply: [{ $divide: ["$withSubtitle", "$totalCount"] }, 100] },
+								{
+									$multiply: [
+										{ $divide: ["$withSubtitle", "$totalCount"] },
+										100,
+									],
+								},
 								2,
 							],
 						},
@@ -661,10 +668,8 @@ async function fetchPerformanceMetrics(
 		backendValues.length > 0
 			? backendValues.reduce((a, b) => a + b, 0) / backendValues.length
 			: 0;
-	const backendMin =
-		backendValues.length > 0 ? Math.min(...backendValues) : 0;
-	const backendMax =
-		backendValues.length > 0 ? Math.max(...backendValues) : 0;
+	const backendMin = backendValues.length > 0 ? Math.min(...backendValues) : 0;
+	const backendMax = backendValues.length > 0 ? Math.max(...backendValues) : 0;
 	const backendP50 = calculatePercentile(backendValues, 50);
 	const backendP95 = calculatePercentile(backendValues, 95);
 	const backendP99 = calculatePercentile(backendValues, 99);
@@ -675,10 +680,8 @@ async function fetchPerformanceMetrics(
 		clientValues.length > 0
 			? clientValues.reduce((a, b) => a + b, 0) / clientValues.length
 			: 0;
-	const clientMin =
-		clientValues.length > 0 ? Math.min(...clientValues) : 0;
-	const clientMax =
-		clientValues.length > 0 ? Math.max(...clientValues) : 0;
+	const clientMin = clientValues.length > 0 ? Math.min(...clientValues) : 0;
+	const clientMax = clientValues.length > 0 ? Math.max(...clientValues) : 0;
 	const clientP50 = calculatePercentile(clientValues, 50);
 	const clientP95 = calculatePercentile(clientValues, 95);
 	const clientP99 = calculatePercentile(clientValues, 99);
@@ -777,9 +780,7 @@ async function fetchPerformanceMetrics(
 	});
 
 	const avgNetworkLatency =
-		backendAvg > 0
-			? parseFloat((clientAvg - backendAvg).toFixed(2))
-			: 0;
+		backendAvg > 0 ? parseFloat((clientAvg - backendAvg).toFixed(2)) : 0;
 
 	return {
 		backendPerformance: {
