@@ -7,10 +7,13 @@ import {
 	type InvocationContext,
 } from "@azure/functions";
 import { Canvas, registerFont } from "canvas";
-import { connectMongoDB, getMetricModel } from "../lib/mongoose";
+import { storeMetricsToMongoDB } from "./metrics";
 import {
 	IMAGE_GENERATED_EVENT,
 	type MetricPayload,
+	METRIC_STATUS_SUCCESS,
+	METRIC_STATUS_ERROR,
+	METRIC_STATUS_VALIDATION_ERROR,
 } from "../shared/metricPayload";
 import {
 	generateFilename,
@@ -80,7 +83,6 @@ async function extractParams(
 ): Promise<Partial<ImageParams>> {
 	const params: Partial<ImageParams> = {};
 
-	// Get query parameters
 	const queryWidth = request.query.get("width");
 	const queryHeight = request.query.get("height");
 	const queryBgColor = request.query.get("backgroundColor");
@@ -108,7 +110,6 @@ async function extractParams(
 		}
 	}
 
-	// Query params take precedence over body
 	if (queryWidth != null) {
 		params.width = Number(queryWidth);
 	} else {
@@ -144,7 +145,6 @@ function getContrastRatio(color1: string, color2: string): number {
 	return (lighter + 0.05) / (darker + 0.05);
 }
 
-// Main validation function that composes all validators
 function validateParams(params: ImageParams): ValidationError[] {
 	const errors: ValidationError[] = [];
 
@@ -157,30 +157,16 @@ function validateParams(params: ImageParams): ValidationError[] {
 	return errors;
 }
 
-// Helper function to persist metrics consistently across all paths
-async function persistMetric(
-	context: InvocationContext,
-	metricData: Partial<MetricPayload>,
-): Promise<void> {
-	try {
-		await connectMongoDB(context);
-		const Metric = getMetricModel();
-
-		const metric = new Metric({
-			event: IMAGE_GENERATED_EVENT,
-			timestamp: new Date().toISOString(),
-			status: metricData.status,
-			...metricData,
-		});
-
-		await metric.save();
-		context.log(`Saved ${metricData.status} metric`, metric._id?.toString());
-	} catch (err) {
-		context.error(
-			`Failed to persist ${metricData.status} metric for image_generated:`,
-			err,
-		);
-	}
+function buildMetricPayload(
+	status: MetricPayload["status"],
+	metricsData: Omit<MetricPayload, "event" | "timestamp" | "status">,
+): MetricPayload {
+	return {
+		event: IMAGE_GENERATED_EVENT,
+		timestamp: new Date().toISOString(),
+		status,
+		...metricsData,
+	};
 }
 
 // Generate PNG image
@@ -230,13 +216,10 @@ export async function generateCoverImage(
 	request: HttpRequest,
 	context: InvocationContext,
 ): Promise<HttpResponseInit> {
-	// Declare startTime here so it's in scope for catch block as well
 	let startTime: number | undefined;
-	// keep a reference to extractedParams in outer scope so we can persist metrics on errors
 	let extractedParams: Partial<ImageParams> | undefined;
 
 	try {
-		// Extract parameters
 		extractedParams = await extractParams(request);
 
 		// All parameters are required - no defaults
@@ -254,7 +237,6 @@ export async function generateCoverImage(
 		// Validate parameters
 		const validationErrors = validateParams(params);
 		if (validationErrors.length > 0) {
-			// Persist a minimal validation_error metric for observability, but do not block response on DB errors
 			const validationMessage = validationErrors
 				.map((e) => `${e.field}: ${e.message}`)
 				.join("; ");
@@ -263,19 +245,26 @@ export async function generateCoverImage(
 				params.backgroundColor,
 				params.textColor,
 			);
-			await persistMetric(context, {
-				status: "validation_error",
-				size: {
-					width: params.width,
-					height: params.height,
-				},
-				font: params.font,
-				titleLength: params.title.length,
-				subtitleLength: params.subtitle?.length,
-				contrastRatio: contrastRatioResult,
-				wcagLevel: getWCAGLevelFromRatio(contrastRatioResult),
-				errorMessage: (validationMessage || "validation failed").slice(0, 1000),
-			});
+
+			try {
+				await storeMetricsToMongoDB(
+					buildMetricPayload(METRIC_STATUS_VALIDATION_ERROR, {
+						size: {
+							width: params.width,
+							height: params.height,
+						},
+						font: params.font,
+						titleLength: params.title.length,
+						subtitleLength: params.subtitle?.length,
+						contrastRatio: contrastRatioResult,
+						wcagLevel: getWCAGLevelFromRatio(contrastRatioResult),
+						errorMessage: (validationMessage || "validation failed").slice(0, 1000),
+					}),
+					context,
+				);
+			} catch (err) {
+				context.error("Failed to store validation_error metric:", err);
+			}
 
 			return {
 				status: 400,
@@ -305,26 +294,30 @@ export async function generateCoverImage(
 			"X-Generation-Duration": String(duration),
 		};
 
-		// Persist metric to MongoDB (does not block response beyond write time)
 		const contrastRatioResult = getContrastRatio(
 			params.backgroundColor,
 			params.textColor,
 		);
-		await persistMetric(context, {
-			status: "success",
-			duration,
-			size: {
-				width: params.width,
-				height: params.height,
-			},
-			font: params.font,
-			titleLength: params.title.length,
-			subtitleLength: params.subtitle?.length,
-			contrastRatio: contrastRatioResult,
-			wcagLevel: getWCAGLevelFromRatio(contrastRatioResult),
-		});
+		try {
+			await storeMetricsToMongoDB(
+				buildMetricPayload(METRIC_STATUS_SUCCESS, {
+					duration,
+					size: {
+						width: params.width,
+						height: params.height,
+					},
+					font: params.font,
+					titleLength: params.title.length,
+					subtitleLength: params.subtitle?.length,
+					contrastRatio: contrastRatioResult,
+					wcagLevel: getWCAGLevelFromRatio(contrastRatioResult),
+				}),
+				context,
+			);
+		} catch (err) {
+			context.error("Failed to store success metric:", err);
+		}
 
-		// Return response with PNG
 		return {
 			status: 200,
 			headers,
@@ -332,35 +325,40 @@ export async function generateCoverImage(
 		};
 	} catch (error) {
 		context.error(`Error generating cover image: ${error}`);
-		// compute partial duration, if applicable
+
 		let partialDuration: number | undefined;
 		try {
 			if (typeof startTime === "number") {
 				partialDuration = Math.round(performance.now() - startTime);
 			}
-		} catch (_e) {
-			// ignore
-		}
-		// Persist an error metric to MongoDB, if possible
+		} catch (_e) {}
+
 		const contrastRatioResult = getContrastRatio(
 			extractedParams?.backgroundColor,
 			extractedParams?.textColor,
 		);
-		await persistMetric(context, {
-			status: "error",
-			duration: partialDuration,
-			size: {
-				width: extractedParams?.width,
-				height: extractedParams?.height,
-			},
-			font: extractedParams?.font,
-			titleLength: extractedParams?.title?.length,
-			subtitleLength: extractedParams?.subtitle?.length,
-			contrastRatio: contrastRatioResult,
-			wcagLevel: getWCAGLevelFromRatio(contrastRatioResult),
-			errorMessage: error instanceof Error ? error.message : String(error),
-		});
-		// Include partial duration header if available
+
+		try {
+			await storeMetricsToMongoDB(
+				buildMetricPayload(METRIC_STATUS_ERROR, {
+					duration: partialDuration,
+					size: {
+						width: extractedParams?.width,
+						height: extractedParams?.height,
+					},
+					font: extractedParams?.font,
+					titleLength: extractedParams?.title?.length,
+					subtitleLength: extractedParams?.subtitle?.length,
+					contrastRatio: contrastRatioResult,
+					wcagLevel: getWCAGLevelFromRatio(contrastRatioResult),
+					errorMessage: error instanceof Error ? error.message : String(error),
+				}),
+				context,
+			);
+		} catch (err) {
+			context.error("Failed to store error metric:", err);
+		}
+
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
 		};

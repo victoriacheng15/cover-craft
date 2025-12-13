@@ -438,9 +438,7 @@ describe("generateCoverImage", () => {
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			expect(mockContext.error).toHaveBeenCalledWith(
-				expect.stringContaining(
-					"Failed to persist success metric for image_generated",
-				),
+				expect.stringContaining("Failed to store success metric:"),
 				expect.any(Error),
 			);
 		});
@@ -592,7 +590,7 @@ describe("generateCoverImage", () => {
 			expect(response.status).toBe(400);
 			expect(mockContext.error).toHaveBeenCalledWith(
 				expect.stringContaining(
-					"Failed to persist validation_error metric for image_generated",
+					"Failed to store validation_error metric:",
 				),
 				expect.any(Error),
 			);
