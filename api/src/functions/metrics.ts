@@ -5,28 +5,7 @@ import {
 	type InvocationContext,
 } from "@azure/functions";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
-
-interface MetricsData {
-	// Core event data
-	event: string;
-	timestamp: string;
-	status: "success" | "error" | "validation_error";
-	errorMessage?: string;
-
-	// Cover generation data
-	sizePreset: string;
-	font: string;
-	titleLength: number;
-	subtitleLength?: number;
-
-	// Form/Validation data
-	contrastRatio: number;
-	wcagLevel: string; // "AAA" | "AA" | "FAIL"
-
-	// Performance/Timing data
-	duration?: number; // in milliseconds (generation time, render time, etc.)
-	clientDuration?: number; // time on client side (ms)
-}
+import type { MetricPayload } from "../shared/metricPayload";
 
 // POST /api/metrics
 // Receives metrics/events from the frontend and stores to MongoDB for persistence
@@ -40,7 +19,7 @@ export async function metrics(
 		await connectMongoDB(context);
 
 		// Parse and validate incoming metrics data
-		const metricsData = (await request.json()) as MetricsData;
+		const metricsData = (await request.json()) as MetricPayload;
 
 		// Validate required fields
 		if (!metricsData.event || !metricsData.timestamp) {
@@ -82,7 +61,7 @@ export async function metrics(
 }
 
 async function storeMetricsToMongoDB(
-	metricsData: MetricsData,
+	metricsData: MetricPayload,
 	context: InvocationContext,
 ): Promise<void> {
 	try {

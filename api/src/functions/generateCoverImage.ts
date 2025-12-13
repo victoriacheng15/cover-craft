@@ -9,6 +9,10 @@ import {
 import { Canvas, registerFont } from "canvas";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
 import {
+	IMAGE_GENERATED_EVENT,
+	type MetricPayload,
+} from "../shared/metricPayload";
+import {
 	generateFilename,
 	getRelativeLuminance,
 	getWCAGLevelFromRatio,
@@ -19,10 +23,6 @@ import {
 	validateSize,
 	validateTextLength,
 } from "../shared/validators";
-import {
-  IMAGE_GENERATED_EVENT,
-  type MetricPayload,
-} from "../shared/metricPayload"
 
 // Register fonts
 const fontDir = path.join(__dirname, "../assets/fonts");
@@ -259,7 +259,10 @@ export async function generateCoverImage(
 				.map((e) => `${e.field}: ${e.message}`)
 				.join("; ");
 
-			const contrastRatioResult = getContrastRatio(params.backgroundColor, params.textColor);
+			const contrastRatioResult = getContrastRatio(
+				params.backgroundColor,
+				params.textColor,
+			);
 			await persistMetric(context, {
 				status: "validation_error",
 				size: {
@@ -303,7 +306,10 @@ export async function generateCoverImage(
 		};
 
 		// Persist metric to MongoDB (does not block response beyond write time)
-		const contrastRatioResult = getContrastRatio(params.backgroundColor, params.textColor);
+		const contrastRatioResult = getContrastRatio(
+			params.backgroundColor,
+			params.textColor,
+		);
 		await persistMetric(context, {
 			status: "success",
 			duration,
@@ -336,7 +342,10 @@ export async function generateCoverImage(
 			// ignore
 		}
 		// Persist an error metric to MongoDB, if possible
-		const contrastRatioResult =  getContrastRatio(extractedParams?.backgroundColor, extractedParams?.textColor)
+		const contrastRatioResult = getContrastRatio(
+			extractedParams?.backgroundColor,
+			extractedParams?.textColor,
+		);
 		await persistMetric(context, {
 			status: "error",
 			duration: partialDuration,

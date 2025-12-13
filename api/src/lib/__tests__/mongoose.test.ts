@@ -47,7 +47,10 @@ describe("mongoose lib helpers", () => {
 		const connectionError = new Error("connection failed");
 		connectSpy.mockRejectedValueOnce(connectionError);
 		await expect(connectMongoDB(mockContext)).rejects.toBe(connectionError);
-		expect(errorMock).toHaveBeenCalledWith("MongoDB connection error:", connectionError);
+		expect(errorMock).toHaveBeenCalledWith(
+			"MongoDB connection error:",
+			connectionError,
+		);
 	});
 
 	it("reuses an existing Metric model", async () => {
