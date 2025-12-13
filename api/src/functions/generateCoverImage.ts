@@ -19,6 +19,10 @@ import {
 	validateSize,
 	validateTextLength,
 } from "../shared/validators";
+import {
+  IMAGE_GENERATED_EVENT,
+  type MetricPayload,
+} from "../shared/metricPayload"
 
 // Register fonts
 const fontDir = path.join(__dirname, "../assets/fonts");
@@ -156,49 +160,17 @@ function validateParams(params: ImageParams): ValidationError[] {
 // Helper function to persist metrics consistently across all paths
 async function persistMetric(
 	context: InvocationContext,
-	metricData: {
-		status: "success" | "validation_error" | "error";
-		duration?: number;
-		width?: number;
-		height?: number;
-		font?: string;
-		title?: string;
-		subtitle?: string;
-		backgroundColor?: string;
-		textColor?: string;
-		errorMessage?: string;
-	},
+	metricData: Partial<MetricPayload>,
 ): Promise<void> {
 	try {
 		await connectMongoDB(context);
 		const Metric = getMetricModel();
 
-		// For success and validation_error paths, all params are validated, so they exist
-		// For error path, params may be partial, so we need nullish checks
-		const contrastRatio =
-			metricData.backgroundColor && metricData.textColor
-				? getContrastRatio(metricData.backgroundColor, metricData.textColor)
-				: undefined;
-		const wcagLevel =
-			contrastRatio !== undefined
-				? getWCAGLevelFromRatio(contrastRatio)
-				: undefined;
-
 		const metric = new Metric({
-			event: "image_generated",
+			event: IMAGE_GENERATED_EVENT,
 			timestamp: new Date().toISOString(),
 			status: metricData.status,
-			duration: metricData.duration,
-			size:
-				metricData.width != null && metricData.height != null
-					? { width: metricData.width, height: metricData.height }
-					: undefined,
-			font: metricData.font,
-			titleLength: metricData.title?.length,
-			subtitleLength: metricData.subtitle?.length,
-			contrastRatio,
-			wcagLevel,
-			...(metricData.errorMessage && { errorMessage: metricData.errorMessage }),
+			...metricData,
 		});
 
 		await metric.save();
@@ -275,7 +247,7 @@ export async function generateCoverImage(
 			textColor: extractedParams.textColor as string,
 			font: extractedParams.font as string,
 			title: extractedParams.title as string,
-			subtitle: extractedParams.subtitle as string,
+			subtitle: extractedParams.subtitle,
 			filename: generateFilename(extractedParams.filename),
 		};
 
@@ -286,15 +258,19 @@ export async function generateCoverImage(
 			const validationMessage = validationErrors
 				.map((e) => `${e.field}: ${e.message}`)
 				.join("; ");
+
+			const contrastRatioResult = getContrastRatio(params.backgroundColor, params.textColor);
 			await persistMetric(context, {
 				status: "validation_error",
-				width: params.width,
-				height: params.height,
+				size: {
+					width: params.width,
+					height: params.height,
+				},
 				font: params.font,
-				title: params.title,
-				subtitle: params.subtitle,
-				backgroundColor: params.backgroundColor,
-				textColor: params.textColor,
+				titleLength: params.title.length,
+				subtitleLength: params.subtitle?.length,
+				contrastRatio: contrastRatioResult,
+				wcagLevel: getWCAGLevelFromRatio(contrastRatioResult),
 				errorMessage: (validationMessage || "validation failed").slice(0, 1000),
 			});
 
@@ -327,16 +303,19 @@ export async function generateCoverImage(
 		};
 
 		// Persist metric to MongoDB (does not block response beyond write time)
+		const contrastRatioResult = getContrastRatio(params.backgroundColor, params.textColor);
 		await persistMetric(context, {
 			status: "success",
 			duration,
-			width: params.width,
-			height: params.height,
+			size: {
+				width: params.width,
+				height: params.height,
+			},
 			font: params.font,
-			title: params.title,
-			subtitle: params.subtitle,
-			backgroundColor: params.backgroundColor,
-			textColor: params.textColor,
+			titleLength: params.title.length,
+			subtitleLength: params.subtitle?.length,
+			contrastRatio: contrastRatioResult,
+			wcagLevel: getWCAGLevelFromRatio(contrastRatioResult),
 		});
 
 		// Return response with PNG
@@ -357,16 +336,19 @@ export async function generateCoverImage(
 			// ignore
 		}
 		// Persist an error metric to MongoDB, if possible
+		const contrastRatioResult =  getContrastRatio(extractedParams?.backgroundColor, extractedParams?.textColor)
 		await persistMetric(context, {
 			status: "error",
 			duration: partialDuration,
-			width: extractedParams?.width,
-			height: extractedParams?.height,
+			size: {
+				width: extractedParams?.width,
+				height: extractedParams?.height,
+			},
 			font: extractedParams?.font,
-			title: extractedParams?.title,
-			subtitle: extractedParams?.subtitle,
-			backgroundColor: extractedParams?.backgroundColor,
-			textColor: extractedParams?.textColor,
+			titleLength: extractedParams?.title?.length,
+			subtitleLength: extractedParams?.subtitle?.length,
+			contrastRatio: contrastRatioResult,
+			wcagLevel: getWCAGLevelFromRatio(contrastRatioResult),
 			errorMessage: error instanceof Error ? error.message : String(error),
 		});
 		// Include partial duration header if available
