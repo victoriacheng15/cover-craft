@@ -11,13 +11,25 @@ export async function POST(req: NextRequest) {
 
 		if (!response.ok) {
 			console.error("Failed to store metrics:", response.statusText);
+			let errorBody: Record<string, unknown> | null = null;
+			try {
+				errorBody = await response.json();
+			} catch (_err) {
+				// Not JSON - fall back to statusText
+			}
+
+			if (errorBody && typeof errorBody === "object") {
+				return NextResponse.json(errorBody, { status: response.status });
+			}
+
 			return NextResponse.json(
-				{ success: false, error: "Failed to store metrics" },
+				{ error: response.statusText || "Failed to store metrics" },
 				{ status: response.status },
 			);
 		}
 
-		return NextResponse.json({ success: true });
+		const responseData = await response.json();
+		return NextResponse.json(responseData);
 	} catch (error) {
 		return handleApiError(error, "forwarding metrics");
 	}

@@ -8,8 +8,8 @@
 // ===================================================================================
 
 // Title and Subtitle length limits
-export const MAX_TITLE_LENGTH = 55;
-export const MAX_SUBTITLE_LENGTH = 120;
+export const MAX_TITLE_LENGTH = 40;
+export const MAX_SUBTITLE_LENGTH = 70;
 
 // Size constraints (in pixels)
 export const SIZE_RANGE = { min: 1, max: 1200 };

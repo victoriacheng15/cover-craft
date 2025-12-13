@@ -12,6 +12,7 @@ vi.mock("@/hooks", async () => {
 });
 
 import { useForm as useFormHook } from "@/hooks";
+import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@/shared/validators";
 
 type UseFormReturn = ReturnType<typeof useFormHook>;
 const mockUseFormHook = vi.mocked(useFormHook);
@@ -89,9 +90,11 @@ describe("CoverForm", () => {
 
 		expect(imageNameInput).toBeInTheDocument();
 		expect(titleInput).toBeInTheDocument();
-		expect((titleInput as HTMLInputElement).maxLength).toBe(55);
+		expect((titleInput as HTMLInputElement).maxLength).toBe(MAX_TITLE_LENGTH);
 		expect(subtitleInput).toBeInTheDocument();
-		expect((subtitleInput as HTMLInputElement).maxLength).toBe(120);
+		expect((subtitleInput as HTMLInputElement).maxLength).toBe(
+			MAX_SUBTITLE_LENGTH,
+		);
 
 		// Color pickers
 		const bgColorInput = within(formCard).getByLabelText(
