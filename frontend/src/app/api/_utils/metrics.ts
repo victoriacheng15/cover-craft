@@ -1,8 +1,3 @@
-/**
- * Utility for sending metrics to the backend API
- * Re-exports canonical types from shared/metricPayload.ts
- */
-
 import {
 	DOWNLOAD_CLICK_EVENT,
 	type EventType,
@@ -19,8 +14,6 @@ export {
 	type EventType,
 	type MetricPayload,
 };
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * Client-side function to send metrics to the backend
@@ -45,6 +38,7 @@ export async function sendMetrics(data: Record<string, unknown>) {
  * Server-side proxy handler for the metrics endpoint
  */
 export async function proxyMetrics(data: Record<string, unknown>) {
+	const API_URL = process.env.AZURE_FUNCTION_URL;
 	const response = await fetch(`${API_URL}/metrics`, {
 		method: "POST",
 		headers: {

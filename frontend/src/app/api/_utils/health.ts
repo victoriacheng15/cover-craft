@@ -1,8 +1,3 @@
-/**
- * Utility for fetching health status from the backend API
- */
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export interface HealthResponse {
 	status: string;
 	timestamp: string;
@@ -23,6 +18,7 @@ export async function health(): Promise<HealthResponse> {
  * Server-side proxy handler for the health endpoint
  */
 export async function proxyHealth() {
+	const API_URL = process.env.AZURE_FUNCTION_URL;
 	const response = await fetch(`${API_URL}/health`);
 	if (!response.ok) {
 		throw new Error(`Health check failed: ${response.statusText}`);

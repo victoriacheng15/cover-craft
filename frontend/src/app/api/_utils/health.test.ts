@@ -47,7 +47,7 @@ describe("health", () => {
 		const result = await proxyHealth();
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			`${process.env.NEXT_PUBLIC_API_URL}/health`,
+			`${process.env.AZURE_FUNCTION_URL}/health`,
 		);
 		expect(result).toEqual(mockResponse);
 	});

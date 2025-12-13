@@ -1,33 +1,11 @@
 /**
  * Utility for generating cover images via the backend API
  */
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import type { ImageParams, ValidationError } from "@/shared/validators";
 
-export interface ImageParams {
-	width: number;
-	height: number;
-	backgroundColor: string;
-	textColor: string;
-	font: string;
-	title: string;
-	subtitle?: string;
-	filename: string;
-}
-
-// Error types for generateCoverImage
-export type GenerateCoverErrorDetail = {
-	field: string;
-	message: string;
-};
-
-export type GenerateCoverErrorBody = {
-	error?: string;
-	details?: GenerateCoverErrorDetail[];
-};
-
-export type GenerateCoverImageError = Error & {
-	clientDuration?: number;
-	details?: GenerateCoverErrorDetail[];
+export type ApiErrorResponse = {
+	error: string;
+	details?: ValidationError[];
 };
 
 /**
@@ -48,7 +26,7 @@ export async function generateCoverImage(
 	const clientDuration = Math.round(performance.now() - startTime);
 
 	if (!response.ok) {
-		let errorBody: GenerateCoverErrorBody | null = null;
+		let errorBody: ApiErrorResponse | null = null;
 		try {
 			errorBody = await response.json();
 		} catch (_err) {
@@ -64,7 +42,10 @@ export async function generateCoverImage(
 				.join("; ");
 			message = `${message}: ${detailsText}`;
 		}
-		const err = new Error(message) as GenerateCoverImageError;
+		const err = new Error(message) as Error & {
+			clientDuration?: number;
+			details?: ValidationError[];
+		};
 		err.clientDuration = clientDuration;
 		err.details = details;
 		throw err;
@@ -76,9 +57,9 @@ export async function generateCoverImage(
 
 /**
  * Server-side proxy handler for the generateCoverImage endpoint
- * Forwards requests from Next.js to the backend API
  */
 export async function proxyGenerateCoverImage(body: ImageParams) {
+	const API_URL = process.env.AZURE_FUNCTION_URL;
 	const response = await fetch(`${API_URL}/generateCoverImage`, {
 		method: "POST",
 		headers: {
