@@ -2,7 +2,7 @@ import { cn } from "@/lib";
 
 type SectionTitleProps = React.HTMLAttributes<HTMLHeadingElement> & {
 	size?: "sm" | "md" | "lg" | "xl";
-	as?: "h1" | "h2" | "h3";
+	as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 };
 
 export default function SectionTitle({

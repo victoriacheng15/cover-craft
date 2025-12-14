@@ -14,11 +14,24 @@ import {
 	YAxis,
 } from "recharts";
 import MainLayout from "@/components/layout/MainLayout";
-import { SectionTitle } from "@/components/ui";
+import { SectionTitle, KPICard } from "@/components/ui";
 import { useAnalytics } from "@/hooks";
+import {
+	TITLE_LENGTH_THRESHOLDS,
+	SUBTITLE_LENGTH_THRESHOLDS,
+} from "@/shared/validators";
 
 export default function AnalyticsPage() {
-	const { data, loading, error, COLORS, dailyTrendData } = useAnalytics();
+	const {
+		userEngagement,
+		featurePopularity,
+		accessibilityCompliance,
+		performanceMetrics,
+		loading,
+		error,
+		COLORS,
+		dailyTrendData,
+	} = useAnalytics();
 
 	return (
 		<MainLayout>
@@ -26,58 +39,106 @@ export default function AnalyticsPage() {
 				<SectionTitle size="lg">Analytics</SectionTitle>
 				{loading && <p>Loading analytics...</p>}
 				{error && <p className="text-red-600">{error}</p>}
-				{data && (
+				{userEngagement && featurePopularity && accessibilityCompliance && performanceMetrics && (
 					<div className="flex flex-col gap-8">
 						{/* User Engagement Section */}
 						<section>
 							<SectionTitle as="h3" size="md">
 								User Engagement
 							</SectionTitle>
-							<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-								<div className="bg-blue-50 rounded-lg p-4">
-									<p className="text-sm text-gray-600">Covers Generated</p>
-									<p className="text-3xl font-bold text-blue-600">
-										{data.userEngagement.totalCoversGenerated}
-									</p>
-								</div>
-								<div className="bg-green-50 rounded-lg p-4">
-									<p className="text-sm text-gray-600">Downloads</p>
-									<p className="text-3xl font-bold text-green-600">
-										{data.userEngagement.totalDownloads}
-									</p>
-								</div>
-								<div className="bg-purple-50 rounded-lg p-4">
-									<p className="text-sm text-gray-600">Download Rate</p>
-									<p className="text-3xl font-bold text-purple-600">
-										{data.userEngagement.downloadRate.toFixed(1)}%
-									</p>
-								</div>
+							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+								{[
+									{
+										title: "Covers Generated",
+										value: userEngagement.totalCoversGenerated,
+										color: "blue" as const,
+									},
+									{
+										title: "Images Generated",
+										value: userEngagement.totalImagesGenerated,
+										color: "green" as const,
+									},
+									{
+										title: "Success Rate",
+										value: userEngagement.generationSuccessRate,
+										color: "purple" as const,
+										suffix: "%",
+									},
+									{
+										title: "API Usage",
+										value: userEngagement.apiUsagePercent,
+										color: "orange" as const,
+										suffix: "%",
+									},
+									{
+										title: "Downloads",
+										value: userEngagement.totalDownloads,
+										color: "indigo" as const,
+									},
+									{
+										title: "Download Rate",
+										value: userEngagement.downloadRate,
+										color: "pink" as const,
+										suffix: "%",
+									},
+								].map((card) => (
+									<KPICard key={card.title} {...card} />
+								))}
 							</div>
 
-							{/* Daily Trend */}
-							<div className="w-full min-w-0 bg-slate-100 rounded-lg p-4">
-								<h4 className="text-sm font-semibold mb-4">
-									Daily Trend (Last 7 Days)
-								</h4>
-								<ResponsiveContainer width="100%" height={250} minWidth={0}>
-									<LineChart
-										data={dailyTrendData}
-										margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
-									>
-										<CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
-										<XAxis dataKey="date" />
-										<YAxis allowDecimals={false} />
-										<Tooltip />
-										<Line
-											type="monotone"
-											dataKey="count"
-											stroke="#3b82f6"
-											strokeWidth={2}
-											dot={{ r: 4 }}
-											name="Covers Generated"
-										/>
-									</LineChart>
-								</ResponsiveContainer>
+							{/* Daily & Hourly Trends */}
+							<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+								{/* Daily Trend */}
+								<div className="w-full min-w-0 bg-slate-100 rounded-lg p-4">
+								<SectionTitle as="h4" size="sm" className="mb-4">
+									Daily Trend (Last 30 Days)
+								</SectionTitle>
+									<ResponsiveContainer width="100%" height={250} minWidth={0}>
+										<LineChart
+											data={dailyTrendData}
+											margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
+										>
+											<CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+											<XAxis dataKey="date" />
+											<YAxis allowDecimals={false} />
+											<Tooltip />
+											<Line
+												type="monotone"
+												dataKey="count"
+												stroke="#3b82f6"
+												strokeWidth={2}
+												dot={{ r: 4 }}
+												name="Covers Generated"
+											/>
+										</LineChart>
+									</ResponsiveContainer>
+								</div>
+
+								{/* Hourly Trend */}
+								<div className="w-full min-w-0 bg-slate-100 rounded-lg p-4">
+								<SectionTitle as="h4" size="sm" className="mb-4">
+									Peak Usage Times (By Hour)
+								</SectionTitle>
+									<ResponsiveContainer width="100%" height={250} minWidth={0}>
+										<LineChart
+											data={userEngagement.hourlyTrend}
+											margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
+										>
+											<CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+											<XAxis dataKey="hour" label={{ value: "Hour", position: "bottom" }} />
+											<YAxis allowDecimals={false} />
+											<Tooltip />
+											<Line
+												type="monotone"
+												dataKey="count"
+												stroke="#8b5cf6"
+												strokeWidth={2}
+												dot={{ r: 4 }}
+												name="Generation Count"
+											/>
+										</LineChart>
+									</ResponsiveContainer>
+								</div>
 							</div>
 						</section>
 
@@ -86,14 +147,14 @@ export default function AnalyticsPage() {
 							<SectionTitle as="h3" size="md">
 								Feature Popularity
 							</SectionTitle>
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
 								{/* Top Fonts */}
 								<div className="bg-slate-100 rounded-lg p-4">
-									<h4 className="text-sm font-semibold mb-4">Top Fonts</h4>
+							<SectionTitle as="h4" size="sm" className="mb-4">Top Fonts</SectionTitle>
 									<ResponsiveContainer width="100%" height={300}>
 										<PieChart>
 											<Pie
-												data={data.featurePopularity.topFonts}
+												data={featurePopularity.topFonts}
 												dataKey="count"
 												nameKey="font"
 												cx="50%"
@@ -101,7 +162,7 @@ export default function AnalyticsPage() {
 												outerRadius={100}
 												label
 											>
-												{data.featurePopularity.topFonts.map((entry, idx) => (
+												{featurePopularity.topFonts.map((entry, idx) => (
 													<Cell
 														key={`cell-font-${entry.font}`}
 														fill={COLORS[idx % COLORS.length]}
@@ -116,11 +177,11 @@ export default function AnalyticsPage() {
 
 								{/* Top Sizes */}
 								<div className="bg-slate-100 rounded-lg p-4">
-									<h4 className="text-sm font-semibold mb-4">Top Sizes</h4>
+							<SectionTitle as="h4" size="sm" className="mb-4">Top Sizes</SectionTitle>
 									<ResponsiveContainer width="100%" height={300}>
 										<PieChart>
 											<Pie
-												data={data.featurePopularity.topSizes}
+												data={featurePopularity.topSizes}
 												dataKey="count"
 												nameKey="size"
 												cx="50%"
@@ -128,7 +189,7 @@ export default function AnalyticsPage() {
 												outerRadius={100}
 												label
 											>
-												{data.featurePopularity.topSizes.map((entry, idx) => (
+												{featurePopularity.topSizes.map((entry, idx) => (
 													<Cell
 														key={`cell-size-${entry.size}`}
 														fill={COLORS[idx % COLORS.length]}
@@ -142,37 +203,169 @@ export default function AnalyticsPage() {
 								</div>
 							</div>
 
+							{/* Title Length Distribution */}
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
+								<div className="bg-slate-100 rounded-lg p-4">
+									<SectionTitle as="h4" size="sm" className="mb-4">
+										Title Length Distribution
+									</SectionTitle>
+									<ResponsiveContainer width="100%" height={300}>
+										<PieChart>
+											<Pie
+												data={[
+													{
+														name: `Short (0-${TITLE_LENGTH_THRESHOLDS.SHORT_MAX})`,
+														value:
+															featurePopularity.titleLengthDistribution.short,
+													},
+													{
+														name: `Medium (${TITLE_LENGTH_THRESHOLDS.SHORT_MAX + 1}-${TITLE_LENGTH_THRESHOLDS.MEDIUM_MAX})`,
+														value:
+															featurePopularity.titleLengthDistribution.medium,
+													},
+													{
+														name: `Long (${TITLE_LENGTH_THRESHOLDS.MEDIUM_MAX + 1}+)`,
+														value: featurePopularity.titleLengthDistribution.long,
+													},
+												]}
+												dataKey="value"
+												nameKey="name"
+												cx="50%"
+												cy="50%"
+												outerRadius={100}
+												label
+											>
+												{[0, 1, 2].map((idx) => (
+													<Cell
+														key={`cell-title-${idx}`}
+														fill={COLORS[idx % COLORS.length]}
+													/>
+												))}
+											</Pie>
+											<Tooltip />
+											<Legend />
+										</PieChart>
+									</ResponsiveContainer>
+								</div>
+
+								{/* Subtitle Distribution */}
+								<div className="bg-slate-100 rounded-lg p-4">
+									<SectionTitle as="h4" size="sm" className="mb-4">
+										Subtitle Usage Distribution
+									</SectionTitle>
+									<ResponsiveContainer width="100%" height={300}>
+										<PieChart>
+											<Pie
+												data={[
+													{
+														name: "None (0)",
+														value:
+															featurePopularity.subtitleUsageDistribution
+																.none,
+													},
+													{
+														name: `Short (1-${SUBTITLE_LENGTH_THRESHOLDS.SHORT_MAX})`,
+														value:
+															featurePopularity.subtitleUsageDistribution
+																.short,
+													},
+													{
+														name: `Medium (${SUBTITLE_LENGTH_THRESHOLDS.SHORT_MAX + 1}-${SUBTITLE_LENGTH_THRESHOLDS.MEDIUM_MAX})`,
+														value:
+															featurePopularity.subtitleUsageDistribution
+																.medium,
+													},
+													{
+														name: `Long (${SUBTITLE_LENGTH_THRESHOLDS.MEDIUM_MAX + 1}+)`,
+														value:
+															featurePopularity.subtitleUsageDistribution.long,
+													},
+												]}
+												dataKey="value"
+												nameKey="name"
+												cx="50%"
+												cy="50%"
+												outerRadius={100}
+												label
+											>
+												{[0, 1, 2, 3].map((idx) => (
+													<Cell
+														key={`cell-subtitle-${idx}`}
+														fill={COLORS[idx % COLORS.length]}
+													/>
+												))}
+											</Pie>
+											<Tooltip />
+											<Legend />
+										</PieChart>
+									</ResponsiveContainer>
+								</div>
+							</div>
+
+							{/* Subtitle Trend Over Time */}
+							<div className="mb-6">
+								<div className="bg-slate-100 rounded-lg p-4">
+									<SectionTitle as="h4" size="sm" className="mb-4">
+										Subtitle Adoption Trend (Weekly)
+									</SectionTitle>
+									<ResponsiveContainer width="100%" height={250}>
+										<LineChart
+											data={featurePopularity.subtitleTrendOverTime}
+											margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+										>
+											<CartesianGrid />
+											<XAxis dataKey="week" />
+											<YAxis label={{ value: "Adoption %", angle: -90, position: "insideLeft" }} />
+											<Tooltip
+												formatter={(value: number) =>
+													typeof value === "number"
+														? `${value.toFixed(1)}%`
+														: value
+												}
+											/>
+											<Legend />
+											<Line
+												type="monotone"
+												dataKey="percentage"
+												stroke="#ec4899"
+												dot={{ fill: "#ec4899", r: 4 }}
+												name="Subtitle Adoption Rate"
+											/>
+										</LineChart>
+									</ResponsiveContainer>
+								</div>
+							</div>
+
 							{/* Title Length Stats */}
 							<div className="mt-6 bg-slate-100 rounded-lg p-4">
-								<h4 className="text-sm font-semibold mb-4">
+								<SectionTitle as="h4" size="sm" className="mb-4">
 									Title Length Statistics
-								</h4>
-								<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-									<div>
-										<p className="text-xs text-gray-600">Average</p>
-										<p className="text-2xl font-bold">
-											{data.featurePopularity.titleLengthStats.avgTitleLength.toFixed(
-												1,
-											)}
-										</p>
-									</div>
-									<div>
-										<p className="text-xs text-gray-600">Minimum</p>
-										<p className="text-2xl font-bold">
-											{data.featurePopularity.titleLengthStats.minTitleLength}
-										</p>
-									</div>
-									<div>
-										<p className="text-xs text-gray-600">Maximum</p>
-										<p className="text-2xl font-bold">
-											{data.featurePopularity.titleLengthStats.maxTitleLength}
-										</p>
-									</div>
+								</SectionTitle>
+								<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+									{[
+										{
+											title: "Average",
+											value: featurePopularity.titleLengthStats.avgTitleLength,
+											color: "blue" as const,
+										},
+										{
+											title: "Minimum",
+											value: featurePopularity.titleLengthStats.minTitleLength,
+											color: "green" as const,
+										},
+										{
+											title: "Maximum",
+											value: featurePopularity.titleLengthStats.maxTitleLength,
+											color: "purple" as const,
+										},
+									].map((card) => (
+										<KPICard key={card.title} {...card} />
+									))}
 								</div>
-								<div className="mt-4 p-3 bg-white rounded">
+								<div className="p-3 bg-white rounded">
 									<p className="text-sm">
 										<span className="font-semibold">
-											{data.featurePopularity.subtitleUsagePercent.toFixed(1)}%
+											{featurePopularity.subtitleUsagePercent.toFixed(1)}%
 										</span>{" "}
 										of covers include subtitles
 									</p>
@@ -188,13 +381,13 @@ export default function AnalyticsPage() {
 							<div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
 								{/* WCAG Distribution */}
 								<div className="bg-slate-100 rounded-lg p-4">
-									<h4 className="text-sm font-semibold mb-4">
+									<SectionTitle as="h4" size="sm" className="mb-4">
 										WCAG Level Distribution
-									</h4>
+									</SectionTitle>
 									<ResponsiveContainer width="100%" height={300}>
 										<PieChart>
 											<Pie
-												data={data.accessibilityCompliance.wcagDistribution}
+												data={accessibilityCompliance.wcagDistribution}
 												dataKey="count"
 												nameKey="level"
 												cx="50%"
@@ -202,7 +395,7 @@ export default function AnalyticsPage() {
 												outerRadius={100}
 												label
 											>
-												{data.accessibilityCompliance.wcagDistribution.map(
+												{accessibilityCompliance.wcagDistribution.map(
 													(entry, idx) => (
 														<Cell
 															key={`cell-wcag-${entry.level}`}
@@ -219,43 +412,37 @@ export default function AnalyticsPage() {
 
 								{/* Contrast Ratio Stats */}
 								<div className="bg-slate-100 rounded-lg p-4">
-									<h4 className="text-sm font-semibold mb-4">
+									<SectionTitle as="h4" size="sm" className="mb-4">
 										Contrast Ratio Statistics
-									</h4>
-									<div className="space-y-4 h-full flex flex-col justify-center">
-										<div className="bg-white rounded p-3">
-											<p className="text-xs text-gray-600">
-												Average Contrast Ratio
-											</p>
-											<p className="text-3xl font-bold text-blue-600">
-												{data.accessibilityCompliance.contrastStats.avgContrastRatio.toFixed(
-													2,
-												)}
-											</p>
-										</div>
-										<div className="bg-white rounded p-3">
-											<p className="text-xs text-gray-600">
-												Failure Rate (WCAG FAIL)
-											</p>
-											<p className="text-3xl font-bold text-red-600">
-												{data.accessibilityCompliance.wcagFailurePercent.toFixed(
-													1,
-												)}
-												%
-											</p>
-										</div>
+									</SectionTitle>
+									<div className="grid grid-cols-1 gap-4">
+										{[
+											{
+												title: "Average Contrast Ratio",
+												value: accessibilityCompliance.contrastStats.avgContrastRatio.toFixed(2),
+												color: "blue" as const,
+											},
+											{
+												title: "Failure Rate (WCAG FAIL)",
+												value: accessibilityCompliance.wcagFailurePercent,
+												color: "red" as const,
+												suffix: "%",
+											},
+										].map((card) => (
+											<KPICard key={card.title} {...card} />
+										))}
 									</div>
 								</div>
 							</div>
 
 							{/* WCAG Trend */}
 							<div className="mt-6 w-full min-w-0 bg-slate-100 rounded-lg p-4">
-								<h4 className="text-sm font-semibold mb-4">
+								<SectionTitle as="h4" size="sm" className="mb-4">
 									WCAG Trend (Last 30 Days)
-								</h4>
+								</SectionTitle>
 								<ResponsiveContainer width="100%" height={300} minWidth={0}>
 									<LineChart
-										data={data.accessibilityCompliance.wcagTrend}
+										data={accessibilityCompliance.wcagTrend}
 										margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
 									>
 										<CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
@@ -264,7 +451,7 @@ export default function AnalyticsPage() {
 										<Tooltip />
 										<Legend />
 										{Object.keys(
-											data.accessibilityCompliance.wcagTrend[0] || {},
+											accessibilityCompliance.wcagTrend[0] || {},
 										)
 											.filter((key) => key !== "date")
 											.map((level, idx) => (
@@ -279,6 +466,174 @@ export default function AnalyticsPage() {
 											))}
 									</LineChart>
 								</ResponsiveContainer>
+							</div>
+						</section>
+
+						{/* Performance Metrics Section */}
+						<section>
+							<SectionTitle as="h3" size="md">
+								Performance Metrics
+							</SectionTitle>
+
+							{/* Key Performance Indicators */}
+							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+								{[
+									{
+										title: "Avg Backend Duration",
+										value: performanceMetrics.backendPerformance.avgBackendDuration,
+										color: "white" as const,
+										suffix: "ms",
+									},
+									{
+										title: "Avg Client Duration",
+										value: performanceMetrics.clientPerformance.avgClientDuration,
+										color: "white" as const,
+										suffix: "ms",
+									},
+									{
+										title: "Network Latency",
+										value: performanceMetrics.networkLatency.avgNetworkLatency,
+										color: "white" as const,
+										suffix: "ms",
+									},
+									{
+										title: "P95 Backend Duration",
+										value: performanceMetrics.backendPerformance.p95BackendDuration,
+										color: "white" as const,
+										suffix: "ms",
+									},
+								].map((card) => (
+									<KPICard key={card.title} {...card} />
+								))}
+							</div>
+
+							{/* Performance Trends */}
+							<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+								{/* Backend Duration Trend */}
+								<div className="bg-slate-100 rounded-lg p-4">
+									<SectionTitle as="h4" size="sm" className="mb-4">
+										Backend Duration Trend (Percentiles)
+									</SectionTitle>
+									<ResponsiveContainer width="100%" height={300}>
+										<LineChart
+											data={performanceMetrics.backendPerformance.backendDurationTrend}
+											margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+										>
+											<CartesianGrid />
+											<XAxis dataKey="date" />
+											<YAxis label={{ value: "Duration (ms)", angle: -90, position: "insideLeft" }} />
+											<Tooltip />
+											<Legend />
+											<Line
+												type="monotone"
+												dataKey="p50"
+												stroke="#3b82f6"
+												name="P50"
+											/>
+											<Line
+												type="monotone"
+												dataKey="p95"
+												stroke="#f59e0b"
+												name="P95"
+											/>
+											<Line
+												type="monotone"
+												dataKey="p99"
+												stroke="#ef4444"
+												name="P99"
+											/>
+										</LineChart>
+									</ResponsiveContainer>
+								</div>
+
+								{/* Client Duration Trend */}
+								<div className="bg-slate-100 rounded-lg p-4">
+									<SectionTitle as="h4" size="sm" className="mb-4">
+										Client Duration Trend (Percentiles)
+									</SectionTitle>
+									<ResponsiveContainer width="100%" height={300}>
+										<LineChart
+											data={performanceMetrics.clientPerformance.clientDurationTrend}
+											margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+										>
+											<CartesianGrid />
+											<XAxis dataKey="date" />
+											<YAxis label={{ value: "Duration (ms)", angle: -90, position: "insideLeft" }} />
+											<Tooltip />
+											<Legend />
+											<Line
+												type="monotone"
+												dataKey="p50"
+												stroke="#10b981"
+												name="P50"
+											/>
+											<Line
+												type="monotone"
+												dataKey="p95"
+												stroke="#8b5cf6"
+												name="P95"
+											/>
+											<Line
+												type="monotone"
+												dataKey="p99"
+												stroke="#ec4899"
+												name="P99"
+											/>
+										</LineChart>
+									</ResponsiveContainer>
+								</div>
+							</div>
+
+							{/* Performance by Size */}
+							<div className="bg-slate-100 rounded-lg p-4">
+								<SectionTitle as="h4" size="sm" className="mb-4">
+									Performance by Image Size
+								</SectionTitle>
+								<div className="overflow-x-auto">
+									<table className="w-full text-sm">
+										<thead>
+											<tr className="border-b">
+												<th className="text-left p-2">Size</th>
+												<th className="text-right p-2">Avg Backend (ms)</th>
+												<th className="text-right p-2">Avg Client (ms)</th>
+												<th className="text-right p-2">Avg Total (ms)</th>
+											</tr>
+										</thead>
+										<tbody>
+											{performanceMetrics.performanceBySize.map(
+												(sizeMetric, idx) => (
+													<tr
+														key={`perf-size-${sizeMetric.size}`}
+														className={
+															idx % 2 === 0 ? "bg-white" : "bg-slate-50"
+														}
+													>
+														<td className="p-2">{sizeMetric.size}</td>
+														<td className="text-right p-2">
+															{typeof sizeMetric.avgBackendDuration === "number"
+																? sizeMetric.avgBackendDuration.toFixed(0)
+																: "-"}
+														</td>
+														<td className="text-right p-2">
+															{typeof sizeMetric.avgClientDuration === "number"
+																? sizeMetric.avgClientDuration.toFixed(0)
+																: "-"}
+														</td>
+														<td className="text-right p-2 font-semibold">
+															{typeof sizeMetric.avgBackendDuration === "number" &&
+															typeof sizeMetric.avgClientDuration === "number"
+																? (
+																	sizeMetric.avgBackendDuration +
+																	sizeMetric.avgClientDuration
+																).toFixed(0)
+																: "-"}
+														</td>
+													</tr>
+												),
+											)}
+										</tbody>
+									</table>
+								</div>
 							</div>
 						</section>
 					</div>
