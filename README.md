@@ -25,10 +25,16 @@ A full-stack cover image generator application with built-in analytics dashboard
 2. **Real-time Preview**: See changes instantly as you adjust design parameters
 3. **Color Contrast Validation**: WCAG AA compliance checking ensures all generated images are accessible (≥ 4.5:1 contrast ratio)
 4. **Activity Tracking**: All generate and download actions are logged to MongoDB
-5. **Analytics Dashboard**: `/analytics` route displays comprehensive metrics with interactive charts:
-   - Total clicks (combined, generate, download)
-   - Monthly trends (12-month line chart)
-   - Font and size usage distribution (pie charts)
+5. **Advanced Analytics Dashboard**: `/analytics` route displays comprehensive, interactive metrics:
+   - **Key Metrics**: Total clicks, generate/download breakdown, unique users, conversion rate, and more
+   - **Trends**: 12-month and 30-day activity, hourly and subtitle usage trends
+   - **Feature Popularity**: Font, size, and subtitle usage, title length stats
+   - **Accessibility**: WCAG level distribution, contrast ratio stats, failure rates, and trends
+   - **Performance**: Backend/client duration, network latency, percentiles, and performance by image size
+   - **Reusable KPICard**: Unified metric display with 8 color variants and dynamic formatting
+   - **Interactive Charts**: Line, bar, and pie charts (recharts)
+   - **Array-Map Patterns**: Modular, maintainable code for metrics and cards
+   - **Test Coverage**: All analytics features covered by unit tests
 
 ## 🚀 Key Features & Technical Highlights
 
@@ -73,32 +79,43 @@ This project demonstrates:
 
 ```plaintext
 cover-craft/
-├── frontend/                 # Next.js frontend application
-│   └── src/
-│       ├── app/             # Next.js app router pages
-│       ├── components/      # React components
-│       ├── hooks/           # Custom React hooks
-│       └── lib/             # Utilities and API functions
-├── api/                      # Azure Functions backend
-│   └── src/
-│       ├── functions/       # Azure Function endpoints
-│       └── assets/          # Fonts for image generation
-├── docs/                     # Architecture and development docs
-└── README.md                # This file
+├── frontend/                  # Next.js frontend app (UI, analytics, hooks, components)
+│   ├── src/
+│   │   ├── app/               # Next.js app router pages (incl. analytics)
+│   │   ├── components/        # React UI components (form, layout, preview, ui)
+│   │   ├── hooks/             # Custom React hooks (analytics, form, contrast)
+│   │   └── lib/               # Utilities, fonts, helpers
+│   ├── public/                # Static assets (images, fonts)
+│   ├── coverage/              # Frontend test coverage reports
+│   └── ...                    # Config, docs, etc.
+├── api/                       # Azure Functions backend (serverless)
+│   ├── src/
+│   │   ├── functions/         # API endpoints (analytics, image generation, health)
+│   │   ├── lib/               # Backend utilities (e.g. mongoose)
+│   │   └── shared/            # Shared types/validators (symlinked from root)
+│   └── ...                    # Config, local.settings.json, etc.
+├── shared/                    # TypeScript types, validators, metric payloads (shared)
+├── script/                    # Utility scripts (e.g. check_responses.sh)
+├── docs/                      # Architecture and development docs
+├── README.md                  # This file
+├── package.json, etc.         # Root config/metadata
+└── ...                        # Other project files
 ```
 
 ## 📊 Analytics Dashboard
 
-The `/analytics` page provides real-time insights into user engagement:
+The `/analytics` page provides real-time, interactive insights into user engagement, feature usage, accessibility, and performance. **All data is persisted in MongoDB and aggregated on-demand.**
 
-| Chart | Purpose |
-|-------|---------|
-| **Total Clicks** | Bar chart showing combined, generate, and download totals |
-| **Monthly Trends** | 12-month line chart tracking generate/download activity |
-| **Font Usage** | Pie chart of font popularity |
-| **Size Usage** | Pie chart of size preset preferences |
+> **Privacy Note:** The analytics system does **not** collect any personal data, browser/device information, or IP addresses. Only pure user input data (cover generation and download actions, selected options, etc.) is tracked for aggregate metrics.
 
-All data is persisted in MongoDB and aggregated on-demand. Built with recharts for interactive, responsive visualizations.
+**Dashboard Includes:**
+- **User Engagement**: Total clicks, generate/download breakdown, unique users, conversion rate
+- **Activity Trends**: 12-month, 30-day, and hourly trends with subtitle usage tracking
+- **Feature Popularity**: Font and size distribution, title length statistics
+- **Accessibility Metrics**: WCAG compliance levels, contrast ratio statistics, 30-day trends
+- **Performance Analytics**: Backend/client duration, network latency, percentiles (P50/P95/P99), performance by image size
+
+**Built with:** Reusable KPICard components (8 color variants), interactive charts (recharts), and comprehensive test coverage. See [Analytics Dashboard Components](./docs/frontend_architecture.md#analytics-dashboard-components) in the frontend architecture docs for implementation details.
 
 ## 🏃 Getting Started
 

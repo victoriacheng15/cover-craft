@@ -100,9 +100,14 @@ graph TB
 ### Analytics Flow
 
 1. **Connect**: Establish MongoDB connection.
-2. **Aggregate**: Query metrics collection for summary statistics.
-3. **Transform**: Calculate engagement, feature popularity, and WCAG compliance.
-4. **Response**: Return aggregated analytics data (non-sensitive, safe for public).
+2. **Aggregate**: Execute multi-stage aggregation pipeline on metrics collection:
+   - **User Engagement**: Total clicks, generate/download counts, unique users (by sessionId), conversion rate
+   - **Trends**: Daily/hourly activity, subtitle usage over time (last 30 days and 12 months)
+   - **Feature Popularity**: Font usage distribution, size distribution, title length statistics
+   - **Accessibility**: WCAG level distribution, contrast ratio stats, failure rate calculation
+   - **Performance**: Backend/client duration percentiles (P50, P95, P99), network latency, duration by image size
+3. **Transform**: Calculate aggregated metrics and format for dashboard display.
+4. **Response**: Return comprehensive analytics data (non-sensitive, safe for public).
 
 ### Data Structures
 
@@ -166,10 +171,15 @@ classDiagram
         +string font
         +number titleLength
         +number subtitleLength
+        +boolean hasSubtitle
         +number contrastRatio
         +string wcagLevel
         +number duration
         +number clientDuration
+        +number networkLatency
+        +string sessionId
+        +string hour
+        +string date
     }
 
     class HealthResponse {
@@ -410,10 +420,13 @@ curl -X POST "http://localhost:7071/api/generateCoverImage" \
   "font": "Montserrat",
   "titleLength": 25,
   "subtitleLength": 50,
+  "hasSubtitle": true,
   "contrastRatio": 12.5,
   "wcagLevel": "AAA",
   "duration": 245,
-  "clientDuration": 120
+  "clientDuration": 120,
+  "networkLatency": 42,
+  "sessionId": "sess_abc123xyz"
 }
 ```
 
@@ -431,15 +444,19 @@ curl -X POST "http://localhost:7071/api/generateCoverImage" \
 
 **Validation Rules**:
 
-- `event` and `timestamp` are required
+- `event` and `timestamp` are required fields
 - `status` must be one of: "success", "error", "validation_error"
-- All metrics are stored to MongoDB for historical analysis
+- `sizePreset`, `font`, `titleLength`, `subtitleLength` track feature usage
+- `contrastRatio` and `wcagLevel` track accessibility metrics
+- `duration`, `clientDuration`, `networkLatency` track performance metrics
+- `sessionId` groups metrics by user session (no personal data)
+- All metrics are stored to MongoDB for historical analysis and aggregation
 
 ### Analytics Endpoint (`GET /api/analytics`)
 
 **Purpose**: Fetch aggregated, non-sensitive analytics data for dashboard display.
 
-**Response**:
+**Response** (Comprehensive):
 
 ```json
 {
@@ -447,16 +464,84 @@ curl -X POST "http://localhost:7071/api/generateCoverImage" \
   "body": {
     "success": true,
     "data": {
-      "totalEvents": 1250,
-      "successRate": 95.2,
-      "averageGenerationTime": 234,
-      "popularFonts": ["Montserrat", "Roboto", "Playfair Display"],
-      "popularSizes": ["post", "square"],
-      "wcagCompliance": 98.5,
-      "contrastStats": {
-        "avgRatio": 8.3,
-        "minRatio": 4.5,
-        "maxRatio": 21
+      "userEngagement": {
+        "totalClicks": 3420,
+        "generateCount": 2150,
+        "downloadCount": 1270,
+        "uniqueUsers": 487,
+        "conversionRate": 59.1
+      },
+      "dailyTrends": [
+        {"date": "2025-12-13", "generates": 145, "downloads": 87},
+        {"date": "2025-12-12", "generates": 162, "downloads": 98}
+      ],
+      "monthlyTrends": [
+        {"month": "Dec", "generates": 2150, "downloads": 1270},
+        {"month": "Nov", "generates": 1980, "downloads": 1180}
+      ],
+      "hourlyTrend": [
+        {"hour": "0", "count": 45},
+        {"hour": "1", "count": 32}
+      ],
+      "featurePopularity": {
+        "fontDistribution": [
+          {"font": "Montserrat", "count": 892},
+          {"font": "Roboto", "count": 756}
+        ],
+        "sizeDistribution": [
+          {"size": "post", "count": 1247},
+          {"size": "square", "count": 903}
+        ],
+        "titleLengthStats": {
+          "avgTitleLength": 28.5,
+          "minTitleLength": 1,
+          "maxTitleLength": 100
+        },
+        "subtitleUsagePercent": 76.5
+      },
+      "accessibilityCompliance": {
+        "wcagDistribution": [
+          {"level": "A", "count": 124},
+          {"level": "AA", "count": 1856},
+          {"level": "AAA", "count": 170},
+          {"level": "FAIL", "count": 0}
+        ],
+        "contrastStats": {
+          "avgContrastRatio": 8.7,
+          "minContrastRatio": 4.5,
+          "maxContrastRatio": 21
+        },
+        "wcagFailurePercent": 0,
+        "wcagTrend": [
+          {"date": "2025-12-13", "A": 12, "AA": 198, "AAA": 15, "FAIL": 0}
+        ]
+      },
+      "performanceMetrics": {
+        "backendPerformance": {
+          "avgBackendDuration": 234,
+          "p95BackendDuration": 412,
+          "p99BackendDuration": 567,
+          "backendDurationTrend": [
+            {"date": "2025-12-13", "p50": 210, "p95": 398, "p99": 545}
+          ]
+        },
+        "clientPerformance": {
+          "avgClientDuration": 156,
+          "p95ClientDuration": 287,
+          "p99ClientDuration": 401,
+          "clientDurationTrend": [
+            {"date": "2025-12-13", "p50": 145, "p95": 267, "p99": 380}
+          ]
+        },
+        "networkLatency": {
+          "avgNetworkLatency": 45,
+          "minNetworkLatency": 8,
+          "maxNetworkLatency": 234
+        },
+        "performanceBySize": [
+          {"size": "post", "avgBackendDuration": 240, "avgClientDuration": 158, "count": 1247},
+          {"size": "square", "avgBackendDuration": 225, "avgClientDuration": 153, "count": 903}
+        ]
       }
     }
   }
@@ -527,12 +612,13 @@ sequenceDiagram
     MongoDB-->>AnalyticsFunc: Connected
     
     AnalyticsFunc->>AnalyticsFunc: fetchAggregatedAnalytics()
-    AnalyticsFunc->>MongoDB: Query aggregated metrics<br/>(engagement, features,<br/>accessibility stats)
+    AnalyticsFunc->>MongoDB: Execute aggregation pipeline:<br/>1. User Engagement (clicks, users)<br/>2. Trends (daily, hourly, monthly)<br/>3. Feature Popularity (fonts, sizes)<br/>4. Accessibility (WCAG, contrast)<br/>5. Performance (duration, latency)
     MongoDB-->>AnalyticsFunc: Aggregated results
     
-    AnalyticsFunc-->>APIRoute: 200 OK (analytics data)
+    AnalyticsFunc->>AnalyticsFunc: Calculate percentiles,<br/>format for dashboard
+    AnalyticsFunc-->>APIRoute: 200 OK (comprehensive analytics)
     APIRoute-->>Frontend: JSON response
-    Frontend->>Frontend: Parse & transform data
-    Frontend->>Frontend: Render charts & tables
+    Frontend->>Frontend: Parse & organize data
+    Frontend->>Frontend: Render 15+ charts & metrics:<br/>KPICards, line charts, pie charts,<br/>tables, trend visualizations
     Frontend-->>Client: Analytics dashboard displayed
 ```
