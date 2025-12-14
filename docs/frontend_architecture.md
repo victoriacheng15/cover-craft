@@ -92,7 +92,22 @@ The application is organized into modular, reusable components:
 ### Pages
 
 - **`page.tsx`** (Home): Main cover image generation page with form and live preview.
-- **`analytics/page.tsx`**: Analytics dashboard page displaying aggregated metrics and insights.
+  - Combines `CoverForm` and `CanvasPreview` components in a two-column layout
+  - Handles form submission and image generation workflow
+  - Integrates metrics tracking after successful image generation
+
+- **`analytics/page.tsx`**: Comprehensive analytics dashboard displaying aggregated metrics and insights.
+  - **Components**: Uses `KPICard` (reusable metric cards with 8 color variants) and `SectionTitle` (section headers)
+  - **Data Visualization**: Line charts (trends), bar charts (hourly activity), pie charts (distributions), tables (performance by size)
+  - **Sections**:
+    1. **User Engagement**: Total clicks, generate/download breakdown, unique users, conversion rate (KPICards + bar chart)
+    2. **Activity Trends**: Monthly trends (12-month), hourly trend (24-hour), subtitle usage trend (line charts)
+    3. **Feature Popularity**: Font usage (pie), size distribution (pie), title length stats (KPICards), subtitle usage %
+    4. **Accessibility Compliance**: WCAG distribution (pie), contrast stats (KPICards), failure rate, 30-day trend (line chart)
+    5. **Performance Metrics**: Backend/client duration, network latency (KPICards), duration trends (percentiles P50/P95/P99), performance by size (table)
+  - **Data Source**: Fetches from `GET /api/analytics` via `useAnalytics` hook
+  - **Array-Map Patterns**: Uses `.map()` for rendering metric cards and charts with consistent styling
+  - **Responsive Layout**: Grid-based layout (1-4 columns depending on screen size) for optimal mobile/tablet/desktop views
 
 ### Form & Input Components
 
@@ -122,8 +137,19 @@ The application is organized into modular, reusable components:
 ### Custom Hooks
 
 - **`useForm`**: Manages form state for cover generation (size, colors, text, font, etc.).
+  - State: size, filename, title, subtitle, backgroundColor, textColor, font, isGenerating, error, generatedImageUrl
+  - Methods: handleInputChange, handleGenerate, handleReset, handleDownload
+  - Validation: Ensures title is filled and contrast ratio meets WCAG AA (≥ 4.5:1) before enabling Generate button
+
 - **`useContrastCheck`**: Real-time WCAG AA color contrast validation with 300ms debounce.
+  - Input: backgroundColor, textColor
+  - Returns: status (good/warning/poor), ratio (number), level (AAA/AA/FAIL), message (string), meetsWCAG (boolean)
+  - Performance: Debounced to prevent excessive calculations during rapid color changes
+
 - **`useAnalytics`**: Fetches and manages analytics data for the dashboard page.
+  - Fetches from `GET /api/analytics` on component mount
+  - Returns destructured analytics data with all metrics categories
+  - Handles loading and error states gracefully
 
 ## Data Model
 
@@ -165,6 +191,60 @@ interface FormState {
 
 // API response
 type ImageResponse = Blob;       // PNG image as Blob
+
+// Analytics data structure (from GET /api/analytics)
+interface AnalyticsData {
+  userEngagement: {
+    totalClicks: number;
+    generateCount: number;
+    downloadCount: number;
+    uniqueUsers: number;
+    conversionRate: number;
+  };
+  dailyTrends: Array<{ date: string; generates: number; downloads: number }>;
+  monthlyTrends: Array<{ month: string; generates: number; downloads: number }>;
+  hourlyTrend: Array<{ hour: string; count: number }>;
+  featurePopularity: {
+    fontDistribution: Array<{ font: string; count: number }>;
+    sizeDistribution: Array<{ size: string; count: number }>;
+    titleLengthStats: {
+      avgTitleLength: number;
+      minTitleLength: number;
+      maxTitleLength: number;
+    };
+    subtitleUsagePercent: number;
+  };
+  accessibilityCompliance: {
+    wcagDistribution: Array<{ level: string; count: number }>;
+    contrastStats: {
+      avgContrastRatio: number;
+      minContrastRatio: number;
+      maxContrastRatio: number;
+    };
+    wcagFailurePercent: number;
+    wcagTrend: Array<{ date: string; A: number; AA: number; AAA: number; FAIL: number }>;
+  };
+  performanceMetrics: {
+    backendPerformance: {
+      avgBackendDuration: number;
+      p95BackendDuration: number;
+      p99BackendDuration: number;
+      backendDurationTrend: Array<{ date: string; p50: number; p95: number; p99: number }>;
+    };
+    clientPerformance: {
+      avgClientDuration: number;
+      p95ClientDuration: number;
+      p99ClientDuration: number;
+      clientDurationTrend: Array<{ date: string; p50: number; p95: number; p99: number }>;
+    };
+    networkLatency: {
+      avgNetworkLatency: number;
+      minNetworkLatency: number;
+      maxNetworkLatency: number;
+    };
+    performanceBySize: Array<{ size: string; avgBackendDuration: number; avgClientDuration: number; count: number }>;
+  };
+}
 ```
 
 ### Available Options
@@ -190,14 +270,48 @@ type ImageResponse = Blob;       // PNG image as Blob
 
 - **`POST /api/generateCoverImage`**: Next.js route handler that proxies to Azure Functions backend.
   - Request body: `ImageParams` (JSON)
-  - Response: PNG image blob
-  - Error response: `{ error: string, details?: object }`
+  - Response: PNG image blob (binary)
+  - Error response: `{ status: 400, error: "Validation failed", details: [...] }`
 
 - **`GET /api/health`**: Check API health and availability.
   - Response: `{ localTime: string, isoTime: string }`
+  - Example: `{ "localTime": "2025-12-13T10:30:00", "isoTime": "2025-12-13T10:30:00Z" }`
 
 - **`POST /api/metrics`**: Store event metrics for analytics (proxies to backend).
-  - Request body: `MetricsData` (event, timestamp, status, performance data)
+  - Request body: `MetricsData` (event, timestamp, status, performance data, session info)
+  - Response: `{ status: 201, body: { success: true, message: "Metrics stored successfully" } }`
+
+- **`GET /api/analytics`**: Fetch comprehensive aggregated analytics data for dashboard.
+  - Response: `AnalyticsData` with 5 metric categories:
+    - `userEngagement`: Total clicks, generate/download counts, unique users, conversion rate
+    - `dailyTrends`, `monthlyTrends`, `hourlyTrend`: Time-series data
+    - `featurePopularity`: Font/size distribution, title length stats
+    - `accessibilityCompliance`: WCAG distribution, contrast stats, failure rates, trends
+    - `performanceMetrics`: Backend/client duration, network latency, percentiles, duration by size
+  - Example structure (abbreviated):
+  
+    ```json
+    {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "userEngagement": {
+            "totalClicks": 3420,
+            "generateCount": 2150,
+            "downloadCount": 1270,
+            "uniqueUsers": 487,
+            "conversionRate": 59.1
+          },
+          "dailyTrends": [...],
+          "monthlyTrends": [...],
+          "featurePopularity": {...},
+          "accessibilityCompliance": {...},
+          "performanceMetrics": {...}
+        }
+      }
+    }
+    ```
 
 ```typescript
 // Generate cover image
@@ -210,7 +324,7 @@ async function downloadImage(blob: Blob, filename: string): Promise<void>
 async function healthCheck(): Promise<HealthCheckResponse>
 
 // Store metrics for analytics
-async function storeMetrics(metricsData: MetricsData): Promise<void>
+async function storeMetrics(metricsData: MetricsData): Promise<{ success: boolean }>
 
 // Fetch aggregated analytics
 async function getAnalytics(): Promise<AnalyticsData>
@@ -258,6 +372,38 @@ sequenceDiagram
     Form-->>User: Download starts
 ```
 
+## Analytics Dashboard Components
+
+The analytics dashboard uses specialized components for consistent metric display and visualization:
+
+### KPICard Component
+
+- **Purpose**: Reusable card for displaying key performance indicators with flexible styling.
+- **Features**:
+  - 8 color variants: `blue`, `green`, `red`, `yellow`, `purple`, `white`, `orange`, `pink`
+  - Dynamic formatting: Supports integers, decimals, percentages
+  - Optional suffix: Append text like "%", "ms", "s" to values
+  - Bold/semibold font weight options
+  - Responsive sizing: Adapts to container width
+- **Props**: `{ title: string, value: number | string, color: ColorVariant, suffix?: string, bold?: boolean }`
+- **Usage**: Array-mapped for rendering multiple metrics in grid layouts
+
+### SectionTitle Component
+
+- **Purpose**: Consistent section headers with semantic heading levels.
+- **Features**:
+  - Multiple sizes: `lg`, `md`, `sm` (H2, H3, H4)
+  - Optional className for custom styling
+  - Used throughout dashboard for hierarchy and organization
+- **Props**: `{ as: 'h2' | 'h3' | 'h4', size: 'lg' | 'md' | 'sm', children: React.ReactNode }`
+
+### Chart Components
+
+- **LineChart** (recharts): Time-series data visualization (trends, percentiles)
+- **BarChart** (recharts): Category comparisons (hourly activity, totals)
+- **PieChart** (recharts): Distribution visualization (font usage, WCAG levels)
+- **Table**: Structured data display (performance by size)
+
 ## Accessibility Standards
 
 Built with accessibility support in mind. The app includes:
@@ -271,6 +417,13 @@ Built with accessibility support in mind. The app includes:
   - Color pickers always paired with text labels so information isn't conveyed by color alone
 - **Screen Reader Support**: Error messages are announced via `role="alert"`, loading states are announced via `aria-busy`, image alt text is descriptive (e.g., "Generated cover image: {title}"), form fields have descriptive `aria-label` attributes, Generate button disabled state announced with tooltip
 - **Focus Indicators**: All interactive elements have visible focus rings with `focus:ring-2` styling
+- **Dashboard Accessibility**:
+  - Chart titles use descriptive `SectionTitle` components
+  - Data tables include proper `<th>` headers with `scope` attributes
+  - KPICard titles are clear and descriptive
+  - Metric abbreviations (P95, AAA, etc.) are defined in accompanying text
+  - Color-coded indicators (charts, status dots) always have text labels
+  - Loading states on analytics page have `aria-live="polite"` announcements
 
 ## Extensibility
 

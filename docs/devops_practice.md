@@ -34,16 +34,32 @@ This keeps each pipeline fast and scoped to the code it needs to verify.
 
 #### lint
 
-- Runs on `ubuntu-latest`, installs Node 24, checks out the repository, runs `npm ci`, then executes `npm run lint` from the root.
-- Succeeds before downstream tests can run, ensuring style issues are addressed first.
+- Runs on `ubuntu-latest`, installs Node 24
+- Steps:
+  1. Checkout repository
+  2. Setup Node.js (v24)
+  3. Install root dependencies and run linting: `npm ci && npm run lint`
+- Succeeds before downstream tests can run, ensuring style issues are addressed first
 
 #### test-api
 
-- Depends on `lint`, repeats checkout/setup, runs `npm ci`, then invokes `npm run test --prefix api` so the API suite uses its local dependencies.
+- Depends on `lint` (waits for lint to pass)
+- Runs on `ubuntu-latest`
+- Steps:
+  1. Checkout repository
+  2. Setup Node.js (v24)
+  3. Install API dependencies and run tests: `npm ci --prefix api && npm run test --prefix api`
+- Tests API with isolated dependencies from `api/package-lock.json`
 
 #### test-frontend
 
-- Depends on `lint`, repeats setup, runs `npm ci`, and executes `npm run test --prefix frontend`, covering the frontend Vitest suite.
+- Depends on `lint` (waits for lint to pass)
+- Runs on `ubuntu-latest`
+- Steps:
+  1. Checkout repository
+  2. Setup Node.js (v24)
+  3. Install frontend dependencies and run tests: `npm ci --prefix frontend && npm run test --prefix frontend`
+- Tests frontend (Vitest) with isolated dependencies from `frontend/package-lock.json`
 
 **Key Features**:
 
@@ -53,7 +69,7 @@ This keeps each pipeline fast and scoped to the code it needs to verify.
 
 ---
 
-### 3. Function App Deployment (`azure_function.yml`)
+### 2. Function App Deployment (`azure_function.yml`)
 
 **Purpose**: Automatically deploys API to Azure Functions on merge to main.
 
@@ -65,28 +81,43 @@ This keeps each pipeline fast and scoped to the code it needs to verify.
 **Environment Variables**:
 
 - `AZURE_FUNCTIONAPP_NAME`: `cover-craft`
-- `AZURE_FUNCTIONAPP_PACKAGE_PATH`: `api/`
-- `NODE_VERSION`: `22.x`
+- `AZURE_FUNCTIONAPP_PACKAGE_PATH`: `api`
+- `NODE_VERSION`: `24.x`
+
+**Concurrency**:
+
+- Group: `cover-craft-function-deploy` (only one deployment at a time)
+- Cancels in-progress deployments when new push triggers workflow
 
 **Job**: build-and-deploy
 
 **Steps**:
 
-1. Checkout code
-2. Setup Node.js 22.x
-3. Install dependencies, build, and run tests
-4. Azure Login using service principal
-5. Create deployment zip (excludes `local.settings.json`)
-6. Deploy to Azure Functions using Azure CLI
+1. **Checkout (shallow)**: Uses `fetch-depth: 1` to minimize cloning time
+2. **Setup Node.js (24.x)** with npm caching on `api/package-lock.json`
+3. **Install dependencies**: `npm ci --prefer-offline --no-audit --no-fund`
+4. **Build**: `npm run build` (TypeScript → JavaScript)
+5. **Run tests** (fail fast): `npm test -- --run`
+6. **Prune dev dependencies**: `npm prune --production` (reduces zip size)
+7. **Prepare deployment zip**:
 
-**Deployment Command**:
+   ```bash
+   zip -r deploy.zip . -x local.settings.json
+   ```
 
-```bash
-az functionapp deployment source config-zip \
-  --name {{ AZURE_FUNCTIONAPP_NAME }} \
-  --resource-group personal-projects \
-  --src ../deploy.zip
-```
+   - Excludes `local.settings.json` to prevent exposing secrets
+   - Logs zip contents and size for verification
+8. **Azure Login**: Uses GitHub secret `AZURE_CREDENTIALS` with service principal
+9. **Deploy to Azure Functions**:
+
+   ```bash
+   az functionapp deployment source config-zip \
+     --name cover-craft \
+     --resource-group personal-projects \
+     --src ./deploy.zip
+   ```
+
+10. **Post-deploy info**: Logs completion timestamp and final zip size
 
 **Key Features**:
 
@@ -101,27 +132,29 @@ az functionapp deployment source config-zip \
 
 ---
 
-### 4. Markdown Linter (`markdownlint.yml`)
+### 2. Markdown Linter (`markdownlint.yml`)
 
 **Purpose**: Validates documentation formatting for every PR that touches Markdown.
 
 **Trigger**:
 
-- Pull requests to `main` changing `**/*.md`
-- Manual dispatch
+- Pull requests to `main` with changes in `**/*.md`
+- Manual dispatch (`workflow_dispatch`)
 
 **Job**: `markdownlint`
 
 **Steps**:
 
-1. Checkout the repository.
-2. Run `victoriacheng15hub/platform-actions/markdown-linter@main` with `md_paths: '**/*.md'`.
+1. Checkout repository
+2. Run custom markdown linter action: `victoriacheng15hub/platform-actions/markdown-linter@main`
+   - Input: `md_paths: '**/*.md'`
 
 **Key Features**:
 
-- Keeps docs styling consistent with a reusable action.
-- Runs quickly because it only inspects Markdown files.
-- Prevents textual/formatting regressions from slipping into `main`.
+- Keeps docs styling consistent with a reusable custom action
+- Runs quickly because it only inspects Markdown files
+- Prevents formatting regressions from slipping into `main`
+- No failed deployments due to doc formatting issues
 
 ---
 
