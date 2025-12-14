@@ -1,7 +1,15 @@
 interface KPICardProps {
 	title: string;
 	value: number | string;
-	color: "blue" | "green" | "purple" | "orange" | "indigo" | "pink" | "red" | "white";
+	color:
+		| "blue"
+		| "green"
+		| "purple"
+		| "orange"
+		| "indigo"
+		| "pink"
+		| "red"
+		| "white";
 	suffix?: string;
 	bold?: boolean;
 }
@@ -25,8 +33,7 @@ export default function KPICard({
 	bold = true,
 }: KPICardProps) {
 	const { bg, text } = colorStyles[color];
-	const formattedValue =
-		typeof value === "number" ? value.toFixed(0) : value;
+	const formattedValue = typeof value === "number" ? value.toFixed(0) : value;
 
 	return (
 		<div className={`${bg} rounded-lg p-4`}>

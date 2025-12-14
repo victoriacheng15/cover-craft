@@ -108,9 +108,15 @@ describe("useAnalytics", () => {
 		});
 
 		expect(result.current.userEngagement).toEqual(mockData.userEngagement);
-		expect(result.current.featurePopularity).toEqual(mockData.featurePopularity);
-		expect(result.current.accessibilityCompliance).toEqual(mockData.accessibilityCompliance);
-		expect(result.current.performanceMetrics).toEqual(mockData.performanceMetrics);
+		expect(result.current.featurePopularity).toEqual(
+			mockData.featurePopularity,
+		);
+		expect(result.current.accessibilityCompliance).toEqual(
+			mockData.accessibilityCompliance,
+		);
+		expect(result.current.performanceMetrics).toEqual(
+			mockData.performanceMetrics,
+		);
 		expect(result.current.error).toBe(null);
 	});
 

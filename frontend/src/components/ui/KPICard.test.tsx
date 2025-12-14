@@ -4,50 +4,27 @@ import KPICard from "./KPICard";
 
 describe("KPICard", () => {
 	it("renders title and value correctly", () => {
-		render(
-			<KPICard
-				title="Test Metric"
-				value={100}
-				color="blue"
-			/>
-		);
+		render(<KPICard title="Test Metric" value={100} color="blue" />);
 
 		expect(screen.getByText("Test Metric")).toBeInTheDocument();
 		expect(screen.getByText("100")).toBeInTheDocument();
 	});
 
 	it("formats numeric values to whole numbers", () => {
-		render(
-			<KPICard
-				title="Percentage"
-				value={75.567}
-				color="green"
-			/>
-		);
+		render(<KPICard title="Percentage" value={75.567} color="green" />);
 
 		expect(screen.getByText("76")).toBeInTheDocument();
 	});
 
 	it("displays string values as-is", () => {
-		render(
-			<KPICard
-				title="String Value"
-				value="1478.50"
-				color="purple"
-			/>
-		);
+		render(<KPICard title="String Value" value="1478.50" color="purple" />);
 
 		expect(screen.getByText("1478.50")).toBeInTheDocument();
 	});
 
 	it("appends suffix correctly", () => {
 		render(
-			<KPICard
-				title="Success Rate"
-				value={95.5}
-				color="orange"
-				suffix="%"
-			/>
+			<KPICard title="Success Rate" value={95.5} color="orange" suffix="%" />,
 		);
 
 		// Check that formatted value and suffix are in the document
@@ -56,11 +33,7 @@ describe("KPICard", () => {
 
 	it("applies correct color styling for blue", () => {
 		const { container } = render(
-			<KPICard
-				title="Metric"
-				value={100}
-				color="blue"
-			/>
+			<KPICard title="Metric" value={100} color="blue" />,
 		);
 
 		const card = container.firstChild as HTMLElement;
@@ -70,11 +43,7 @@ describe("KPICard", () => {
 
 	it("applies correct color styling for green", () => {
 		const { container } = render(
-			<KPICard
-				title="Metric"
-				value={100}
-				color="green"
-			/>
+			<KPICard title="Metric" value={100} color="green" />,
 		);
 
 		const card = container.firstChild as HTMLElement;
@@ -84,11 +53,7 @@ describe("KPICard", () => {
 
 	it("applies correct color styling for red", () => {
 		const { container } = render(
-			<KPICard
-				title="Failure Rate"
-				value={5}
-				color="red"
-			/>
+			<KPICard title="Failure Rate" value={5} color="red" />,
 		);
 
 		const card = container.firstChild as HTMLElement;
@@ -98,11 +63,7 @@ describe("KPICard", () => {
 
 	it("applies correct color styling for white", () => {
 		const { container } = render(
-			<KPICard
-				title="Metric"
-				value={100}
-				color="white"
-			/>
+			<KPICard title="Metric" value={100} color="white" />,
 		);
 
 		const card = container.firstChild as HTMLElement;
@@ -112,40 +73,32 @@ describe("KPICard", () => {
 	});
 
 	it("applies bold font by default", () => {
-		render(
-			<KPICard
-				title="Metric"
-				value={100}
-				color="blue"
-			/>
-		);
+		render(<KPICard title="Metric" value={100} color="blue" />);
 
 		expect(screen.getByText("100")).toHaveClass("font-bold");
 	});
 
 	it("applies semibold font when bold is false", () => {
-		render(
-			<KPICard
-				title="Metric"
-				value={100}
-				color="blue"
-				bold={false}
-			/>
-		);
+		render(<KPICard title="Metric" value={100} color="blue" bold={false} />);
 
 		expect(screen.getByText("100")).toHaveClass("font-semibold");
 	});
 
 	it("handles all color variants", () => {
-		const colors = ["blue", "green", "purple", "orange", "indigo", "pink", "red", "white"] as const;
+		const colors = [
+			"blue",
+			"green",
+			"purple",
+			"orange",
+			"indigo",
+			"pink",
+			"red",
+			"white",
+		] as const;
 
 		colors.forEach((color) => {
 			const { unmount } = render(
-				<KPICard
-					title={`${color} card`}
-					value={100}
-					color={color}
-				/>
+				<KPICard title={`${color} card`} value={100} color={color} />,
 			);
 
 			expect(screen.getByText(`${color} card`)).toBeInTheDocument();
@@ -154,25 +107,14 @@ describe("KPICard", () => {
 	});
 
 	it("handles zero value correctly", () => {
-		render(
-			<KPICard
-				title="Zero Value"
-				value={0}
-				color="blue"
-			/>
-		);
+		render(<KPICard title="Zero Value" value={0} color="blue" />);
 
 		expect(screen.getByText("0")).toBeInTheDocument();
 	});
 
 	it("combines suffix with formatted value", () => {
 		render(
-			<KPICard
-				title="Duration"
-				value={1478.9}
-				color="white"
-				suffix="ms"
-			/>
+			<KPICard title="Duration" value={1478.9} color="white" suffix="ms" />,
 		);
 
 		expect(screen.getByText(/1479ms/)).toBeInTheDocument();
