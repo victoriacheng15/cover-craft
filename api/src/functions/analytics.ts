@@ -743,18 +743,48 @@ async function fetchPerformanceMetrics(
 					height: "$size.height",
 				},
 				durations: { $push: "$duration" },
-				clientDurations: { $push: "$clientDuration" },
 			},
 		},
 	])) as Array<{
 		_id: { width: number | null; height: number | null };
 		durations: number[];
+	}>;
+
+	// Get client durations by size from GENERATE_CLICK events
+	const clientDurationsBySize = (await Metric.aggregate([
+		{
+			$match: {
+				event: GENERATE_CLICK_EVENT,
+				status: METRIC_STATUS_SUCCESS,
+				clientDuration: { $exists: true, $ne: null },
+			},
+		},
+		{
+			$group: {
+				_id: {
+					width: "$size.width",
+					height: "$size.height",
+				},
+				clientDurations: { $push: "$clientDuration" },
+			},
+		},
+	])) as Array<{
+		_id: { width: number | null; height: number | null };
 		clientDurations: number[];
 	}>;
 
+	// Create a map for quick lookup
+	const clientDurationsMap = new Map(
+		clientDurationsBySize.map((item) => [
+			`${item._id.width}-${item._id.height}`,
+			item.clientDurations,
+		]),
+	);
+
 	const performanceBySize = performanceBySizeRaw.map((item) => {
 		const backendDurs = item.durations.filter((d) => d != null);
-		const clientDurs = item.clientDurations.filter((d) => d != null);
+		const key = `${item._id.width}-${item._id.height}`;
+		const clientDurs = clientDurationsMap.get(key) || [];
 
 		const avgBackend =
 			backendDurs.length > 0
