@@ -3,6 +3,7 @@ import { getAnalytics } from "@/_utils";
 import type {
 	AccessibilityCompliance,
 	FeaturePopularity,
+	PerformanceMetrics,
 	UserEngagement,
 } from "@/shared/analytics";
 
@@ -10,6 +11,7 @@ interface AnalyticsData {
 	userEngagement: UserEngagement;
 	featurePopularity: FeaturePopularity;
 	accessibilityCompliance: AccessibilityCompliance;
+	performanceMetrics: PerformanceMetrics;
 }
 
 export function useAnalytics() {
@@ -33,6 +35,12 @@ export function useAnalytics() {
 		fetchAnalytics();
 	}, []);
 
+	// Destructure analytics data
+	const userEngagement = data?.userEngagement;
+	const featurePopularity = data?.featurePopularity;
+	const accessibilityCompliance = data?.accessibilityCompliance;
+	const performanceMetrics = data?.performanceMetrics;
+
 	// Chart colors - medium to dark colors for better contrast on whitesmoke background
 	const COLORS = [
 		"#10b981", // emerald-500
@@ -46,8 +54,8 @@ export function useAnalytics() {
 	];
 
 	// Prepare data for total clicks chart, including combined total
-	const totalGenerate = data?.userEngagement?.totalCoversGenerated || 0;
-	const totalDownload = data?.userEngagement?.totalDownloads || 0;
+	const totalGenerate = userEngagement?.totalCoversGenerated || 0;
+	const totalDownload = userEngagement?.totalDownloads || 0;
 	const totalCombined = totalGenerate + totalDownload;
 
 	const totalClicksData = [
@@ -56,9 +64,9 @@ export function useAnalytics() {
 		{ name: "Download", value: totalDownload },
 	];
 
-	// Prepare data for daily trend chart (last 7 days from available data)
-	const dailyTrendData = (data?.userEngagement?.dailyTrend || [])
-		.slice(-7)
+	// Prepare data for daily trend chart (last 30 days from available data)
+	const dailyTrendData = (userEngagement?.dailyTrend || [])
+		.slice(-30)
 		.map((item) => ({
 			date: new Date(item.date).toLocaleDateString("default", {
 				month: "short",
@@ -67,5 +75,15 @@ export function useAnalytics() {
 			count: item.count,
 		}));
 
-	return { data, loading, error, COLORS, totalClicksData, dailyTrendData };
+	return {
+		userEngagement,
+		featurePopularity,
+		accessibilityCompliance,
+		performanceMetrics,
+		loading,
+		error,
+		COLORS,
+		totalClicksData,
+		dailyTrendData,
+	};
 }
