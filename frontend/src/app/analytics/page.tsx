@@ -336,7 +336,7 @@ export default function AnalyticsPage() {
 													}}
 												/>
 												<Tooltip
-													formatter={(value: number) =>
+													formatter={(value: number | undefined) =>
 														typeof value === "number"
 															? `${value.toFixed(1)}%`
 															: value
