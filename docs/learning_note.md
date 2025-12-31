@@ -1,45 +1,32 @@
-# 🧭 Learning Notes
+# 🧭 Engineering Journal
 
-Here's a summary of what I learned while building this full-stack cover image generator project.
+Technical challenges, architectural decisions, and key learnings from building the **Cover Craft** platform.
 
----
+## 🏗️ Architecture & Infrastructure
 
-## 🚀 Deploying Serverless APIs to Azure Function App
+| Challenge | Solution | Key Takeaway |
+| :--- | :--- | :--- |
+| **Serverless Deployment** | Automated deployment to **Azure Functions** using GitHub Actions and `config-zip`. | Serverless is ideal for event-driven workloads (image generation) but requires careful cold-start management. |
+| **Secret Management** | Implemented strict `.funcignore` rules and used Azure App Settings for production credentials. | Never rely on `local.settings.json` in production; infrastructure-as-code principles prevent leaks. |
+| **Multi-Cloud Hosting** | Decoupled Frontend (Vercel) from Backend (Azure) using Next.js API Routes as a proxy. | Proxy patterns allow flexibility in backend hosting without exposing infrastructure details to the client. |
 
-**Context:** I built a serverless image generation API and deployed it to Azure Function App to learn cloud deployment and serverless architecture patterns.
+## 🎨 Rendering & Validation Logic
 
-**What I Learned:**
+| Challenge | Solution | Key Takeaway |
+| :--- | :--- | :--- |
+| **Server-Side Rendering** | Leveraged `node-canvas` to generate high-fidelity PNGs on the backend, ensuring consistency across devices. | Backend rendering guarantees pixel-perfect output but adds memory overhead that must be monitored. |
+| **WCAG Compliance** | Built a shared validation library (`shared/validators.ts`) to enforce 4.5:1 contrast ratios before generation. | Accessibility checks should be "shift-left"—validated at the API boundary, not just the UI. |
+| **Font Consistency** | mapped Google Fonts in Next.js to CSS variables, ensuring the live preview matches the backend canvas render. | Hybrid rendering (CSS preview + Canvas output) offers the best UX: instant feedback with zero server load until final generation. |
 
-- Azure Functions provides a serverless compute model where you only pay for execution time, not idle server time.
-- Function App deployment requires proper authentication setup using service principals and GitHub secrets.
-- Environment variables and sensitive configurations (like `local.settings.json`) must be managed carefully to avoid exposing credentials.
-- Azure CLI commands can automate the deployment pipeline using config-zip for continuous deployment.
+## 📊 Data & Analytics
 
-**Why It Matters:**
+| Challenge | Solution | Key Takeaway |
+| :--- | :--- | :--- |
+| **Event Ingestion** | Designed a strongly-typed `MetricPayload` schema to capture granular performance and usage data. | Strong typing at the ingestion layer prevents data swamps and simplifies downstream analysis. |
+| **Complex Aggregation** | Utilized MongoDB's Aggregation Pipeline for calculating percentiles (P95/P99) and trends on the fly. | Moving computation to the database layer (via Aggregation) is significantly faster than processing raw logs in application code. |
 
-- Serverless architecture reduces operational overhead and infrastructure costs.
-- Enables automatic scaling without manual server management.
-- GitHub Actions integration allows fully automated CI/CD pipelines from code merge to production.
-- Understanding cloud deployment is critical for modern application development.
+## 🔮 Future Improvements
 
-**How I Applied It:**
-
-- Created an Azure Function App resource named `cover-craft` in `personal-projects` resource group.
-- Configured GitHub Actions workflow to automatically build, test, and deploy on push to main.
-- Set up Azure service principal credentials in GitHub secrets for secure authentication.
-- Implemented deployment zip creation that excludes sensitive configuration files.
-- Deployed Node.js Canvas-based image generation as serverless functions.
-
-**Challenges / Limitations:**
-
-- Initial setup of Azure credentials and service principal requires careful configuration.
-- Debugging serverless functions locally requires Azure Functions Core Tools installation.
-- Cold start latency can be noticeable for infrequently used functions.
-- Azure Function App pricing can increase with high concurrent request volume.
-
-**Key Takeaways:**
-
-- ✅ Serverless is ideal for event-driven workloads like image generation on demand.
-- ✅ Automated CI/CD pipelines are essential for safe and consistent cloud deployments.
-- ✅ Infrastructure as Code (via GitHub Actions workflows) makes deployments reproducible and auditable.
-- ✅ Proper secret management is critical when deploying to cloud platforms.  
+- **Caching:** Implement Azure Redis Cache for frequently generated default covers.
+- **Queueing:** Move heavy rendering tasks to Azure Storage Queues for better concurrency handling.
+- **Edge Function:** Migrate lightweight validation logic to the Edge to reduce latency.
