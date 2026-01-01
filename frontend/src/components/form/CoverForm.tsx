@@ -42,7 +42,7 @@ export default function CoverForm() {
 			"good" | "warning" | "poor",
 			{ dot: string; text: string }
 		> = {
-			good: { dot: "bg-green-500", text: "text-green-700" },
+			good: { dot: "bg-emerald-500", text: "text-emerald-700" },
 			warning: { dot: "bg-yellow-500", text: "text-yellow-700" },
 			poor: { dot: "bg-red-500", text: "text-red-700" },
 		};
@@ -103,14 +103,14 @@ export default function CoverForm() {
 						aria-describedby={error ? errorId : undefined}
 					/>
 					<div className="flex justify-between items-center mt-1">
-						<span className="text-xs text-slate-500"></span>
+						<span className="text-xs text-gray-500"></span>
 						<span
 							className={`text-xs font-medium ${
 								formData.title.length > MAX_TITLE_LENGTH - 4
 									? "text-red-600"
 									: formData.title.length > MAX_TITLE_LENGTH - 8
 										? "text-orange-600"
-										: "text-slate-500"
+										: "text-gray-500"
 							}`}
 						>
 							{formData.title.length} / {MAX_TITLE_LENGTH}
@@ -128,14 +128,14 @@ export default function CoverForm() {
 						aria-label="Enter your cover subtitle (optional)"
 					/>
 					<div className="flex justify-between items-center mt-1">
-						<span className="text-xs text-slate-500"></span>
+						<span className="text-xs text-gray-500"></span>
 						<span
 							className={`text-xs font-medium ${
 								(formData.subtitle?.length ?? 0) > MAX_SUBTITLE_LENGTH - 4
 									? "text-red-600"
 									: (formData.subtitle?.length ?? 0) > MAX_SUBTITLE_LENGTH - 14
 										? "text-orange-600"
-										: "text-slate-500"
+										: "text-gray-500"
 							}`}
 						>
 							{formData.subtitle?.length ?? 0} / {MAX_SUBTITLE_LENGTH}
@@ -143,9 +143,11 @@ export default function CoverForm() {
 					</div>
 				</FormField>
 
-				<div className="p-3 bg-slate-50 rounded-md border border-slate-200">
+				<div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
 					<div className="flex items-center justify-between">
-						<p className="text-sm font-medium text-slate-700">Color Contrast</p>
+						<p className="text-sm font-medium text-emerald-900">
+							Color Contrast
+						</p>
 						<output
 							className="flex items-center gap-2"
 							aria-live="polite"
@@ -216,7 +218,7 @@ export default function CoverForm() {
 
 				{error && (
 					<div
-						className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md"
+						className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-xl"
 						role="alert"
 						id={errorId}
 						aria-live="polite"
@@ -242,6 +244,7 @@ export default function CoverForm() {
 						{isGenerating ? "Generating..." : "Generate"}
 					</Button>
 					<Button
+						variant="outline"
 						onClick={handleReset}
 						aria-label="Reset form to default values"
 					>
@@ -264,7 +267,7 @@ export default function CoverForm() {
 					<>
 						<SectionTitle size="lg">Live Preview</SectionTitle>
 						<div
-							className="flex justify-center items-center rounded-md border border-gray-300 max-w-full"
+							className="flex justify-center items-center rounded-xl border border-gray-300 max-w-full"
 							style={{
 								backgroundColor: formData.backgroundColor,
 								color: formData.textColor,
@@ -295,7 +298,7 @@ export default function CoverForm() {
 								alt={`Generated cover image: ${formData.title}`}
 								width={getPreviewDimensions().width}
 								height={getPreviewDimensions().height}
-								className="max-w-full h-auto object-contain rounded-md border border-gray-300"
+								className="max-w-full h-auto object-contain rounded-xl border border-gray-300"
 								unoptimized
 							/>
 						</div>

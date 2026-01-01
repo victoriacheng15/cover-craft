@@ -14,7 +14,7 @@ import {
 	YAxis,
 } from "recharts";
 import MainLayout from "@/components/layout/MainLayout";
-import { KPICard, SectionTitle } from "@/components/ui";
+import { Card, KPICard, SectionTitle } from "@/components/ui";
 import { useAnalytics } from "@/hooks";
 import {
 	SUBTITLE_LENGTH_THRESHOLDS,
@@ -35,8 +35,12 @@ export default function AnalyticsPage() {
 
 	return (
 		<MainLayout>
-			<div className="max-w-6xl mx-auto">
-				<SectionTitle size="lg">Analytics</SectionTitle>
+			<div className="max-w-3xl mx-auto">
+				<div className="flex flex-col gap-4 mb-8">
+					<div className="flex items-center gap-3">
+						<SectionTitle size="lg">Analytics</SectionTitle>
+					</div>
+				</div>
 				{loading && <p>Loading analytics...</p>}
 				{error && <p className="text-red-600">{error}</p>}
 				{userEngagement &&
@@ -92,7 +96,7 @@ export default function AnalyticsPage() {
 								{/* Daily & Hourly Trends */}
 								<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 									{/* Daily Trend */}
-									<div className="w-full min-w-0 bg-slate-100 rounded-lg p-4">
+									<Card className="w-full min-w-0">
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											Daily Trend (Last 30 Days)
 										</SectionTitle>
@@ -101,7 +105,7 @@ export default function AnalyticsPage() {
 												data={dailyTrendData}
 												margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
 											>
-												<CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+												<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
 												<XAxis dataKey="date" />
 												<YAxis allowDecimals={false} />
 												<Tooltip />
@@ -115,10 +119,10 @@ export default function AnalyticsPage() {
 												/>
 											</LineChart>
 										</ResponsiveContainer>
-									</div>
+									</Card>
 
 									{/* Hourly Trend */}
-									<div className="w-full min-w-0 bg-slate-100 rounded-lg p-4">
+									<Card className="w-full min-w-0">
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											Peak Usage Times (By Hour)
 										</SectionTitle>
@@ -127,7 +131,7 @@ export default function AnalyticsPage() {
 												data={userEngagement.hourlyTrend}
 												margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
 											>
-												<CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+												<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
 												<XAxis
 													dataKey="hour"
 													label={{ value: "Hour", position: "bottom" }}
@@ -144,7 +148,7 @@ export default function AnalyticsPage() {
 												/>
 											</LineChart>
 										</ResponsiveContainer>
-									</div>
+									</Card>
 								</div>
 							</section>
 
@@ -155,7 +159,7 @@ export default function AnalyticsPage() {
 								</SectionTitle>
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
 									{/* Top Fonts */}
-									<div className="bg-slate-100 rounded-lg p-4">
+									<Card>
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											Top Fonts
 										</SectionTitle>
@@ -181,10 +185,10 @@ export default function AnalyticsPage() {
 												<Legend />
 											</PieChart>
 										</ResponsiveContainer>
-									</div>
+									</Card>
 
 									{/* Top Sizes */}
-									<div className="bg-slate-100 rounded-lg p-4">
+									<Card>
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											Top Sizes
 										</SectionTitle>
@@ -210,12 +214,12 @@ export default function AnalyticsPage() {
 												<Legend />
 											</PieChart>
 										</ResponsiveContainer>
-									</div>
+									</Card>
 								</div>
 
 								{/* Title Length Distribution */}
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
-									<div className="bg-slate-100 rounded-lg p-4">
+									<Card>
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											Title Length Distribution
 										</SectionTitle>
@@ -258,10 +262,10 @@ export default function AnalyticsPage() {
 												<Legend />
 											</PieChart>
 										</ResponsiveContainer>
-									</div>
+									</Card>
 
 									{/* Subtitle Distribution */}
-									<div className="bg-slate-100 rounded-lg p-4">
+									<Card>
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											Subtitle Usage Distribution
 										</SectionTitle>
@@ -312,12 +316,12 @@ export default function AnalyticsPage() {
 												<Legend />
 											</PieChart>
 										</ResponsiveContainer>
-									</div>
+									</Card>
 								</div>
 
 								{/* Subtitle Trend Over Time */}
 								<div className="mb-6">
-									<div className="bg-slate-100 rounded-lg p-4">
+									<Card>
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											Subtitle Adoption Trend (Weekly)
 										</SectionTitle>
@@ -326,7 +330,7 @@ export default function AnalyticsPage() {
 												data={featurePopularity.subtitleTrendOverTime}
 												margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
 											>
-												<CartesianGrid />
+												<CartesianGrid stroke="#e2e8f0" />
 												<XAxis dataKey="week" />
 												<YAxis
 													label={{
@@ -336,7 +340,7 @@ export default function AnalyticsPage() {
 													}}
 												/>
 												<Tooltip
-													formatter={(value: number | undefined) =>
+													formatter={(value) =>
 														typeof value === "number"
 															? `${value.toFixed(1)}%`
 															: value
@@ -352,11 +356,11 @@ export default function AnalyticsPage() {
 												/>
 											</LineChart>
 										</ResponsiveContainer>
-									</div>
+									</Card>
 								</div>
 
 								{/* Title Length Stats */}
-								<div className="mt-6 bg-slate-100 rounded-lg p-4">
+								<Card className="mt-6">
 									<SectionTitle as="h4" size="sm" className="mb-4">
 										Title Length Statistics
 									</SectionTitle>
@@ -384,15 +388,15 @@ export default function AnalyticsPage() {
 											<KPICard key={card.title} {...card} />
 										))}
 									</div>
-									<div className="p-3 bg-white rounded">
+									<div className="p-3 bg-white rounded-xl border border-gray-100">
 										<p className="text-sm">
-											<span className="font-semibold">
+											<span className="font-semibold text-emerald-600">
 												{featurePopularity.subtitleUsagePercent.toFixed(1)}%
 											</span>{" "}
 											of covers include subtitles
 										</p>
 									</div>
-								</div>
+								</Card>
 							</section>
 
 							{/* Accessibility Compliance Section */}
@@ -402,7 +406,7 @@ export default function AnalyticsPage() {
 								</SectionTitle>
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
 									{/* WCAG Distribution */}
-									<div className="bg-slate-100 rounded-lg p-4">
+									<Card>
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											WCAG Level Distribution
 										</SectionTitle>
@@ -430,10 +434,10 @@ export default function AnalyticsPage() {
 												<Legend />
 											</PieChart>
 										</ResponsiveContainer>
-									</div>
+									</Card>
 
 									{/* Contrast Ratio Stats */}
-									<div className="bg-slate-100 rounded-lg p-4">
+									<Card>
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											Contrast Ratio Statistics
 										</SectionTitle>
@@ -457,11 +461,11 @@ export default function AnalyticsPage() {
 												<KPICard key={card.title} {...card} />
 											))}
 										</div>
-									</div>
+									</Card>
 								</div>
 
 								{/* WCAG Trend */}
-								<div className="mt-6 w-full min-w-0 bg-slate-100 rounded-lg p-4">
+								<Card className="mt-6 w-full min-w-0">
 									<SectionTitle as="h4" size="sm" className="mb-4">
 										WCAG Trend (Last 30 Days)
 									</SectionTitle>
@@ -470,7 +474,7 @@ export default function AnalyticsPage() {
 											data={accessibilityCompliance.wcagTrend}
 											margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
 										>
-											<CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+											<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
 											<XAxis dataKey="date" />
 											<YAxis allowDecimals={false} />
 											<Tooltip />
@@ -489,7 +493,7 @@ export default function AnalyticsPage() {
 												))}
 										</LineChart>
 									</ResponsiveContainer>
-								</div>
+								</Card>
 							</section>
 
 							{/* Performance Metrics Section */}
@@ -539,7 +543,7 @@ export default function AnalyticsPage() {
 								{/* Performance Trends */}
 								<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
 									{/* Backend Duration Trend */}
-									<div className="bg-slate-100 rounded-lg p-4">
+									<Card>
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											Backend Duration Trend (Percentiles)
 										</SectionTitle>
@@ -551,7 +555,7 @@ export default function AnalyticsPage() {
 												}
 												margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
 											>
-												<CartesianGrid />
+												<CartesianGrid stroke="#e2e8f0" />
 												<XAxis dataKey="date" />
 												<YAxis
 													label={{
@@ -582,10 +586,10 @@ export default function AnalyticsPage() {
 												/>
 											</LineChart>
 										</ResponsiveContainer>
-									</div>
+									</Card>
 
 									{/* Client Duration Trend */}
-									<div className="bg-slate-100 rounded-lg p-4">
+									<Card>
 										<SectionTitle as="h4" size="sm" className="mb-4">
 											Client Duration Trend (Percentiles)
 										</SectionTitle>
@@ -597,7 +601,7 @@ export default function AnalyticsPage() {
 												}
 												margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
 											>
-												<CartesianGrid />
+												<CartesianGrid stroke="#e2e8f0" />
 												<XAxis dataKey="date" />
 												<YAxis
 													label={{
@@ -628,18 +632,18 @@ export default function AnalyticsPage() {
 												/>
 											</LineChart>
 										</ResponsiveContainer>
-									</div>
+									</Card>
 								</div>
 
 								{/* Performance by Size */}
-								<div className="bg-slate-100 rounded-lg p-4">
+								<Card>
 									<SectionTitle as="h4" size="sm" className="mb-4">
 										Performance by Image Size
 									</SectionTitle>
 									<div className="overflow-x-auto">
 										<table className="w-full text-sm">
 											<thead>
-												<tr className="border-b">
+												<tr className="border-b border-gray-100">
 													<th className="text-left p-2">Size</th>
 													<th className="text-right p-2">Avg Backend (ms)</th>
 													<th className="text-right p-2">Avg Client (ms)</th>
@@ -652,26 +656,23 @@ export default function AnalyticsPage() {
 														<tr
 															key={`perf-size-${sizeMetric.size}`}
 															className={
-																idx % 2 === 0 ? "bg-white" : "bg-slate-50"
+																idx % 2 === 0 ? "bg-white" : "bg-emerald-50/30"
 															}
 														>
-															<td className="p-2">{sizeMetric.size}</td>
-															<td className="text-right p-2">
-																{typeof sizeMetric.avgBackendDuration ===
-																"number"
-																	? sizeMetric.avgBackendDuration.toFixed(0)
-																	: "-"}
+															<td className="p-2 font-medium">
+																{sizeMetric.size}
 															</td>
 															<td className="text-right p-2">
-																{typeof sizeMetric.avgClientDuration ===
-																"number"
-																	? sizeMetric.avgClientDuration.toFixed(0)
-																	: "-"}
+																{sizeMetric.avgBackendDuration?.toFixed(0) ||
+																	"-"}
 															</td>
-															<td className="text-right p-2 font-semibold">
-																{typeof sizeMetric.avgBackendDuration ===
-																	"number" &&
-																typeof sizeMetric.avgClientDuration === "number"
+															<td className="text-right p-2">
+																{sizeMetric.avgClientDuration?.toFixed(0) ||
+																	"-"}
+															</td>
+															<td className="text-right p-2 font-semibold text-emerald-700">
+																{sizeMetric.avgBackendDuration &&
+																sizeMetric.avgClientDuration
 																	? (
 																			sizeMetric.avgBackendDuration +
 																			sizeMetric.avgClientDuration
@@ -684,10 +685,21 @@ export default function AnalyticsPage() {
 											</tbody>
 										</table>
 									</div>
-								</div>
+								</Card>
 							</section>
 						</div>
 					)}
+				<div className="mt-12 pl-4 border-l-4 border-emerald-200 py-1">
+					<p className="text-sm text-gray-600 italic leading-relaxed">
+						<span className="font-semibold not-italic text-emerald-800">
+							A Note on Metrics:
+						</span>{" "}
+						To keep metrics meaningful during low traffic, I occasionally send
+						synthetic requests from my homelab—mimicking real usage (including
+						errors) to validate latency percentiles. All data is anonymized and
+						never tied to individuals.
+					</p>
+				</div>
 			</div>
 		</MainLayout>
 	);
