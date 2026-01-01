@@ -36,7 +36,7 @@ export default function KPICard({
 	const formattedValue = typeof value === "number" ? value.toFixed(0) : value;
 
 	return (
-		<div className={`${bg} rounded-lg p-4`}>
+		<div className={`${bg} rounded-xl p-4`}>
 			<p className="text-sm text-gray-600">{title}</p>
 			<p className={`text-2xl ${bold ? "font-bold" : "font-semibold"} ${text}`}>
 				{formattedValue}
