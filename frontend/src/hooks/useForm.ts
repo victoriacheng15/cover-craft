@@ -15,7 +15,7 @@ import {
 } from "@/shared/validators";
 import { useContrastCheck } from "./useContrastCheck";
 
-interface FormData {
+export interface FormData {
 	size: string;
 	filename: string;
 	title: string;
