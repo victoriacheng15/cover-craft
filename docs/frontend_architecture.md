@@ -39,9 +39,9 @@ The application attempts to use the **FileSystem API** for downloads to provide 
 
 | Type | Examples | Responsibility |
 | :--- | :--- | :--- |
-| **Pages** | `page.tsx`, `analytics/page.tsx` | Entry points and high-level layout. |
+| **Pages** | `page.tsx` (Landing), `generate/page.tsx`, `evolution/page.tsx`, `analytics/page.tsx` | Entry points for the application's distinct routes. |
 | **Forms** | `CoverForm`, `FormField` | Encapsulates input logic, contrast validation, and error state. |
-| **UI** | `Button`, `Input`, `KPICard` | Stateless, reusable atoms styled with Tailwind. |
+| **UI** | `Button`, `Input`, `Card`, `SectionTitle`, `ColorPicker` | Stateless, reusable atoms styled with Tailwind. |
 | **Preview** | `CanvasPreview` | Logic to toggle between CSS-based preview and generated PNG `Blob`. |
 
 ## Custom Hooks (The Logic Layer)
