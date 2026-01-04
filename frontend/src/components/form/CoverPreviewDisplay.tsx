@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { Button, Card, SectionTitle } from "@/components/ui";
-import { fontFamilyMap } from "@/lib";
 import type { FormData } from "@/hooks/useForm";
+import { fontFamilyMap } from "@/lib";
 
 interface CoverPreviewDisplayProps {
 	formData: FormData;

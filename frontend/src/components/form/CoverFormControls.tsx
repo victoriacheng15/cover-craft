@@ -9,9 +9,9 @@ import {
 	Select,
 } from "@/components/ui";
 import { FONT_OPTIONS, SIZE_PRESETS } from "@/hooks";
-import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@/shared/validators";
 import type { ContrastCheckResult } from "@/hooks/useContrastCheck";
 import type { FormData } from "@/hooks/useForm";
+import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@/shared/validators";
 import FormField from "./FormField";
 
 interface CoverFormControlsProps {
@@ -139,9 +139,7 @@ export default function CoverFormControls({
 
 			<div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
 				<div className="flex items-center justify-between">
-					<p className="text-sm font-medium text-emerald-900">
-						Color Contrast
-					</p>
+					<p className="text-sm font-medium text-emerald-900">Color Contrast</p>
 					<output
 						className="flex items-center gap-2"
 						aria-live="polite"

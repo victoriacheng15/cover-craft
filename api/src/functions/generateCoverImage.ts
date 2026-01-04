@@ -7,6 +7,7 @@ import {
 	type InvocationContext,
 } from "@azure/functions";
 import { Canvas, registerFont } from "canvas";
+import { FONT_CONFIG } from "../lib/fontConfig";
 import {
 	IMAGE_GENERATED_EVENT,
 	METRIC_STATUS_ERROR,
@@ -31,37 +32,24 @@ import { storeMetricsToMongoDB } from "./metrics";
 
 // Register fonts
 const fontDir = path.join(__dirname, "../assets/fonts");
-registerFont(path.join(fontDir, "Montserrat-Regular.ttf"), {
-	family: "Montserrat",
-});
-registerFont(path.join(fontDir, "Montserrat-Bold.ttf"), {
-	family: "Montserrat",
-	weight: "bold",
-});
-registerFont(path.join(fontDir, "Roboto-Regular.ttf"), { family: "Roboto" });
-registerFont(path.join(fontDir, "Roboto-Bold.ttf"), {
-	family: "Roboto",
-	weight: "bold",
-});
-registerFont(path.join(fontDir, "Lato-Regular.ttf"), { family: "Lato" });
-registerFont(path.join(fontDir, "Lato-Bold.ttf"), {
-	family: "Lato",
-	weight: "bold",
-});
-registerFont(path.join(fontDir, "PlayfairDisplay-Regular.ttf"), {
-	family: "Playfair Display",
-});
-registerFont(path.join(fontDir, "PlayfairDisplay-Bold.ttf"), {
-	family: "Playfair Display",
-	weight: "bold",
-});
-registerFont(path.join(fontDir, "OpenSans-Regular.ttf"), {
-	family: "Open Sans",
-});
-registerFont(path.join(fontDir, "OpenSans-Bold.ttf"), {
-	family: "Open Sans",
-	weight: "bold",
-});
+
+// Iterate over configuration to register fonts
+for (const font of FONT_CONFIG) {
+	try {
+		const fontPath = path.join(fontDir, font.file);
+		registerFont(fontPath, {
+			family: font.family,
+			weight: font.weight,
+		});
+	} catch (error) {
+		// Log error but allow process to continue (resilience)
+		// In a real production system, we might want to alert on this
+		console.error(
+			`Failed to register font ${font.family} (${font.file}):`,
+			error,
+		);
+	}
+}
 
 // Extract parameters from query and body
 async function extractParams(

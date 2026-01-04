@@ -1,13 +1,7 @@
 "use client";
 
 import { useForm } from "@/hooks";
-import {
-	lato,
-	montserrat,
-	openSans,
-	playfairDisplay,
-	roboto,
-} from "@/lib";
+import { lato, montserrat, openSans, playfairDisplay, roboto } from "@/lib";
 import CoverFormControls from "./CoverFormControls";
 import CoverPreviewDisplay from "./CoverPreviewDisplay";
 
