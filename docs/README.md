@@ -4,9 +4,9 @@ Welcome to the **Cover Craft** technical documentation. This directory contains 
 
 ## 🏗️ System Architecture
 
-- [**Frontend Architecture**](./frontend_architecture.md)
+- [**Frontend Architecture**](./architecture/frontend.md)
   - React patterns, custom hooks, and the Next.js Proxy Layer implementation.
-- [**Backend Architecture**](./backend_architecture.md)
+- [**Backend Architecture**](./architecture/backend.md)
   - Azure Functions (v4) specification, `node-canvas` rendering logic, and MongoDB schemas.
 
 ## ⚙️ Operations & DevOps

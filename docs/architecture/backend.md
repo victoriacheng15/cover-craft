@@ -71,6 +71,7 @@ Ingests client-side performance and usage data.
 
 Performs on-the-fly aggregation of the `metrics` collection.
 
+- **Architecture:** Logic is decomposed into `api/src/lib/analyticsQueries.ts` (Repository Pattern) to separate data access from the HTTP handler.
 - **Pipeline Stages:**
   - **User Engagement:** Counts `generate_click` vs `download_click`.
   - **Performance:** Calculates P50/P95/P99 latencies for backend vs client duration.
