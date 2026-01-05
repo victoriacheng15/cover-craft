@@ -107,24 +107,10 @@ export function useForm() {
 				subtitle: formData.subtitle,
 				filename: formData.filename || DEFAULT_FILENAME,
 			});
-			// Build typed metrics payload and log it to console before sending
-			const metricsPayload: Partial<MetricPayload> = {
-				size: {
-					width: selectedSize.width,
-					height: selectedSize.height,
-				},
-				font: formData.font,
-				titleLength: formData.title.length,
-				contrastRatio: contrastCheck.ratio || 0,
-				wcagLevel: contrastCheck.level || "FAIL",
+			// Send minimal payload (intent + client performance)
+			sendGenerateEvent({
 				clientDuration,
-			};
-			if (formData.subtitle && formData.subtitle.length > 0) {
-				metricsPayload.subtitleLength = formData.subtitle.length;
-			}
-
-			// Send typed payload as single argument for simplicity
-			sendGenerateEvent(metricsPayload);
+			});
 
 			setGeneratedImage(blob);
 			setGeneratedFilename(formData.filename || DEFAULT_FILENAME);
