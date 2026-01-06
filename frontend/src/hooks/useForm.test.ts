@@ -226,16 +226,7 @@ describe("useForm", () => {
 				][0];
 			expect(lastCall).toEqual(
 				expect.objectContaining({
-					size: {
-						width: 1200,
-						height: 627,
-					},
-					font: "Montserrat",
-					titleLength: 10,
-					subtitleLength: 13,
 					clientDuration: 123,
-					contrastRatio: 9.863254791756054,
-					wcagLevel: "AAA",
 				}),
 			);
 		});

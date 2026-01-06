@@ -130,10 +130,10 @@ async function fetchUserEngagement(
 	completeDataFilter: DataFilter,
 	thirtyDaysAgo: Date,
 ): Promise<UserEngagement> {
-	// Total covers generated (GENERATE_CLICK only with complete data)
+	// Total covers generated (GENERATE_CLICK raw count)
 	const totalCoversGenerated = await Metric.countDocuments({
 		event: GENERATE_CLICK_EVENT,
-		...completeDataFilter,
+		// No data filter needed as this is just an intent signal now
 	});
 
 	// Total images generated successfully (IMAGE_GENERATED - actual backend output)
@@ -148,14 +148,14 @@ async function fetchUserEngagement(
 		status: METRIC_STATUS_SUCCESS,
 	});
 
-	// Download rate (from complete data only)
+	// Download rate
 	const totalGenerateEvents = await Metric.countDocuments({
 		event: GENERATE_CLICK_EVENT,
 		status: METRIC_STATUS_SUCCESS,
 	});
 	const successfulGenerateEvents = await Metric.countDocuments({
 		event: GENERATE_CLICK_EVENT,
-		...completeDataFilter,
+		status: METRIC_STATUS_SUCCESS,
 	});
 	const downloadRate =
 		totalGenerateEvents > 0
@@ -190,7 +190,7 @@ async function fetchUserEngagement(
 			$match: {
 				timestamp: { $gte: thirtyDaysAgo },
 				event: GENERATE_CLICK_EVENT,
-				...completeDataFilter,
+				// No data filter needed
 			},
 		},
 		{
@@ -210,7 +210,7 @@ async function fetchUserEngagement(
 			$match: {
 				timestamp: { $gte: thirtyDaysAgo },
 				event: GENERATE_CLICK_EVENT,
-				...completeDataFilter,
+				// No data filter needed
 			},
 		},
 		{
@@ -251,7 +251,7 @@ async function fetchFeaturePopularity(
 	const topFonts = (await Metric.aggregate([
 		{
 			$match: {
-				event: GENERATE_CLICK_EVENT,
+				event: IMAGE_GENERATED_EVENT,
 				...completeDataFilter,
 			},
 		},
@@ -269,7 +269,7 @@ async function fetchFeaturePopularity(
 	const topSizesRaw = (await Metric.aggregate([
 		{
 			$match: {
-				event: GENERATE_CLICK_EVENT,
+				event: IMAGE_GENERATED_EVENT,
 				...completeDataFilter,
 			},
 		},
@@ -300,7 +300,7 @@ async function fetchFeaturePopularity(
 	const titleStats = (await Metric.aggregate([
 		{
 			$match: {
-				event: GENERATE_CLICK_EVENT,
+				event: IMAGE_GENERATED_EVENT,
 				...completeDataFilter,
 			},
 		},
@@ -318,7 +318,7 @@ async function fetchFeaturePopularity(
 	const titleDistribution = (await Metric.aggregate([
 		{
 			$match: {
-				event: GENERATE_CLICK_EVENT,
+				event: IMAGE_GENERATED_EVENT,
 				...completeDataFilter,
 			},
 		},
@@ -359,7 +359,7 @@ async function fetchFeaturePopularity(
 
 	// Subtitle usage (percentage with subtitles, complete data only)
 	const withSubtitle = await Metric.countDocuments({
-		event: GENERATE_CLICK_EVENT,
+		event: IMAGE_GENERATED_EVENT,
 		...completeDataFilter,
 		subtitleLength: { $gt: 0 },
 	});
@@ -372,7 +372,7 @@ async function fetchFeaturePopularity(
 	const subtitleDistribution = (await Metric.aggregate([
 		{
 			$match: {
-				event: GENERATE_CLICK_EVENT,
+				event: IMAGE_GENERATED_EVENT,
 				...completeDataFilter,
 			},
 		},
@@ -433,7 +433,7 @@ async function fetchFeaturePopularity(
 		{
 			$match: {
 				timestamp: { $gte: thirtyDaysAgo },
-				event: GENERATE_CLICK_EVENT,
+				event: IMAGE_GENERATED_EVENT,
 				...completeDataFilter,
 			},
 		},
@@ -509,7 +509,7 @@ async function fetchAccessibilityCompliance(
 	const wcagDistribution = (await Metric.aggregate([
 		{
 			$match: {
-				event: GENERATE_CLICK_EVENT,
+				event: IMAGE_GENERATED_EVENT,
 				...completeDataFilter,
 			},
 		},
@@ -525,7 +525,7 @@ async function fetchAccessibilityCompliance(
 	const contrastStats = (await Metric.aggregate([
 		{
 			$match: {
-				event: GENERATE_CLICK_EVENT,
+				event: IMAGE_GENERATED_EVENT,
 				...completeDataFilter,
 			},
 		},
@@ -552,7 +552,7 @@ async function fetchAccessibilityCompliance(
 		{
 			$match: {
 				timestamp: { $gte: thirtyDaysAgo },
-				event: GENERATE_CLICK_EVENT,
+				event: IMAGE_GENERATED_EVENT,
 				...completeDataFilter,
 			},
 		},
