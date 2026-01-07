@@ -56,19 +56,19 @@ export default function AnalyticsPage() {
 								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 									{[
 										{
-											title: "Covers Generated",
-											value: userEngagement.totalCoversGenerated,
+											title: "Generation Attempts",
+											value: userEngagement.uiGenerationAttempts,
 											color: "blue" as const,
 										},
 										{
-											title: "Images Generated",
-											value: userEngagement.totalImagesGenerated,
+											title: "Successful Generations",
+											value: userEngagement.totalSuccessfulGenerations,
 											color: "green" as const,
 										},
 										{
-											title: "Success Rate",
-											value: userEngagement.generationSuccessRate,
-											color: "purple" as const,
+											title: "UI Usage",
+											value: userEngagement.uiUsagePercent,
+											color: "orange" as const,
 											suffix: "%",
 										},
 										{
@@ -92,13 +92,12 @@ export default function AnalyticsPage() {
 										<KPICard key={card.title} {...card} />
 									))}
 								</div>
-
 								{/* Daily & Hourly Trends */}
 								<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 									{/* Daily Trend */}
 									<Card className="w-full min-w-0">
 										<SectionTitle as="h4" size="sm" className="mb-4">
-											Daily Trend (Last 30 Days)
+											Successful Generations (Daily)
 										</SectionTitle>
 										<ResponsiveContainer width="100%" height={250} minWidth={0}>
 											<LineChart
@@ -115,7 +114,7 @@ export default function AnalyticsPage() {
 													stroke="#3b82f6"
 													strokeWidth={2}
 													dot={{ r: 4 }}
-													name="Covers Generated"
+													name="Successful Generations"
 												/>
 											</LineChart>
 										</ResponsiveContainer>
@@ -144,7 +143,7 @@ export default function AnalyticsPage() {
 													stroke="#8b5cf6"
 													strokeWidth={2}
 													dot={{ r: 4 }}
-													name="Generation Count"
+													name="Successful Generations"
 												/>
 											</LineChart>
 										</ResponsiveContainer>
@@ -451,12 +450,6 @@ export default function AnalyticsPage() {
 														),
 													color: "blue" as const,
 												},
-												{
-													title: "Failure Rate (WCAG FAIL)",
-													value: accessibilityCompliance.wcagFailurePercent,
-													color: "red" as const,
-													suffix: "%",
-												},
 											].map((card) => (
 												<KPICard key={card.title} {...card} />
 											))}
@@ -694,10 +687,9 @@ export default function AnalyticsPage() {
 						<span className="font-semibold not-italic text-emerald-800">
 							A Note on Metrics:
 						</span>{" "}
-						To keep metrics meaningful during low traffic, I occasionally send
-						synthetic requests from my homelab—mimicking real usage (including
-						errors) to validate latency percentiles. All data is anonymized and
-						never tied to individuals.
+						To maintain statistical significance during low traffic periods,
+						synthetic traffic is periodically injected to validate latency
+						percentiles and error-handling paths. All metrics remain anonymized.
 					</p>
 				</div>
 			</div>

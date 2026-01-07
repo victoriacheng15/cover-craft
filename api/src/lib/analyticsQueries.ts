@@ -130,14 +130,14 @@ async function fetchUserEngagement(
 	completeDataFilter: DataFilter,
 	thirtyDaysAgo: Date,
 ): Promise<UserEngagement> {
-	// Total covers generated (GENERATE_CLICK raw count)
-	const totalCoversGenerated = await Metric.countDocuments({
+	// UI Generation Attempts (GENERATE_CLICK raw count)
+	const uiGenerationAttempts = await Metric.countDocuments({
 		event: GENERATE_CLICK_EVENT,
 		// No data filter needed as this is just an intent signal now
 	});
 
-	// Total images generated successfully (IMAGE_GENERATED - actual backend output)
-	const totalImagesGenerated = await Metric.countDocuments({
+	// Total Successful Generations (IMAGE_GENERATED - actual backend success)
+	const totalSuccessfulGenerations = await Metric.countDocuments({
 		event: IMAGE_GENERATED_EVENT,
 		status: METRIC_STATUS_SUCCESS,
 	});
@@ -148,40 +148,31 @@ async function fetchUserEngagement(
 		status: METRIC_STATUS_SUCCESS,
 	});
 
-	// Download rate
-	const totalGenerateEvents = await Metric.countDocuments({
-		event: GENERATE_CLICK_EVENT,
-		status: METRIC_STATUS_SUCCESS,
-	});
-	const successfulGenerateEvents = await Metric.countDocuments({
-		event: GENERATE_CLICK_EVENT,
-		status: METRIC_STATUS_SUCCESS,
-	});
+	// Download rate (UI Conversion: Downloads / UI Attempts)
 	const downloadRate =
-		totalGenerateEvents > 0
-			? Number(
-					((successfulGenerateEvents / totalGenerateEvents) * 100).toFixed(2),
-				)
+		uiGenerationAttempts > 0
+			? Number(((totalDownloads / uiGenerationAttempts) * 100).toFixed(2))
 			: 0;
 
-	// Generation success rate (IMAGE_GENERATED / GENERATE_CLICK)
-	const generationSuccessRate =
-		totalCoversGenerated > 0
-			? Number(((totalImagesGenerated / totalCoversGenerated) * 100).toFixed(2))
-			: 0;
-
-	// API usage percent (IMAGE_GENERATED without matching GENERATE_CLICK)
-	const imageGeneratedWithoutClick = await Metric.countDocuments({
-		event: IMAGE_GENERATED_EVENT,
-		status: METRIC_STATUS_SUCCESS,
-	});
+	// API usage percent (Estimated Share of traffic NOT from UI)
+	const estimatedApiGenerations = Math.max(
+		0,
+		totalSuccessfulGenerations - uiGenerationAttempts,
+	);
 	const apiUsagePercent =
-		totalImagesGenerated > 0
+		totalSuccessfulGenerations > 0
 			? Number(
-					((imageGeneratedWithoutClick / totalImagesGenerated) * 100).toFixed(
-						2,
-					),
+					(
+						(estimatedApiGenerations / totalSuccessfulGenerations) *
+						100
+					).toFixed(2),
 				)
+			: 0;
+
+	// UI usage percent (Complement of API usage)
+	const uiUsagePercent =
+		totalSuccessfulGenerations > 0
+			? Number((100 - apiUsagePercent).toFixed(2))
 			: 0;
 
 	// Daily trend (last 30 days)
@@ -189,8 +180,8 @@ async function fetchUserEngagement(
 		{
 			$match: {
 				timestamp: { $gte: thirtyDaysAgo },
-				event: GENERATE_CLICK_EVENT,
-				// No data filter needed
+				event: IMAGE_GENERATED_EVENT,
+				status: METRIC_STATUS_SUCCESS,
 			},
 		},
 		{
@@ -209,8 +200,8 @@ async function fetchUserEngagement(
 		{
 			$match: {
 				timestamp: { $gte: thirtyDaysAgo },
-				event: GENERATE_CLICK_EVENT,
-				// No data filter needed
+				event: IMAGE_GENERATED_EVENT,
+				status: METRIC_STATUS_SUCCESS,
 			},
 		},
 		{
@@ -223,15 +214,15 @@ async function fetchUserEngagement(
 	])) as HourlyTrendAggregate[];
 
 	return {
-		totalCoversGenerated,
+		uiGenerationAttempts,
 		totalDownloads,
 		downloadRate,
 		dailyTrend: dailyTrend.map((item) => ({
 			date: item._id,
 			count: item.count,
 		})),
-		totalImagesGenerated,
-		generationSuccessRate,
+		totalSuccessfulGenerations,
+		uiUsagePercent,
 		apiUsagePercent,
 		hourlyTrend: hourlyTrend.map((item) => ({
 			hour: item._id,
@@ -539,14 +530,6 @@ async function fetchAccessibilityCompliance(
 		},
 	])) as ContrastStatsAggregate[];
 
-	// WCAG failure rate (complete data only)
-	const failureCount =
-		wcagDistribution.find((item) => item._id === "FAIL")?.count || 0;
-	const wcagFailurePercent =
-		totalCoversGenerated > 0
-			? Number(((failureCount / totalCoversGenerated) * 100).toFixed(2))
-			: 0;
-
 	// WCAG trend over time (last 30 days, complete data only)
 	const wcagTrend = (await Metric.aggregate([
 		{
@@ -581,7 +564,6 @@ async function fetchAccessibilityCompliance(
 			minContrastRatio: 0,
 			maxContrastRatio: 0,
 		},
-		wcagFailurePercent,
 		wcagTrend: (wcagTrend as WcagTrendAggregate[]).reduce(
 			(acc: WcagTrendItem[], item) => {
 				const date = item._id.date;
@@ -855,7 +837,7 @@ export async function fetchAggregatedAnalytics(
 		const featurePopularity = await fetchFeaturePopularity(
 			Metric,
 			completeDataFilter,
-			userEngagement.totalCoversGenerated,
+			userEngagement.totalSuccessfulGenerations,
 			thirtyDaysAgo,
 		);
 
@@ -863,7 +845,7 @@ export async function fetchAggregatedAnalytics(
 			Metric,
 			completeDataFilter,
 			thirtyDaysAgo,
-			userEngagement.totalCoversGenerated,
+			userEngagement.totalSuccessfulGenerations,
 		);
 
 		const performanceMetrics = await fetchPerformanceMetrics(

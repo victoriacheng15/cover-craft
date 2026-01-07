@@ -113,7 +113,10 @@ export interface MetricPayload {
 ```typescript
 export type AnalyticsResult = {
     userEngagement: {
-        totalCoversGenerated: number;
+        uiGenerationAttempts: number;
+        totalSuccessfulGenerations: number;
+        uiUsagePercent: number;
+        apiUsagePercent: number;
         totalDownloads: number;
         downloadRate: number;
         hourlyTrend: Array<{ hour: number; count: number }>;
@@ -125,7 +128,6 @@ export type AnalyticsResult = {
     };
     accessibilityCompliance: {
         wcagDistribution: Array<{ level: string; count: number }>;
-        wcagFailurePercent: number;
         contrastStats: { avgContrastRatio: number; minContrastRatio: number; maxContrastRatio: number };
     };
     performanceMetrics: {

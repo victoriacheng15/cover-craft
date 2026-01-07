@@ -29,15 +29,15 @@ describe("useAnalytics", () => {
 	it("fetches analytics data successfully", async () => {
 		const mockData = {
 			userEngagement: {
-				totalCoversGenerated: 10,
+				uiGenerationAttempts: 0,
 				totalDownloads: 5,
 				downloadRate: 50,
 				dailyTrend: [
 					{ date: "2025-12-01", count: 2 },
 					{ date: "2025-12-02", count: 3 },
 				],
-				totalImagesGenerated: 10,
-				generationSuccessRate: 100,
+				totalSuccessfulGenerations: 10,
+				uiUsagePercent: 100,
 				apiUsagePercent: 50,
 				hourlyTrend: [],
 			},
@@ -63,7 +63,6 @@ describe("useAnalytics", () => {
 					minContrastRatio: 6.0,
 					maxContrastRatio: 8.0,
 				},
-				wcagFailurePercent: 10,
 				wcagTrend: [
 					{ date: "2025-12-01", AAA: 2, AA: 0, FAIL: 0 },
 					{ date: "2025-12-02", AAA: 3, AA: 0, FAIL: 0 },
@@ -177,12 +176,12 @@ describe("useAnalytics", () => {
 	it("calculates total clicks data correctly", async () => {
 		const mockData = {
 			userEngagement: {
-				totalCoversGenerated: 100,
+				uiGenerationAttempts: 100,
 				totalDownloads: 50,
 				downloadRate: 50,
 				dailyTrend: [],
-				totalImagesGenerated: 100,
-				generationSuccessRate: 100,
+				totalSuccessfulGenerations: 100,
+				uiUsagePercent: 100,
 				apiUsagePercent: 50,
 				hourlyTrend: [],
 			},
@@ -208,7 +207,6 @@ describe("useAnalytics", () => {
 					minContrastRatio: 0,
 					maxContrastRatio: 0,
 				},
-				wcagFailurePercent: 0,
 				wcagTrend: [],
 			},
 			performanceMetrics: {
@@ -259,12 +257,12 @@ describe("useAnalytics", () => {
 	it("handles zero click counts", async () => {
 		const mockData = {
 			userEngagement: {
-				totalCoversGenerated: 0,
+				uiGenerationAttempts: 0,
 				totalDownloads: 0,
 				downloadRate: 0,
 				dailyTrend: [],
-				totalImagesGenerated: 0,
-				generationSuccessRate: 0,
+				totalSuccessfulGenerations: 0,
+				uiUsagePercent: 0,
 				apiUsagePercent: 0,
 				hourlyTrend: [],
 			},
@@ -290,7 +288,6 @@ describe("useAnalytics", () => {
 					minContrastRatio: 0,
 					maxContrastRatio: 0,
 				},
-				wcagFailurePercent: 0,
 				wcagTrend: [],
 			},
 			performanceMetrics: {
@@ -341,7 +338,7 @@ describe("useAnalytics", () => {
 	it("generates daily trend data for last 7 days", async () => {
 		const mockData = {
 			userEngagement: {
-				totalCoversGenerated: 100,
+				uiGenerationAttempts: 100,
 				totalDownloads: 50,
 				downloadRate: 50,
 				dailyTrend: [
@@ -353,8 +350,8 @@ describe("useAnalytics", () => {
 					{ date: "2025-12-03", count: 18 },
 					{ date: "2025-12-04", count: 25 },
 				],
-				totalImagesGenerated: 100,
-				generationSuccessRate: 100,
+				totalSuccessfulGenerations: 100,
+				uiUsagePercent: 100,
 				apiUsagePercent: 50,
 				hourlyTrend: [],
 			},
@@ -380,7 +377,6 @@ describe("useAnalytics", () => {
 					minContrastRatio: 0,
 					maxContrastRatio: 0,
 				},
-				wcagFailurePercent: 0,
 				wcagTrend: [],
 			},
 			performanceMetrics: {
@@ -436,12 +432,12 @@ describe("useAnalytics", () => {
 	it("handles empty daily trend data", async () => {
 		const mockData = {
 			userEngagement: {
-				totalCoversGenerated: 0,
+				uiGenerationAttempts: 0,
 				totalDownloads: 0,
 				downloadRate: 0,
 				dailyTrend: [],
-				totalImagesGenerated: 0,
-				generationSuccessRate: 0,
+				totalSuccessfulGenerations: 0,
+				uiUsagePercent: 0,
 				apiUsagePercent: 0,
 				hourlyTrend: [],
 			},
@@ -467,7 +463,6 @@ describe("useAnalytics", () => {
 					minContrastRatio: 0,
 					maxContrastRatio: 0,
 				},
-				wcagFailurePercent: 0,
 				wcagTrend: [],
 			},
 			performanceMetrics: {
@@ -515,15 +510,15 @@ describe("useAnalytics", () => {
 	it("handles partial daily trend data", async () => {
 		const mockData = {
 			userEngagement: {
-				totalCoversGenerated: 100,
+				uiGenerationAttempts: 100,
 				totalDownloads: 50,
 				downloadRate: 50,
 				dailyTrend: [
 					{ date: "2025-12-04", count: 25 },
 					{ date: "2025-12-05", count: 15 },
 				],
-				totalImagesGenerated: 100,
-				generationSuccessRate: 100,
+				totalSuccessfulGenerations: 100,
+				uiUsagePercent: 100,
 				apiUsagePercent: 50,
 				hourlyTrend: [],
 			},
@@ -549,7 +544,6 @@ describe("useAnalytics", () => {
 					minContrastRatio: 0,
 					maxContrastRatio: 0,
 				},
-				wcagFailurePercent: 0,
 				wcagTrend: [],
 			},
 			performanceMetrics: {

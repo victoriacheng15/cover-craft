@@ -54,7 +54,7 @@ export function useAnalytics() {
 	];
 
 	// Prepare data for total clicks chart, including combined total
-	const totalGenerate = userEngagement?.totalCoversGenerated || 0;
+	const totalGenerate = userEngagement?.uiGenerationAttempts || 0;
 	const totalDownload = userEngagement?.totalDownloads || 0;
 	const totalCombined = totalGenerate + totalDownload;
 
