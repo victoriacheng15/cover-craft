@@ -29,9 +29,9 @@ export default function EvolutionPage() {
 		},
 		{
 			date: "2025-11",
-			title: "Observability & Reliability",
+			title: "Analytics & Compliance",
 			description:
-				"Designed a privacy-first telemetry system using MongoDB to track system health and compliance. Implemented comprehensive testing strategies with Vitest and real-time WCAG checks.",
+				"Designed a privacy-first telemetry system using MongoDB to track user engagement and compliance. Implemented comprehensive testing strategies with Vitest and real-time WCAG checks.",
 		},
 		{
 			date: "2025-12",
@@ -43,7 +43,13 @@ export default function EvolutionPage() {
 			date: "2026-01",
 			title: "Landing and Evolution Pages Launch",
 			description:
-				"Launched the public landing page and this evolution timeline to transparently share Cover Craft’s journey.",
+			"Launched the public landing page and this evolution timeline to transparently share Cover Craft’s journey.",
+		},
+		{
+			date: "2026-01",
+			title: "Operational Excellence",
+			description:
+				"Transitioned to structured JSON logging with correlation IDs and a centralized MongoDB sink. Standardized error handling across the serverless architecture to ensure production-grade maintainability.",
 		},
 	];
 
@@ -58,7 +64,7 @@ export default function EvolutionPage() {
 
 				<div className="relative border-l-2 border-emerald-200 ml-4 md:ml-6 space-y-8">
 					{[...timelineEvents].reverse().map((event) => (
-						<div key={event.date} className="relative pl-8 md:pl-12">
+						<div key={event.title} className="relative pl-8 md:pl-12">
 							{/* Timeline Dot */}
 							<div className="absolute -left-[9px] top-6 h-4 w-4 rounded-full bg-emerald-500 border-4 border-white shadow-sm" />
 
