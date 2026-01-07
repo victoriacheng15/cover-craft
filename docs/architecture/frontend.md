@@ -72,9 +72,9 @@ interface FormData {
 
 ```typescript
 interface AnalyticsResult {
-  userEngagement: { totalCoversGenerated: number; totalDownloads: number };
+  userEngagement: { uiGenerationAttempts: number; totalSuccessfulGenerations: number; uiUsagePercent: number; apiUsagePercent: number; totalDownloads: number };
   featurePopularity: { topFonts: Array<{ font: string; count: number }> };
-  accessibilityCompliance: { wcagFailurePercent: number };
+  accessibilityCompliance: { wcagDistribution: Array<{ level: string; count: number }> };
   performanceMetrics: { backendPerformance: { p95BackendDuration: number } };
 }
 ```

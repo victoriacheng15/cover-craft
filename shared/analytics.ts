@@ -33,12 +33,12 @@ export type PerformanceBySize = {
 };
 
 export type UserEngagement = {
-	totalCoversGenerated: number;
+	uiGenerationAttempts: number;
 	totalDownloads: number;
 	downloadRate: number;
 	dailyTrend: Array<{ date: string; count: number }>;
-	totalImagesGenerated: number;
-	generationSuccessRate: number;
+	totalSuccessfulGenerations: number;
+	uiUsagePercent: number;
 	apiUsagePercent: number;
 	hourlyTrend: HourlyTrendItem[];
 };
@@ -66,7 +66,6 @@ export type AccessibilityCompliance = {
 		minContrastRatio: number;
 		maxContrastRatio: number;
 	};
-	wcagFailurePercent: number;
 	wcagTrend: WcagTrendItem[];
 };
 
