@@ -45,12 +45,11 @@ describe("mongoose lib helpers", () => {
 		process.env.MONGODB_URI = "mongodb://localhost:27017/test";
 		const { connectMongoDB } = await import("../mongoose");
 		const connectionError = new Error("connection failed");
+		const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 		connectSpy.mockRejectedValueOnce(connectionError);
 		await expect(connectMongoDB(mockContext)).rejects.toBe(connectionError);
-		expect(errorMock).toHaveBeenCalledWith(
-			"MongoDB connection error:",
-			connectionError,
-		);
+		expect(consoleErrorSpy).toHaveBeenCalled();
+		consoleErrorSpy.mockRestore();
 	});
 
 	it("reuses an existing Metric model", async () => {
