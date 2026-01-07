@@ -4,13 +4,19 @@ import {
 	type HttpResponseInit,
 	type InvocationContext,
 } from "@azure/functions";
+import { createLogger } from "../lib/logger";
+import { connectMongoDB } from "../lib/mongoose";
 
 export async function healthCheck(
 	_request: HttpRequest,
 	context: InvocationContext,
 ): Promise<HttpResponseInit> {
+	const logger = createLogger(context);
+
 	try {
+		await connectMongoDB(context);
 		const now = new Date();
+		logger.info("Health check triggered");
 
 		return {
 			status: 200,
@@ -23,7 +29,7 @@ export async function healthCheck(
 			}),
 		};
 	} catch (error) {
-		context.error("Health check error:", error);
+		logger.error("Health check error:", error);
 		return {
 			status: 500,
 			headers: { "Content-Type": "application/json" },

@@ -30,6 +30,42 @@ export const metricSchema = new mongoose.Schema({
 	clientDuration: { type: Number },
 });
 
+// Define the Log schema
+const logSchema = new mongoose.Schema(
+	{
+		timestamp: { type: Date, required: true, index: true },
+		level: {
+			type: String,
+			required: true,
+			enum: ["INFO", "WARN", "ERROR", "DEBUG"],
+			index: true,
+		},
+		message: { type: String, required: true },
+		invocationId: { type: String, index: true },
+		functionName: { type: String, index: true },
+		details: mongoose.Schema.Types.Mixed, // For storing error objects, stack traces, etc.
+	},
+	{ timestamps: true }, // Adds createdAt and updatedAt
+);
+
+// Type for the structured log, needed here for the Log model
+export interface StructuredLog {
+    timestamp: string;
+    level: "INFO" | "WARN" | "ERROR" | "DEBUG";
+    message: string;
+    invocationId?: string;
+    functionName?: string;
+    details?: Record<string, unknown>;
+}
+
+export function getLogModel() {
+	if (mongoose.models.Log) {
+		return mongoose.models.Log;
+	}
+	return mongoose.model("Log", logSchema);
+}
+
+
 export function getMetricModel() {
 	if (mongoose.models.Metric) {
 		return mongoose.models.Metric;
@@ -52,7 +88,12 @@ export async function connectMongoDB(
 		mongoConnected = true;
 		context.log("MongoDB connected");
 	} catch (error) {
-		context.error("MongoDB connection error:", error);
+		// Use console.error for critical DB connection issues to avoid dependency on the logger
+		console.error("CRITICAL: MongoDB connection error.", {
+			invocationId: context.invocationId,
+			functionName: context.functionName,
+			error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+		});
 		throw error;
 	}
 }

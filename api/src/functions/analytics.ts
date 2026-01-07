@@ -6,12 +6,13 @@ import {
 } from "@azure/functions";
 import { fetchAggregatedAnalytics } from "../lib/analyticsQueries";
 import { connectMongoDB } from "../lib/mongoose";
+import { createLogger } from "../lib/logger";
 
 export async function analytics(
 	_request: HttpRequest,
 	context: InvocationContext,
 ): Promise<HttpResponseInit> {
-	context.log("analytics() function triggered");
+	const logger = createLogger(context);
 
 	try {
 		await connectMongoDB(context);
@@ -24,7 +25,7 @@ export async function analytics(
 			headers: { "Content-Type": "application/json" },
 		};
 	} catch (error) {
-		context.error("Error fetching analytics:", error);
+		logger.error("Error fetching analytics:", error);
 		return {
 			status: 500,
 			body: JSON.stringify({
