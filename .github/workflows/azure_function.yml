@@ -1,4 +1,4 @@
-name: Function App Deployment
+name: Azure Functions Deployment
 
 on:
   push:
@@ -47,17 +47,15 @@ jobs:
         run: |
           npm test -- --run
 
-      - name: Prune dev dependencies (reduce zip size)
+      - name: Package for deployment
         working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
         run: |
-          npm prune --production
+          # 1. Remove dev dependencies and install only production dependencies
+          rm -rf node_modules
+          npm install --omit=dev --no-audit --no-fund
 
-      - name: Prepare and deploy package
-        run: |
-          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          # 2. Create the zip file for deployment
           zip -r deploy.zip . -x local.settings.json
-          ls -lh deploy.zip
-          echo "Contents (top 20):" && unzip -l deploy.zip | head -20
 
       - name: Azure Login
         uses: azure/login@v2.3.0
