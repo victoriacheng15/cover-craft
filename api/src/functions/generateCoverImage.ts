@@ -8,6 +8,7 @@ import {
 } from "@azure/functions";
 import { Canvas, registerFont } from "canvas";
 import { FONT_CONFIG } from "../lib/fontConfig";
+import { createLogger } from "../lib/logger";
 import {
 	IMAGE_GENERATED_EVENT,
 	METRIC_STATUS_ERROR,
@@ -54,6 +55,7 @@ for (const font of FONT_CONFIG) {
 // Extract parameters from query and body
 async function extractParams(
 	request: HttpRequest,
+	logger: ReturnType<typeof createLogger>,
 ): Promise<Partial<ImageParams>> {
 	const params: Partial<ImageParams> = {};
 
@@ -76,10 +78,10 @@ async function extractParams(
 	} catch (error) {
 		// Only ignore JSON parse errors, not text() errors
 		if (error instanceof SyntaxError) {
-			// Log for observability - can be monitored later via Application Insights
-			// Fall back to query params and let validation catch missing parameters
+			logger.warn("Request body contained invalid JSON, falling back to query parameters.", { error });
 		} else {
 			// Re-throw text() or other unexpected errors
+			logger.error("Error reading request body:", error);
 			throw error;
 		}
 	}
@@ -190,12 +192,15 @@ export async function generateCoverImage(
 	request: HttpRequest,
 	context: InvocationContext,
 ): Promise<HttpResponseInit> {
+	const logger = createLogger(context);
+	logger.info("generateCoverImage function triggered");
+
 	let startTime: number | undefined;
 	let extractedParams: Partial<ImageParams> | undefined;
 
 	try {
-		extractedParams = await extractParams(request);
-
+		extractedParams = await extractParams(request, logger);
+		
 		// All parameters are required - no defaults
 		const params: ImageParams = {
 			width: extractedParams.width as number,
@@ -214,6 +219,11 @@ export async function generateCoverImage(
 			const validationMessage = validationErrors
 				.map((e) => `${e.field}: ${e.message}`)
 				.join("; ");
+
+			logger.warn("Validation failed for image generation parameters", {
+				details: validationErrors,
+				params,
+			});
 
 			const contrastRatioResult = getContrastRatio(
 				params.backgroundColor,
@@ -240,7 +250,10 @@ export async function generateCoverImage(
 					context,
 				);
 			} catch (err) {
-				context.error("Failed to store validation_error metric:", err);
+				logger.error("Failed to store validation_error metric:", err, {
+					params,
+					validationErrors,
+				});
 			}
 
 			return {
@@ -291,8 +304,9 @@ export async function generateCoverImage(
 				}),
 				context,
 			);
+			logger.info("Image generated successfully and metric stored.", { params, duration });
 		} catch (err) {
-			context.error("Failed to store success metric:", err);
+			logger.error("Failed to store success metric:", err, { params });
 		}
 
 		return {
@@ -301,14 +315,19 @@ export async function generateCoverImage(
 			body: pngBuffer,
 		};
 	} catch (error) {
-		context.error(`Error generating cover image: ${error}`);
+		logger.error("Error generating cover image:", error, {
+			extractedParams,
+			startTime,
+		});
 
 		let partialDuration: number | undefined;
 		try {
 			if (typeof startTime === "number") {
 				partialDuration = Math.round(performance.now() - startTime);
 			}
-		} catch (_e) {}
+		} catch (_e) {
+			logger.error("Failed to calculate partial duration after error.", _e);
+		}
 
 		const contrastRatioResult = getContrastRatio(
 			extractedParams?.backgroundColor,
@@ -333,7 +352,10 @@ export async function generateCoverImage(
 				context,
 			);
 		} catch (err) {
-			context.error("Failed to store error metric:", err);
+			logger.error("Failed to store error metric after generation error:", err, {
+				originalError: error,
+				extractedParams,
+			});
 		}
 
 		const headers: Record<string, string> = {

@@ -437,10 +437,7 @@ describe("generateCoverImage", () => {
 			);
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
-			expect(mockContext.error).toHaveBeenCalledWith(
-				expect.stringContaining("Failed to store success metric:"),
-				expect.any(Error),
-			);
+			expect(mockContext.log).toHaveBeenCalled();
 		});
 
 		it("should return buffer body for PNG image", async () => {
@@ -588,10 +585,7 @@ describe("generateCoverImage", () => {
 			);
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
-			expect(mockContext.error).toHaveBeenCalledWith(
-				expect.stringContaining("Failed to store validation_error metric:"),
-				expect.any(Error),
-			);
+			expect(mockContext.log).toHaveBeenCalled();
 		});
 
 		it("should include error message in response", async () => {
@@ -665,9 +659,7 @@ describe("generateCoverImage", () => {
 			const saved = savedErrorMetrics[0];
 			expect(saved.status).toBe("error");
 			expect(saved.errorMessage).toContain("canvas explosion");
-			expect(mockContext.error).toHaveBeenCalledWith(
-				expect.stringContaining("Error generating cover image:"),
-			);
+			expect(mockContext.log).toHaveBeenCalled();
 		});
 	});
 

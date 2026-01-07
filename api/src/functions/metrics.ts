@@ -6,6 +6,7 @@ import {
 } from "@azure/functions";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
 import type { MetricPayload } from "../shared/metricPayload";
+import { createLogger } from "../lib/logger";
 
 // POST /api/metrics
 // Receives metrics/events from the frontend and stores to MongoDB for persistence
@@ -13,7 +14,8 @@ export async function metrics(
 	request: HttpRequest,
 	context: InvocationContext,
 ): Promise<HttpResponseInit> {
-	context.log("metrics() function triggered");
+	const logger = createLogger(context);
+	logger.info("metrics() function triggered");
 
 	try {
 		await connectMongoDB(context);
@@ -23,6 +25,9 @@ export async function metrics(
 
 		// Validate required fields
 		if (!metricsData.event || !metricsData.timestamp) {
+			logger.warn("Validation Error: Missing required fields", {
+				details: metricsData,
+			});
 			return {
 				status: 400,
 				headers: { "Content-Type": "application/json" },
@@ -33,6 +38,7 @@ export async function metrics(
 		}
 
 		await storeMetricsToMongoDB(metricsData, context);
+		logger.info("Metrics processed successfully", { details: metricsData });
 
 		return {
 			status: 200,
@@ -45,7 +51,7 @@ export async function metrics(
 			}),
 		};
 	} catch (error) {
-		context.error("Error processing metrics:", error);
+		logger.error("Error processing metrics:", error);
 		return {
 			status: 500,
 			headers: { "Content-Type": "application/json" },
@@ -60,6 +66,7 @@ export async function storeMetricsToMongoDB(
 	metricsData: MetricPayload,
 	context: InvocationContext,
 ): Promise<void> {
+	const logger = createLogger(context); // Instantiate logger in helper function too
 	try {
 		await connectMongoDB(context);
 		const Metric = getMetricModel();
@@ -68,9 +75,9 @@ export async function storeMetricsToMongoDB(
 			timestamp: new Date(metricsData.timestamp),
 		});
 		await metric.save();
-		context.log("Metrics stored to MongoDB:", metric._id);
+		logger.info("Metrics stored to MongoDB:", { metricId: metric._id, event: metric.event });
 	} catch (error) {
-		context.error("Error storing metrics to MongoDB:", error);
+		logger.error("Error storing metrics to MongoDB:", error);
 		throw error;
 	}
 }

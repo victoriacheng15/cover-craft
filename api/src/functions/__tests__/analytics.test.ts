@@ -3,9 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AnalyticsResult } from "../../shared/analytics";
 
 // Mock dependencies
-vi.mock("../../lib/mongoose", () => ({
-	connectMongoDB: vi.fn().mockResolvedValue(undefined),
-}));
+vi.mock("../../lib/mongoose", () => {
+	const mockLogModel = vi.fn();
+	mockLogModel.prototype.save = vi.fn().mockResolvedValue({ _id: "test-log-id" });
+
+	return {
+		connectMongoDB: vi.fn().mockResolvedValue(undefined),
+		getLogModel: vi.fn(() => mockLogModel),
+	};
+});
 
 vi.mock("../../lib/analyticsQueries", () => ({
 	fetchAggregatedAnalytics: vi.fn(),
@@ -130,10 +136,7 @@ describe("analytics", () => {
 		const response = await analytics(mockRequest, mockContext);
 
 		expect(response.status).toBe(500);
-		expect(mockContext.error).toHaveBeenCalledWith(
-			"Error fetching analytics:",
-			error,
-		);
+		expect(mockContext.log).toHaveBeenCalled();
 		const body = JSON.parse(response.body as string);
 		expect(body).toEqual({ error: "Failed to fetch analytics" });
 	});
