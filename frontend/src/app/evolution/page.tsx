@@ -4,49 +4,49 @@ import { Card, SectionTitle } from "@/components/ui";
 export default function EvolutionPage() {
 	const timelineEvents = [
 		{
-			date: "2025-04",
+			date: "2025-04-05",
 			title: "The Beginning: Local Automation",
 			description:
 				"Developed a Python CLI tool to automate LinkedIn cover generation. While functional, the dependency on local virtual environments highlighted the need for a cloud-native, zero-setup solution.",
 		},
 		{
-			date: "2025-08",
+			date: "2025-08-01",
 			title: "Design-First Architecture",
 			description:
 				"Adoption of a 'Design-First' methodology. Defined core system architecture, data privacy constraints, and API contracts before implementation, ensuring a scalable and maintainable foundation.",
 		},
 		{
-			date: "2025-09",
+			date: "2025-09-23",
 			title: "Serverless Backend",
 			description:
 				"Engineered a serverless architecture using Azure Functions and TypeScript. Focused on stateless image generation to ensure high availability and minimize operational costs.",
 		},
 		{
-			date: "2025-10",
+			date: "2025-10-27",
 			title: "Frontend Architecture & Delivery",
 			description:
 				"Architected the client-side using Next.js for performance and SEO. Established a rigid CI/CD pipeline with GitHub Actions to enforce code quality and automate deployment.",
 		},
 		{
-			date: "2025-11",
+			date: "2025-11-07",
 			title: "Analytics & Compliance",
 			description:
 				"Designed a privacy-first telemetry system using MongoDB to track user engagement and compliance. Implemented comprehensive testing strategies with Vitest and real-time WCAG checks.",
 		},
 		{
-			date: "2025-12",
+			date: "2025-12-13",
 			title: "Full-Stack Optimization",
 			description:
 				"Refactored codebase to share validation logic between frontend and backend, ensuring consistency and eliminating duplication bugs. Enhanced the Analytics Dashboard with Recharts for visualizing system performance and user engagement.",
 		},
 		{
-			date: "2026-01",
+			date: "2026-01-01",
 			title: "Landing and Evolution Pages Launch",
 			description:
-			"Launched the public landing page and this evolution timeline to transparently share Cover Craft’s journey.",
+				"Launched the public landing page and this evolution timeline to transparently share Cover Craft’s journey.",
 		},
 		{
-			date: "2026-01",
+			date: "2026-01-07",
 			title: "Operational Excellence",
 			description:
 				"Transitioned to structured JSON logging with correlation IDs and a centralized MongoDB sink. Standardized error handling across the serverless architecture to ensure production-grade maintainability.",
