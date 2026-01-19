@@ -312,7 +312,7 @@ export async function generateCoverImage(
 		return {
 			status: 200,
 			headers,
-			body: pngBuffer,
+			body: new Uint8Array(pngBuffer),
 		};
 	} catch (error) {
 		logger.error("Error generating cover image:", error, {
