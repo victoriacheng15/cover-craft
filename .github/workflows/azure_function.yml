@@ -30,32 +30,30 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
+          cache-dependency-path: 'package-lock.json'
 
-      - name: Install dependencies (clean & fast)
-        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+      - name: Install dependencies (root)
         run: |
           npm ci --prefer-offline --no-audit --no-fund
 
-      - name: Build (TypeScript -> JS)
-        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+      - name: Build API
         run: |
-          npm run build
+          npm run build:api
 
       - name: Run tests (fail fast)
-        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
         run: |
-          npm test -- --run
+          npm run test:api
 
       - name: Package for deployment
         working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
         run: |
-          # 1. Remove dev dependencies and install only production dependencies
-          rm -rf node_modules
+          # 1. Install only production dependencies locally for the function app
+          # We need to run this inside the api folder so it populates api/node_modules
           npm install --omit=dev --no-audit --no-fund
 
           # 2. Create the zip file for deployment
-          zip -r deploy.zip . -x local.settings.json
+          # Exclude source, tests, and config files not needed at runtime
+          zip -r deploy.zip . -x "src/*" "__tests__/*" "*.test.ts" "tsconfig.json" "local.settings.json"
 
       - name: Azure Login
         uses: azure/login@v2.3.0

@@ -20,15 +20,11 @@
 		"@tailwindcss/postcss": "^4",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/react": "^16.3.1",
-		"@types/node": "^25",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
-		"@vitest/coverage-v8": "^4.0.16",
 		"babel-plugin-react-compiler": "1.0.0",
 		"jsdom": "^27.4.0",
 		"tailwindcss": "^4",
-		"typescript": "^5",
-		"vite-tsconfig-paths": "^6.0.4",
-		"vitest": "^4.0.16"
+		"vite-tsconfig-paths": "^6.0.4"
 	}
 }

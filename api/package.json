@@ -21,11 +21,7 @@
 		"mongoose": "^9.1.2"
 	},
 	"devDependencies": {
-		"@types/node": "^25.x",
-		"@vitest/coverage-v8": "^4.0.16",
-		"rimraf": "^6.1.2",
-		"typescript": "^5.9.3",
-		"vitest": "^4.0.16"
+		"rimraf": "^6.1.2"
 	},
 	"main": "dist/index.js"
 }
