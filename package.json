@@ -20,6 +20,6 @@
     "test:frontend": "npm run test --prefix frontend"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.8"
+    "@biomejs/biome": "2.3.11"
   }
 }
