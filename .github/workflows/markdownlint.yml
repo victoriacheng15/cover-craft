@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5.0.0
-      - uses: victoriacheng15hub/platform-actions/markdown-linter@main
+      - uses: victoriacheng15hub/platform-actions/markdown-linter@v0
         with:
-          md_paths: |
+          paths: |
             '**/*.md'
