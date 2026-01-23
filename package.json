@@ -12,14 +12,22 @@
   },
   "license": "MIT",
   "author": "",
+  "workspaces": [
+    "frontend",
+    "shared"
+  ],
   "scripts": {
-    "lint": "biome check --write frontend/ api/ shared/",
-    "format": "biome format --write frontend/ api/ shared/",
-    "test": "npm run test:api && npm run test:frontend",
-    "test:api": "npm run test --prefix api",
-    "test:frontend": "npm run test --prefix frontend"
+    "lint": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "npm test --workspaces --if-present",
+    "test:coverage": "npm test --workspaces --if-present -- --coverage",
+    "build:shared": "npm run build --workspace=@cover-craft/shared",
+    "build:frontend": "npm run build:shared && npm run build --workspace=frontend",
+    "dev:frontend": "npm run dev --workspace=frontend"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.11"
+    "@biomejs/biome": "2.3.11",
+    "frontend": "./frontend",
+    "@cover-craft/shared": "./shared"
   }
 }

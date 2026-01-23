@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { ValidationError } from "@/shared/validators";
+import type { ValidationError } from "@cover-craft/shared";
 
 // Error response type - matches unified backend error format
 export type ApiErrorResponse = {

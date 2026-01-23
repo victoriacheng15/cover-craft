@@ -19,7 +19,7 @@ import { useAnalytics } from "@/hooks";
 import {
 	SUBTITLE_LENGTH_THRESHOLDS,
 	TITLE_LENGTH_THRESHOLDS,
-} from "@/shared/validators";
+} from "@cover-craft/shared";
 
 export default function AnalyticsPage() {
 	const {
