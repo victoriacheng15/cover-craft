@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
 	downloadImage,
 	generateCoverImage,
-	type MetricPayload,
 	sendDownloadEvent,
 	sendGenerateEvent,
 } from "@/_utils";
