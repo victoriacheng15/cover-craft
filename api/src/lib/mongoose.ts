@@ -50,12 +50,12 @@ const logSchema = new mongoose.Schema(
 
 // Type for the structured log, needed here for the Log model
 export interface StructuredLog {
-    timestamp: string;
-    level: "INFO" | "WARN" | "ERROR" | "DEBUG";
-    message: string;
-    invocationId?: string;
-    functionName?: string;
-    details?: Record<string, unknown>;
+	timestamp: string;
+	level: "INFO" | "WARN" | "ERROR" | "DEBUG";
+	message: string;
+	invocationId?: string;
+	functionName?: string;
+	details?: Record<string, unknown>;
 }
 
 export function getLogModel() {
@@ -64,7 +64,6 @@ export function getLogModel() {
 	}
 	return mongoose.model("Log", logSchema);
 }
-
 
 export function getMetricModel() {
 	if (mongoose.models.Metric) {
@@ -92,7 +91,10 @@ export async function connectMongoDB(
 		console.error("CRITICAL: MongoDB connection error.", {
 			invocationId: context.invocationId,
 			functionName: context.functionName,
-			error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+			error:
+				error instanceof Error
+					? { message: error.message, stack: error.stack }
+					: error,
 		});
 		throw error;
 	}

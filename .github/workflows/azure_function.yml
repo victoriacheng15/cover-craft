@@ -5,72 +5,89 @@ on:
     branches: [main]
     paths:
       - 'api/**'
+      - 'shared/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - 'shared/**'
   workflow_dispatch:
 
 env:
   AZURE_FUNCTIONAPP_NAME: 'cover-craft'
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'api'
-  NODE_VERSION: '24.x' # Use LTS for better cache availability & stability
+  NODE_VERSION: '24.x'
 
 concurrency:
-  group: cover-craft-function-deploy
+  group: cover-craft-function-deploy-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout (shallow)
+      - name: Checkout
         uses: actions/checkout@v6.0.1
-        with:
-          fetch-depth: 1
 
-      - name: Setup Node (${{ env.NODE_VERSION }}) with cache
+      - name: Setup Node (${{ env.NODE_VERSION }})
         uses: actions/setup-node@v6.2.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
 
-      - name: Install dependencies (clean & fast)
-        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        run: |
-          npm ci --prefer-offline --no-audit --no-fund
+      - name: Install all dependencies
+        run: npm ci
 
-      - name: Build (TypeScript -> JS)
-        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        run: |
-          npm run build
+      - name: Build shared package
+        run: npm run build:shared
 
-      - name: Run tests (fail fast)
-        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        run: |
-          npm test -- --run
+      - name: Build API
+        run: npm run build --workspace=api
+
+      - name: Run API tests
+        run: npm run test:api
 
       - name: Package for deployment
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
         run: |
-          # 1. Remove dev dependencies and install only production dependencies
+          # 1. Remove dev dependencies and install production dependencies
           rm -rf node_modules
-          npm install --omit=dev --no-audit --no-fund
+          npm install --omit=dev --no-audit --no-fund --install-links
 
-          # 2. Create the zip file for deployment
+          # 2. Ensure shared/dist is physically present (manual copy if link failed to include it)
+          # Note: --install-links copies the folder, but we ensure dist is there.
+          mkdir -p node_modules/@cover-craft/shared/dist
+          cp -r ../shared/dist/* node_modules/@cover-craft/shared/dist/
+
+          # 3. Create the zip file for deployment
           zip -r deploy.zip . -x local.settings.json
+
+      - name: Upload artifact for deployment
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: function-app-package
+          path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/deploy.zip
+
+  deploy:
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: function-app-package
 
       - name: Azure Login
         uses: azure/login@v2.3.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure Functions (Zip Push)
+      - name: Deploy to Azure Functions
         run: |
-          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           az functionapp deployment source config-zip \
             --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
             --resource-group personal-projects \
             --src ./deploy.zip
-
-      - name: Post-deploy info
-        run: |
-          echo "Deployment completed at $(date -u)."
-          echo "Zip size:" && ls -lh ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/deploy.zip

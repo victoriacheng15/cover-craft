@@ -1,33 +1,47 @@
 {
-  "name": "cover-craft",
-  "version": "1.0.0",
-  "description": "A full-stack cover image generator application with built-in analytics dashboard. Showcases modern web development, cloud deployment, and best practices. Demonstrates end-to-end integration of responsive frontend, serverless backend, MongoDB data persistence, and cloud infrastructure for production-ready applications.",
-  "homepage": "https://github.com/victoriacheng15/cover-craft#readme",
-  "bugs": {
-    "url": "https://github.com/victoriacheng15/cover-craft/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/victoriacheng15/cover-craft.git"
-  },
-  "license": "MIT",
-  "author": "",
-  "workspaces": [
-    "frontend",
-    "shared"
-  ],
-  "scripts": {
-    "lint": "biome check --write .",
-    "format": "biome format --write .",
-    "test": "npm test --workspaces --if-present",
-    "test:coverage": "npm test --workspaces --if-present -- --coverage",
-    "build:shared": "npm run build --workspace=@cover-craft/shared",
-    "build:frontend": "npm run build:shared && npm run build --workspace=frontend",
-    "dev:frontend": "npm run dev --workspace=frontend"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.3.11",
-    "frontend": "./frontend",
-    "@cover-craft/shared": "./shared"
-  }
+	"name": "cover-craft",
+	"version": "1.0.0",
+	"description": "A full-stack cover image generator application with built-in analytics dashboard. Showcases modern web development, cloud deployment, and best practices. Demonstrates end-to-end integration of responsive frontend, serverless backend, MongoDB data persistence, and cloud infrastructure for production-ready applications.",
+	"homepage": "https://github.com/victoriacheng15/cover-craft#readme",
+	"bugs": {
+		"url": "https://github.com/victoriacheng15/cover-craft/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/victoriacheng15/cover-craft.git"
+	},
+	"license": "MIT",
+	"author": "",
+	"workspaces": [
+		"frontend",
+		"api",
+		"shared"
+	],
+	"scripts": {
+		"lint": "biome check --write frontend/ api/ shared/",
+		"lint:api": "biome check --write api/",
+		"lint:frontend": "biome check --write frontend/",
+		"lint:shared": "biome check --write shared/",
+		"format": "biome format --write frontend/ api/ shared/",
+		"format:api": "biome format --write api/",
+		"format:frontend": "biome format --write frontend/",
+		"format:shared": "biome format --write shared/",
+		"test": "npm test --workspaces --if-present",
+		"test:api": "npm test --workspace=api",
+		"test:frontend": "npm test --workspace=frontend",
+		"test:coverage": "npm test --workspaces --if-present -- --coverage",
+		"build:shared": "npm run build --workspace=@cover-craft/shared",
+		"build:frontend": "npm run build:shared && npm run build --workspace=frontend",
+		"dev:frontend": "npm run dev --workspace=frontend",
+		"start:api": "npm run build:shared && npm run start --workspace=api"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.11",
+		"api": "./api",
+		"frontend": "./frontend",
+		"@cover-craft/shared": "./shared",
+		"typescript": "^5.9.3",
+		"vite-tsconfig-paths": "^6.0.5",
+		"vitest": "^4.0.16"
+	}
 }

@@ -1,6 +1,6 @@
 import type { HttpRequest, InvocationContext } from "@azure/functions";
+import type { MetricPayload } from "@cover-craft/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { MetricPayload } from "../../shared/metricPayload";
 
 // Mock connectMongoDB and getMetricModel
 vi.mock("../../lib/mongoose", () => {

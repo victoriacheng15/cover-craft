@@ -8,11 +8,7 @@
 		"strict": false,
 		"types": ["vitest/globals", "node"],
 		"skipLibCheck": true,
-		"esModuleInterop": true,
-		"baseUrl": ".",
-		"paths": {
-			"@/shared/*": ["../shared/*"]
-		}
+		"esModuleInterop": true
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist"]

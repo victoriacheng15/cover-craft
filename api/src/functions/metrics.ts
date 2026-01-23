@@ -4,9 +4,9 @@ import {
 	type HttpResponseInit,
 	type InvocationContext,
 } from "@azure/functions";
-import { connectMongoDB, getMetricModel } from "../lib/mongoose";
-import type { MetricPayload } from "../shared/metricPayload";
+import type { MetricPayload } from "@cover-craft/shared";
 import { createLogger } from "../lib/logger";
+import { connectMongoDB, getMetricModel } from "../lib/mongoose";
 
 // POST /api/metrics
 // Receives metrics/events from the frontend and stores to MongoDB for persistence
@@ -75,7 +75,10 @@ export async function storeMetricsToMongoDB(
 			timestamp: new Date(metricsData.timestamp),
 		});
 		await metric.save();
-		logger.info("Metrics stored to MongoDB:", { metricId: metric._id, event: metric.event });
+		logger.info("Metrics stored to MongoDB:", {
+			metricId: metric._id,
+			event: metric.event,
+		});
 	} catch (error) {
 		logger.error("Error storing metrics to MongoDB:", error);
 		throw error;

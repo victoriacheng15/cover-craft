@@ -327,3 +327,15 @@ export function validateContrast(
 
 	return errors;
 }
+
+export function validateImageParams(params: ImageParams): ValidationError[] {
+	const errors: ValidationError[] = [];
+
+	errors.push(...validateSize(params.width, params.height));
+	errors.push(...validateColors(params.backgroundColor, params.textColor));
+	errors.push(...validateFont(params.font));
+	errors.push(...validateTextLength(params.title, params.subtitle));
+	errors.push(...validateContrast(params.backgroundColor, params.textColor));
+
+	return errors;
+}
