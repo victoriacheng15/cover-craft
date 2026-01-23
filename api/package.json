@@ -4,11 +4,9 @@
 	"description": "",
 	"scripts": {
 		"copy:assets": "mkdir -p dist/assets && cp -r src/assets/fonts dist/assets/fonts",
-		"copy:shared": "mkdir -p src/shared && cp ../shared/*.ts src/shared/",
-		"build:shared": "tsc -p ../shared/tsconfig.json",
-		"build": "npm run build:shared && npm run copy:shared && tsc && npm run copy:assets",
+		"build": "tsc && npm run copy:assets",
 		"watch": "tsc -w",
-		"clean": "rimraf dist && rimraf src/shared && rimraf ../shared/dist",
+		"clean": "rimraf dist",
 		"prestart": "npm run clean && npm run build",
 		"start": "func start",
 		"test": "vitest run",
@@ -17,6 +15,7 @@
 	},
 	"dependencies": {
 		"@azure/functions": "^4.10.0",
+		"@cover-craft/shared": "*",
 		"canvas": "^3.2.0",
 		"mongoose": "^9.1.2"
 	},
@@ -25,6 +24,7 @@
 		"@vitest/coverage-v8": "^4.0.16",
 		"rimraf": "^6.1.2",
 		"typescript": "^5.9.3",
+		"vite-tsconfig-paths": "^6.0.5",
 		"vitest": "^4.0.16"
 	},
 	"main": "dist/index.js"

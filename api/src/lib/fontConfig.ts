@@ -1,4 +1,4 @@
-import type { AllowedFont } from "../shared/validators";
+import type { AllowedFont } from "@cover-craft/shared";
 
 export interface FontDefinition {
 	family: AllowedFont;

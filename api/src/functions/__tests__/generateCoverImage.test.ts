@@ -1,10 +1,10 @@
 import type { HttpRequest, InvocationContext } from "@azure/functions";
+import type { MetricStatus } from "@cover-craft/shared";
+import * as validators from "@cover-craft/shared";
+import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
 import { Canvas } from "canvas";
 import { describe, expect, it, vi } from "vitest";
 import * as mongooseLib from "../../lib/mongoose";
-import type { MetricStatus } from "../../shared/metricPayload";
-import * as validators from "../../shared/validators";
-import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "../../shared/validators";
 import { generateCoverImage } from "../generateCoverImage";
 
 interface MetricDocument {

@@ -1,11 +1,13 @@
 import type { HttpRequest, InvocationContext } from "@azure/functions";
+import type { AnalyticsResult } from "@cover-craft/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AnalyticsResult } from "../../shared/analytics";
 
 // Mock dependencies
 vi.mock("../../lib/mongoose", () => {
 	const mockLogModel = vi.fn();
-	mockLogModel.prototype.save = vi.fn().mockResolvedValue({ _id: "test-log-id" });
+	mockLogModel.prototype.save = vi
+		.fn()
+		.mockResolvedValue({ _id: "test-log-id" });
 
 	return {
 		connectMongoDB: vi.fn().mockResolvedValue(undefined),
@@ -92,9 +94,9 @@ describe("analytics", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		(fetchAggregatedAnalytics as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
-			mockAnalyticsResult,
-		);
+		(
+			fetchAggregatedAnalytics as unknown as ReturnType<typeof vi.fn>
+		).mockResolvedValue(mockAnalyticsResult);
 	});
 
 	it("should return status 200 and analytics data on success", async () => {
@@ -129,9 +131,9 @@ describe("analytics", () => {
 
 	it("should return status 500 when fetching analytics fails", async () => {
 		const error = new Error("Database error");
-		(fetchAggregatedAnalytics as unknown as ReturnType<typeof vi.fn>).mockRejectedValue(
-			error,
-		);
+		(
+			fetchAggregatedAnalytics as unknown as ReturnType<typeof vi.fn>
+		).mockRejectedValue(error);
 
 		const response = await analytics(mockRequest, mockContext);
 

@@ -5,8 +5,8 @@ import {
 	type InvocationContext,
 } from "@azure/functions";
 import { fetchAggregatedAnalytics } from "../lib/analyticsQueries";
-import { connectMongoDB } from "../lib/mongoose";
 import { createLogger } from "../lib/logger";
+import { connectMongoDB } from "../lib/mongoose";
 
 export async function analytics(
 	_request: HttpRequest,

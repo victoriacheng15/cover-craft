@@ -6,29 +6,27 @@ import {
 	type HttpResponseInit,
 	type InvocationContext,
 } from "@azure/functions";
-import { Canvas, registerFont } from "canvas";
-import { FONT_CONFIG } from "../lib/fontConfig";
-import { createLogger } from "../lib/logger";
-import {
-	IMAGE_GENERATED_EVENT,
-	METRIC_STATUS_ERROR,
-	METRIC_STATUS_SUCCESS,
-	METRIC_STATUS_VALIDATION_ERROR,
-	type MetricPayload,
-} from "../shared/metricPayload";
 import {
 	generateFilename,
 	getRelativeLuminance,
 	getWCAGLevelFromRatio,
 	hexToRgb,
+	IMAGE_GENERATED_EVENT,
 	type ImageParams,
+	METRIC_STATUS_ERROR,
+	METRIC_STATUS_SUCCESS,
+	METRIC_STATUS_VALIDATION_ERROR,
+	type MetricPayload,
 	type ValidationError,
 	validateColors,
 	validateContrast,
 	validateFont,
 	validateSize,
 	validateTextLength,
-} from "../shared/validators";
+} from "@cover-craft/shared";
+import { Canvas, registerFont } from "canvas";
+import { FONT_CONFIG } from "../lib/fontConfig";
+import { createLogger } from "../lib/logger";
 import { storeMetricsToMongoDB } from "./metrics";
 
 // Register fonts
@@ -78,7 +76,10 @@ async function extractParams(
 	} catch (error) {
 		// Only ignore JSON parse errors, not text() errors
 		if (error instanceof SyntaxError) {
-			logger.warn("Request body contained invalid JSON, falling back to query parameters.", { error });
+			logger.warn(
+				"Request body contained invalid JSON, falling back to query parameters.",
+				{ error },
+			);
 		} else {
 			// Re-throw text() or other unexpected errors
 			logger.error("Error reading request body:", error);
@@ -200,7 +201,7 @@ export async function generateCoverImage(
 
 	try {
 		extractedParams = await extractParams(request, logger);
-		
+
 		// All parameters are required - no defaults
 		const params: ImageParams = {
 			width: extractedParams.width as number,
@@ -304,7 +305,10 @@ export async function generateCoverImage(
 				}),
 				context,
 			);
-			logger.info("Image generated successfully and metric stored.", { params, duration });
+			logger.info("Image generated successfully and metric stored.", {
+				params,
+				duration,
+			});
 		} catch (err) {
 			logger.error("Failed to store success metric:", err, { params });
 		}
@@ -352,10 +356,14 @@ export async function generateCoverImage(
 				context,
 			);
 		} catch (err) {
-			logger.error("Failed to store error metric after generation error:", err, {
-				originalError: error,
-				extractedParams,
-			});
+			logger.error(
+				"Failed to store error metric after generation error:",
+				err,
+				{
+					originalError: error,
+					extractedParams,
+				},
+			);
 		}
 
 		const headers: Record<string, string> = {

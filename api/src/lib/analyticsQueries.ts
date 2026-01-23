@@ -6,19 +6,17 @@ import type {
 	PerformanceMetrics,
 	UserEngagement,
 	WcagTrendItem,
-} from "../shared/analytics";
+} from "@cover-craft/shared";
 import {
 	DOWNLOAD_CLICK_EVENT,
 	GENERATE_CLICK_EVENT,
 	IMAGE_GENERATED_EVENT,
 	METRIC_STATUS_SUCCESS,
-	type WcagLevel,
-} from "../shared/metricPayload";
-import {
 	SIZE_PRESETS,
 	SUBTITLE_LENGTH_THRESHOLDS,
 	TITLE_LENGTH_THRESHOLDS,
-} from "../shared/validators";
+	type WcagLevel,
+} from "@cover-craft/shared";
 import { getMetricModel } from "./mongoose";
 
 // ===================================================================================
@@ -127,7 +125,7 @@ function getSizePresetLabel(
 // Fetch user engagement metrics
 async function fetchUserEngagement(
 	Metric: MetricModel,
-	completeDataFilter: DataFilter,
+	_completeDataFilter: DataFilter,
 	thirtyDaysAgo: Date,
 ): Promise<UserEngagement> {
 	// UI Generation Attempts (GENERATE_CLICK raw count)
@@ -494,7 +492,7 @@ async function fetchAccessibilityCompliance(
 	Metric: MetricModel,
 	completeDataFilter: DataFilter,
 	thirtyDaysAgo: Date,
-	totalCoversGenerated: number,
+	_totalCoversGenerated: number,
 ): Promise<AccessibilityCompliance> {
 	// WCAG level distribution (complete data only)
 	const wcagDistribution = (await Metric.aggregate([
