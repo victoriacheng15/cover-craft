@@ -55,20 +55,20 @@ jobs:
           rm -rf node_modules
           npm install --omit=dev --no-audit --no-fund --install-links
 
-          # 2. Ensure shared/dist is physically present (manual copy if link failed to include it)
-          # Note: --install-links copies the folder, but we ensure dist is there.
+          # 2. Ensure shared/dist is physically present
           mkdir -p node_modules/@cover-craft/shared/dist
           cp -r ../shared/dist/* node_modules/@cover-craft/shared/dist/
-
-          # 3. Create the zip file for deployment
-          zip -r deploy.zip . -x local.settings.json
 
       - name: Upload artifact for deployment
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: function-app-package
-          path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/deploy.zip
+          path: |
+            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dist
+            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/node_modules
+            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/host.json
+            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package.json
 
   deploy:
     needs: build-and-test
@@ -79,6 +79,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: function-app-package
+          path: deployment-package
+
+      - name: Create final zip
+        run: |
+          cd deployment-package
+          zip -r ../deploy.zip .
 
       - name: Azure Login
         uses: azure/login@v2.3.0
