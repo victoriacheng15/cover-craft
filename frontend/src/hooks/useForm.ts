@@ -11,7 +11,7 @@ import {
 	MAX_SUBTITLE_LENGTH,
 	MAX_TITLE_LENGTH,
 	SIZE_PRESETS,
-} from "@/shared/validators";
+} from "@cover-craft/shared";
 import { useContrastCheck } from "./useContrastCheck";
 
 export interface FormData {

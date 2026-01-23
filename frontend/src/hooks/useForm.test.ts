@@ -16,7 +16,7 @@ import {
 	sendDownloadEvent,
 	sendGenerateEvent,
 } from "@/_utils";
-import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@/shared/validators";
+import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
 
 const downloadImageMock = vi.mocked(downloadImage);
 const generateCoverImageMock = vi.mocked(generateCoverImage);

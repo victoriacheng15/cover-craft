@@ -12,7 +12,7 @@ vi.mock("@/hooks", async () => {
 });
 
 import { useForm as useFormHook } from "@/hooks";
-import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@/shared/validators";
+import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
 
 type UseFormReturn = ReturnType<typeof useFormHook>;
 const mockUseFormHook = vi.mocked(useFormHook);

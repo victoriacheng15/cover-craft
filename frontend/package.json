@@ -11,6 +11,7 @@
 		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
+		"@cover-craft/shared": "*",
 		"next": "16.1.1",
 		"react": "19.2.3",
 		"react-dom": "19.2.3",
@@ -27,7 +28,7 @@
 		"babel-plugin-react-compiler": "1.0.0",
 		"jsdom": "^27.4.0",
 		"tailwindcss": "^4",
-		"typescript": "^5",
+		"typescript": "^5.9.3",
 		"vite-tsconfig-paths": "^6.0.4",
 		"vitest": "^4.0.16"
 	}

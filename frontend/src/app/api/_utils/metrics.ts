@@ -5,7 +5,7 @@ import {
 	type MetricPayload,
 	type MetricStatus,
 	type WcagLevel,
-} from "@/shared/metricPayload";
+} from "@cover-craft/shared";
 export {
 	DOWNLOAD_CLICK_EVENT,
 	GENERATE_CLICK_EVENT,

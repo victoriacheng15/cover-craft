@@ -5,7 +5,7 @@ import type {
 	FeaturePopularity,
 	PerformanceMetrics,
 	UserEngagement,
-} from "@/shared/analytics";
+} from "@cover-craft/shared";
 
 interface AnalyticsData {
 	userEngagement: UserEngagement;
