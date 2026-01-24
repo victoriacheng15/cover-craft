@@ -1,5 +1,6 @@
 "use client";
 
+import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
 import {
 	Button,
 	Card,
@@ -11,7 +12,6 @@ import {
 import { FONT_OPTIONS, SIZE_PRESETS } from "@/hooks";
 import type { ContrastCheckResult } from "@/hooks/useContrastCheck";
 import type { FormData } from "@/hooks/useForm";
-import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
 import FormField from "./FormField";
 
 interface CoverFormControlsProps {

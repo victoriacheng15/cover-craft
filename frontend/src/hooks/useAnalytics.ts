@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { getAnalytics } from "@/_utils";
 import type {
 	AccessibilityCompliance,
 	FeaturePopularity,
 	PerformanceMetrics,
 	UserEngagement,
 } from "@cover-craft/shared";
+import { useEffect, useState } from "react";
+import { getAnalytics } from "@/_utils";
 
 interface AnalyticsData {
 	userEngagement: UserEngagement;

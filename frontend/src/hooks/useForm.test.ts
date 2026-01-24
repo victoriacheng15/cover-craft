@@ -10,13 +10,13 @@ vi.mock("@/_utils", () => ({
 	sendGenerateEvent: vi.fn(),
 }));
 
+import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
 import {
 	downloadImage,
 	generateCoverImage,
 	sendDownloadEvent,
 	sendGenerateEvent,
 } from "@/_utils";
-import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
 
 const downloadImageMock = vi.mocked(downloadImage);
 const generateCoverImageMock = vi.mocked(generateCoverImage);

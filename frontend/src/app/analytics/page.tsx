@@ -1,6 +1,10 @@
 "use client";
 
 import {
+	SUBTITLE_LENGTH_THRESHOLDS,
+	TITLE_LENGTH_THRESHOLDS,
+} from "@cover-craft/shared";
+import {
 	CartesianGrid,
 	Cell,
 	Legend,
@@ -16,10 +20,6 @@ import {
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, KPICard, SectionTitle } from "@/components/ui";
 import { useAnalytics } from "@/hooks";
-import {
-	SUBTITLE_LENGTH_THRESHOLDS,
-	TITLE_LENGTH_THRESHOLDS,
-} from "@cover-craft/shared";
 
 export default function AnalyticsPage() {
 	const {
