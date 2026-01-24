@@ -51,12 +51,12 @@ jobs:
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
         working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
         run: |
-          # 1. Clear existing modules to ensure a clean production set
+          # 1. Clear existing modules
           rm -rf node_modules
 
-          # 2. Install production dependencies LOCALLY. 
-          # We use --no-package-lock to prevent npm from trying to resolve against the root workspace lockfile,
-          # which would trigger hoisting. This forces all dependencies into api/node_modules.
+          # 2. Force a standalone production install. 
+          # We set NPM_CONFIG_WORKSPACE_AWARE=false to prevent hoisting.
+          export NPM_CONFIG_WORKSPACE_AWARE=false
           npm install --omit=dev --no-audit --no-fund --install-links --no-package-lock
 
           # 3. Fail-safe: ensure shared/dist is physically present
