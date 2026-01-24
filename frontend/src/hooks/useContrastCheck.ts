@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
 import { getContrastStatus } from "@cover-craft/shared";
+import { useEffect, useMemo, useState } from "react";
 
 export interface ContrastCheckResult {
 	status: "good" | "warning" | "poor";

@@ -1,10 +1,3 @@
-import { useState } from "react";
-import {
-	downloadImage,
-	generateCoverImage,
-	sendDownloadEvent,
-	sendGenerateEvent,
-} from "@/_utils";
 import {
 	DEFAULT_FILENAME,
 	FONT_OPTIONS,
@@ -12,6 +5,13 @@ import {
 	MAX_TITLE_LENGTH,
 	SIZE_PRESETS,
 } from "@cover-craft/shared";
+import { useState } from "react";
+import {
+	downloadImage,
+	generateCoverImage,
+	sendDownloadEvent,
+	sendGenerateEvent,
+} from "@/_utils";
 import { useContrastCheck } from "./useContrastCheck";
 
 export interface FormData {
