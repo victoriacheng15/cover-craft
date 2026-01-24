@@ -51,11 +51,15 @@ jobs:
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
         working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
         run: |
-          # 1. Remove dev dependencies and install production dependencies
+          # 1. Clear existing modules to ensure a clean production set
           rm -rf node_modules
-          npm install --omit=dev --no-audit --no-fund --install-links
 
-          # 2. Ensure shared/dist is physically present
+          # 2. Install production dependencies LOCALLY. 
+          # We use --no-package-lock to prevent npm from trying to resolve against the root workspace lockfile,
+          # which would trigger hoisting. This forces all dependencies into api/node_modules.
+          npm install --omit=dev --no-audit --no-fund --install-links --no-package-lock
+
+          # 3. Fail-safe: ensure shared/dist is physically present
           mkdir -p node_modules/@cover-craft/shared/dist
           cp -r ../shared/dist/* node_modules/@cover-craft/shared/dist/
 
