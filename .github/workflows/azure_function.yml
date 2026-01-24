@@ -54,12 +54,19 @@ jobs:
           # 1. Clear existing modules
           rm -rf node_modules
 
-          # 2. Force a standalone production install. 
-          # We set NPM_CONFIG_WORKSPACE_AWARE=false to prevent hoisting.
-          export NPM_CONFIG_WORKSPACE_AWARE=false
-          npm install --omit=dev --no-audit --no-fund --install-links --no-package-lock
+          # 2. Force isolation by temporarily hiding root workspace files.
+          # This prevents npm from detecting the monorepo and hoisting dependencies.
+          if [ -f ../package.json ]; then mv ../package.json ../package.json.bak; fi
+          if [ -f ../package-lock.json ]; then mv ../package-lock.json ../package-lock.json.bak; fi
 
-          # 3. Fail-safe: ensure shared/dist is physically present
+          # 3. Install production dependencies (local to api folder)
+          npm install --omit=dev --no-audit --no-fund --install-links
+
+          # 4. Restore root workspace files
+          if [ -f ../package.json.bak ]; then mv ../package.json.bak ../package.json; fi
+          if [ -f ../package-lock.json.bak ]; then mv ../package-lock.json.bak ../package-lock.json; fi
+
+          # 5. Fail-safe: ensure shared/dist is physically present
           mkdir -p node_modules/@cover-craft/shared/dist
           cp -r ../shared/dist/* node_modules/@cover-craft/shared/dist/
 
