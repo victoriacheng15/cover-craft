@@ -1,6 +1,8 @@
 # 🎨 Cover Craft
 
-A production-ready, full-stack cover image generator. This project demonstrates a multi-cloud serverless architecture, real-time Canvas rendering, and automated WCAG accessibility validation.
+**A Design-First, Full-Stack Monorepo engineered for Reliability, Accessibility, and Scale.**
+
+Cover Craft is a cloud-native platform that bridges the gap between creative automation and rigorous system design. It demonstrates professional engineering standards by enforcing **WCAG AA accessibility compliance** and **data privacy** through its core architecture. Built as a TypeScript monorepo, it prioritizes engineering velocity and type safety, ensuring a stable and maintainable foundation from inception to launch.
 
 ---
 
@@ -10,18 +12,20 @@ A production-ready, full-stack cover image generator. This project demonstrates 
 
 ---
 
-## 🧭 Design Principles
+## 🧭 Engineering Principles
 
-- **🎨 Enforced Contrast:** The tool won’t generate an image if the text and background colors fail accessibility readability checks.
-- **🔒 Zero User Data:** No sign-ups, no cookies, no personal data collected. What you generate is your business.
-- **🖼️ Server-Rendered:** Images are generated on the backend for consistent rendering, not via client-side canvas hacks.
-- **📊 Observable:** Anonymized usage metrics help improve the tool without tracking individual users.
+- **🎨 Shift-Left Accessibility:** Automated WCAG AA contrast validation is baked into the generation pipeline, preventing inaccessible output by design.
+- **🔒 Privacy by Design:** A zero-data architecture with no cookies, no tracking, and no persistence, ensuring complete user anonymity.
+- **🖼️ Stateless Reliability:** Server-side rendering via Azure Functions ensures consistent visual fidelity and cross-platform rendering accuracy.
+- **📊 Privacy-First Observability:** Structured, anonymized telemetry provides system insights and performance monitoring without compromising user privacy.
 
 ---
 
 ## 📚 Documentation
 
-The project follows a "Documentation as Code" philosophy. You can find the full technical index in the [**Documentation Directory**](./docs/README.md).
+The project follows a "Documentation as Code" philosophy:
+
+- [**Technical Documentation**](./docs/README.md) — Comprehensive architecture, Architectural Decision Records, and operational guides.
 
 ---
 

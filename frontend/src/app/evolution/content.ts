@@ -3,6 +3,7 @@ export interface TimelineEvent {
 	title: string;
 	description: string;
 	lessonLearned?: string;
+	adrPath?: string;
 }
 
 export interface Chapter {
@@ -30,12 +31,14 @@ export const chapters: Chapter[] = [
 				title: "Design-First Architecture",
 				description:
 					"Adoption of a 'Design-First' methodology. Defined core system architecture, data privacy constraints, and API contracts before implementation, ensuring a scalable and maintainable foundation.",
+				adrPath: "001-design-first-methodology",
 			},
 			{
 				date: "2025-09-23",
 				title: "Serverless Backend",
 				description:
 					"Engineered a serverless architecture using Azure Functions and TypeScript. Focused on stateless image generation to ensure high availability and minimize operational costs.",
+				adrPath: "002-serverless-backend-architecture",
 			},
 		],
 	},
@@ -62,6 +65,7 @@ export const chapters: Chapter[] = [
 				title: "Full-Stack Optimization",
 				description:
 					"Refactored codebase to share validation logic between frontend and backend, ensuring consistency and eliminating duplication bugs. Enhanced the Analytics Dashboard with Recharts for visualizing system performance and user engagement.",
+				adrPath: "003-in-app-analytics-strategy",
 			},
 		],
 	},
@@ -88,6 +92,7 @@ export const chapters: Chapter[] = [
 				title: "Full-Stack Monorepo Orchestration",
 				description:
 					"Unified the entire platform into a cohesive full-stack workspace to improve engineering velocity and system consistency. This structural upgrade ensures all components stay in sync, significantly reducing maintenance overhead while providing a more robust foundation for future growth.",
+				adrPath: "004-full-stack-monorepo-orchestration",
 			},
 			{
 				date: "2026-01-24",
