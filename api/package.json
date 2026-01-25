@@ -6,7 +6,7 @@
 		"copy:assets": "mkdir -p dist/assets && cp -r src/assets/fonts dist/assets/fonts",
 		"build": "tsc && npm run copy:assets",
 		"watch": "tsc -w",
-		"clean": "rimraf dist",
+		"clean": "rm -rf dist",
 		"prestart": "npm run clean && npm run build",
 		"start": "func start",
 		"test": "vitest run",
@@ -22,7 +22,6 @@
 	"devDependencies": {
 		"@types/node": "^25.x",
 		"@vitest/coverage-v8": "^4.0.16",
-		"rimraf": "^6.1.2",
 		"typescript": "^5.9.3",
 		"vite-tsconfig-paths": "^6.0.5",
 		"vitest": "^4.0.16"
