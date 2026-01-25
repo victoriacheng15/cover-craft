@@ -8,6 +8,7 @@ The backend is a serverless API built on Azure Functions (v4, Node.js), responsi
 - **Rendering:** `canvas` (Server-side implementation of HTML5 Canvas)
 - **Database:** MongoDB (via `mongoose`)
 - **Testing:** Vitest
+- **Shared Logic:** `@cover-craft/shared` (Types & Validators)
 
 ## System Architecture
 
@@ -84,7 +85,7 @@ The backend relies on shared TypeScript definitions to ensure type safety across
 
 ### Metric Payload (Ingress)
 
-*Source: `api/src/shared/metricPayload.ts`*
+*Source: `shared/metricPayload.ts` (via `@cover-craft/shared`)*
 
 ```typescript
 export interface MetricPayload {
@@ -108,7 +109,7 @@ export interface MetricPayload {
 
 ### Analytics Result (Egress)
 
-*Source: `api/src/shared/analytics.ts`*
+*Source: `shared/analytics.ts` (via `@cover-craft/shared`)*
 
 ```typescript
 export type AnalyticsResult = {

@@ -8,7 +8,7 @@ We use path-based triggering to ensure pipelines only run when relevant files ar
 
 | Workflow | File | Trigger | Purpose |
 | :--- | :--- | :--- | :--- |
-| **CI - Lint & Test** | `ci.yml` | Push/PR to `api/`, `frontend/`, `shared/` | Runs global linting and executes per-package test suites (API & Frontend). Blocks merge on failure. |
+| **CI - Lint & Test** | `ci.yml` | Push/PR to `api/`, `frontend/`, `shared/` | Runs global linting and executes per-workspace test suites (`npm test --workspace=frontend`, `test:api`, etc.). Blocks merge on failure. |
 | **Frontend Deployment** | *Vercel Managed* | Push to `main` | Automatic deployment via Vercel's GitHub integration. |
 | **API Deployment** | `azure_function.yml` | Push to `main` (only `api/**`) | Builds, tests, prunes dev dependencies, and deploys the API to Azure Functions. |
 | **Markdown Linter** | `markdownlint.yml` | Push/PR to `**/*.md` | Validates Markdown formatting using a custom action. |

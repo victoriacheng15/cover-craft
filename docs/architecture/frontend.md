@@ -8,6 +8,7 @@ The frontend is a **Next.js (App Router)** application that provides a real-time
 - **Styling:** Tailwind CSS + CSS Variables (for dynamic font injection)
 - **State:** React Hooks (`useState`, `useMemo`, `useCallback`)
 - **Metrics:** Recharts (for analytics visualization)
+- **Shared Logic:** `@cover-craft/shared` (Monorepo Workspace)
 
 ## System Architecture
 
@@ -40,6 +41,8 @@ The application attempts to use the **FileSystem API** for downloads to provide 
 | Type | Examples | Responsibility |
 | :--- | :--- | :--- |
 | **Pages** | `page.tsx` (Landing), `generate/page.tsx`, `evolution/page.tsx`, `analytics/page.tsx` | Entry points for the application's distinct routes. |
+| **Landing** | `HeroSection`, `OriginStory`, `DesignPrinciples` | Semantic sections of the landing page, decomposed for readability. |
+| **Analytics** | `UserEngagement`, `FeaturePopularity`, `PerformanceMetrics` | Domain-specific visualization components for the analytics dashboard. |
 | **Forms** | `CoverForm`, `FormField` | Encapsulates input logic, contrast validation, and error state. |
 | **UI** | `Button`, `Input`, `Card`, `SectionTitle`, `ColorPicker` | Stateless, reusable atoms styled with Tailwind. |
 | **Preview** | `CanvasPreview` | Logic to toggle between CSS-based preview and generated PNG `Blob`. |
