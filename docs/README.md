@@ -16,5 +16,7 @@ Welcome to the **Cover Craft** technical documentation. This directory contains 
 
 ## 🧠 Knowledge Base
 
+- [**Architectural Decision Records (ADR)**](./decisions/README.md)
+  - A chronological log of significant architectural decisions and their impact.
 - [**Engineering Journal**](./learning_note.md)
   - A record of technical challenges, architectural trade-offs, and key learnings from the project development.

@@ -32,6 +32,21 @@ export default function TimelineItem({ event }: TimelineItemProps) {
 						</p>
 					</div>
 				)}
+				{event.adrPath && (
+						<a
+							href={`https://github.com/victoriacheng15/cover-craft/blob/main/docs/decisions/${event.adrPath}.md`}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-lg transition-all group/adr"
+						>
+							<span className="text-base filter grayscale group-hover/adr:grayscale-0 transition-all">
+								📄
+							</span>
+							<span className="text-xs font-bold text-gray-600 group-hover/adr:text-emerald-700">
+								Read Technical Decision
+							</span>
+						</a>
+				)}
 			</Card>
 		</li>
 	);

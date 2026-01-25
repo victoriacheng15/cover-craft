@@ -1,6 +1,6 @@
 "use client";
 
-import { DesignPrinciples } from "@/components/landing/DesignPrinciples";
+import { Principles } from "@/components/landing/Principles";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { OriginStory } from "@/components/landing/OriginStory";
 import { SourceCodeLink } from "@/components/landing/SourceCodeLink";
@@ -16,8 +16,8 @@ export default function LandingPage() {
 				{/* Origin Story */}
 				<OriginStory />
 
-				{/* Design Principles */}
-				<DesignPrinciples />
+				{/* Principles */}
+				<Principles />
 
 				{/* Footer Link */}
 				<SourceCodeLink />
