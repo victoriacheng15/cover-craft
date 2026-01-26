@@ -26,14 +26,14 @@ describe("mongoose lib helpers", () => {
 	});
 
 	it("throws when MONGODB_URI is missing", async () => {
-		const { connectMongoDB } = await import("../mongoose");
+		const { connectMongoDB } = await import("./mongoose");
 		await expect(connectMongoDB(mockContext)).rejects.toThrow("MONGODB_URI");
 		expect(connectSpy).not.toHaveBeenCalled();
 	});
 
 	it("connects once and caches the connection", async () => {
 		process.env.MONGODB_URI = "mongodb://localhost:27017/test";
-		const { connectMongoDB } = await import("../mongoose");
+		const { connectMongoDB } = await import("./mongoose");
 		await connectMongoDB(mockContext);
 		await connectMongoDB(mockContext);
 		expect(connectSpy).toHaveBeenCalledWith(process.env.MONGODB_URI);
@@ -43,7 +43,7 @@ describe("mongoose lib helpers", () => {
 
 	it("logs and rethrows when connection fails", async () => {
 		process.env.MONGODB_URI = "mongodb://localhost:27017/test";
-		const { connectMongoDB } = await import("../mongoose");
+		const { connectMongoDB } = await import("./mongoose");
 		const connectionError = new Error("connection failed");
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
@@ -57,13 +57,13 @@ describe("mongoose lib helpers", () => {
 	it("reuses an existing Metric model", async () => {
 		const existingModel = {} as Model<unknown>;
 		mongoose.models.Metric = existingModel;
-		const { getMetricModel } = await import("../mongoose");
+		const { getMetricModel } = await import("./mongoose");
 		expect(getMetricModel()).toBe(existingModel);
 	});
 
 	it("creates the Metric model when missing", async () => {
 		delete mongoose.models.Metric;
-		const { getMetricModel, metricSchema } = await import("../mongoose");
+		const { getMetricModel, metricSchema } = await import("./mongoose");
 		const modelSpy = vi.spyOn(mongoose, "model");
 		const created = getMetricModel();
 		expect(created).toBe(mongoose.models.Metric);

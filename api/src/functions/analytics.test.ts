@@ -3,7 +3,7 @@ import type { AnalyticsResult } from "@cover-craft/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies
-vi.mock("../../lib/mongoose", () => {
+vi.mock("../lib/mongoose", () => {
 	const mockLogModel = vi.fn();
 	mockLogModel.prototype.save = vi
 		.fn()
@@ -15,12 +15,12 @@ vi.mock("../../lib/mongoose", () => {
 	};
 });
 
-vi.mock("../../lib/analyticsQueries", () => ({
+vi.mock("../lib/analyticsQueries", () => ({
 	fetchAggregatedAnalytics: vi.fn(),
 }));
 
-import { fetchAggregatedAnalytics } from "../../lib/analyticsQueries";
-import { analytics } from "../analytics";
+import { fetchAggregatedAnalytics } from "../lib/analyticsQueries";
+import { analytics } from "./analytics";
 
 describe("analytics", () => {
 	const mockContext = {

@@ -3,7 +3,7 @@ import type { MetricPayload } from "@cover-craft/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock connectMongoDB and getMetricModel
-vi.mock("../../lib/mongoose", () => {
+vi.mock("../lib/mongoose", () => {
 	const mockMetricModel = vi.fn();
 	mockMetricModel.prototype.save = vi
 		.fn()
@@ -16,7 +16,7 @@ vi.mock("../../lib/mongoose", () => {
 });
 
 // Import after setting up mocks
-import { metrics } from "../metrics";
+import { metrics } from "./metrics";
 
 describe("metrics", () => {
 	const mockContext = {
