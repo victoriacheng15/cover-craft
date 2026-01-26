@@ -4,8 +4,8 @@ import * as validators from "@cover-craft/shared";
 import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
 import { Canvas } from "canvas";
 import { describe, expect, it, vi } from "vitest";
-import * as mongooseLib from "../../lib/mongoose";
-import { generateCoverImage } from "../generateCoverImage";
+import * as mongooseLib from "../lib/mongoose";
+import { generateCoverImage } from "./generateCoverImage";
 
 interface MetricDocument {
 	event: string;

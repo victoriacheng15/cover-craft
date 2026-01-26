@@ -2,11 +2,11 @@ import type { HttpRequest, InvocationContext } from "@azure/functions";
 import { describe, expect, it, vi } from "vitest";
 
 // Mock dependencies
-vi.mock("../../lib/mongoose", () => ({
+vi.mock("../lib/mongoose", () => ({
 	connectMongoDB: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { healthCheck } from "../healthCheck";
+import { healthCheck } from "./healthCheck";
 
 describe("healthCheck", () => {
 	// Mock InvocationContext
