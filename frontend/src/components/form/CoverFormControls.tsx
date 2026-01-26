@@ -1,6 +1,11 @@
 "use client";
 
-import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
+import {
+	FONT_OPTIONS,
+	MAX_SUBTITLE_LENGTH,
+	MAX_TITLE_LENGTH,
+	SIZE_PRESETS,
+} from "@cover-craft/shared";
 import {
 	Button,
 	Card,
@@ -9,7 +14,6 @@ import {
 	SectionTitle,
 	Select,
 } from "@/components/ui";
-import { FONT_OPTIONS, SIZE_PRESETS } from "@/hooks";
 import type { ContrastCheckResult } from "@/hooks/useContrastCheck";
 import type { FormData } from "@/hooks/useForm";
 import FormField from "./FormField";

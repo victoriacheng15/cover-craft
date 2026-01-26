@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { downloadImage } from "./downloadImage";
+import { downloadImage } from "./download";
 
 type ShowSaveFilePicker = (options: {
 	suggestedName: string;

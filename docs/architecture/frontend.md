@@ -45,7 +45,6 @@ The application attempts to use the **FileSystem API** for downloads to provide 
 | **Analytics** | `UserEngagement`, `FeaturePopularity`, `PerformanceMetrics` | Domain-specific visualization components for the analytics dashboard. |
 | **Forms** | `CoverForm`, `FormField` | Encapsulates input logic, contrast validation, and error state. |
 | **UI** | `Button`, `Input`, `Card`, `SectionTitle`, `ColorPicker` | Stateless, reusable atoms styled with Tailwind. |
-| **Preview** | `CanvasPreview` | Logic to toggle between CSS-based preview and generated PNG `Blob`. |
 
 ## Custom Hooks (The Logic Layer)
 

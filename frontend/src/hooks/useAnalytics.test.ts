@@ -1,10 +1,15 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useAnalytics } from "./useAnalytics";
 
-const fetchMock: MockedFunction<typeof fetch> = vi.fn();
-global.fetch = fetchMock;
+// Mock the API utilities
+vi.mock("@/services/analytics", () => ({
+	getAnalytics: vi.fn(),
+}));
+
+import { getAnalytics } from "@/services/analytics";
+
+const getAnalyticsMock = vi.mocked(getAnalytics);
 
 describe("useAnalytics", () => {
 	beforeEach(() => {
@@ -12,7 +17,7 @@ describe("useAnalytics", () => {
 	});
 
 	it("initializes with loading state", () => {
-		fetchMock.mockImplementation(
+		getAnalyticsMock.mockImplementation(
 			() =>
 				new Promise(() => {
 					/* never resolves */
@@ -95,9 +100,9 @@ describe("useAnalytics", () => {
 		};
 
 		// @ts-expect-error
-		fetchMock.mockResolvedValueOnce({
-			ok: true,
-			json: async () => ({ success: true, data: mockData }),
+		getAnalyticsMock.mockResolvedValueOnce({
+			success: true,
+			data: mockData,
 		});
 
 		const { result } = renderHook(() => useAnalytics());
@@ -120,11 +125,9 @@ describe("useAnalytics", () => {
 	});
 
 	it("handles fetch errors", async () => {
-		// @ts-expect-error
-		fetchMock.mockResolvedValueOnce({
-			ok: false,
-			statusText: "Internal Server Error",
-		});
+		getAnalyticsMock.mockRejectedValueOnce(
+			new Error("Failed to fetch analytics: Internal Server Error"),
+		);
 
 		const { result } = renderHook(() => useAnalytics());
 
@@ -150,10 +153,7 @@ describe("useAnalytics", () => {
 		};
 
 		// @ts-expect-error
-		fetchMock.mockResolvedValueOnce({
-			ok: true,
-			json: async () => mockData,
-		});
+		getAnalyticsMock.mockResolvedValueOnce(mockData);
 
 		const { result } = renderHook(() => useAnalytics());
 
@@ -236,9 +236,9 @@ describe("useAnalytics", () => {
 		};
 
 		// @ts-expect-error
-		fetchMock.mockResolvedValueOnce({
-			ok: true,
-			json: async () => ({ success: true, data: mockData }),
+		getAnalyticsMock.mockResolvedValueOnce({
+			success: true,
+			data: mockData,
 		});
 
 		const { result } = renderHook(() => useAnalytics());
@@ -317,9 +317,9 @@ describe("useAnalytics", () => {
 		};
 
 		// @ts-expect-error
-		fetchMock.mockResolvedValueOnce({
-			ok: true,
-			json: async () => ({ success: true, data: mockData }),
+		getAnalyticsMock.mockResolvedValueOnce({
+			success: true,
+			data: mockData,
 		});
 
 		const { result } = renderHook(() => useAnalytics());
@@ -406,9 +406,9 @@ describe("useAnalytics", () => {
 		};
 
 		// @ts-expect-error
-		fetchMock.mockResolvedValueOnce({
-			ok: true,
-			json: async () => ({ success: true, data: mockData }),
+		getAnalyticsMock.mockResolvedValueOnce({
+			success: true,
+			data: mockData,
 		});
 
 		const { result } = renderHook(() => useAnalytics());
@@ -492,9 +492,9 @@ describe("useAnalytics", () => {
 		};
 
 		// @ts-expect-error
-		fetchMock.mockResolvedValueOnce({
-			ok: true,
-			json: async () => ({ success: true, data: mockData }),
+		getAnalyticsMock.mockResolvedValueOnce({
+			success: true,
+			data: mockData,
 		});
 
 		const { result } = renderHook(() => useAnalytics());
@@ -573,9 +573,9 @@ describe("useAnalytics", () => {
 		};
 
 		// @ts-expect-error
-		fetchMock.mockResolvedValueOnce({
-			ok: true,
-			json: async () => ({ success: true, data: mockData }),
+		getAnalyticsMock.mockResolvedValueOnce({
+			success: true,
+			data: mockData,
 		});
 
 		const { result } = renderHook(() => useAnalytics());
@@ -596,23 +596,21 @@ describe("useAnalytics", () => {
 
 	it("calls fetch on component mount", async () => {
 		// @ts-expect-error
-		fetchMock.mockResolvedValueOnce({
-			ok: true,
-			json: async () => ({ success: true, data: {} }),
+		getAnalyticsMock.mockResolvedValueOnce({
+			success: true,
+			data: {},
 		});
 
 		renderHook(() => useAnalytics());
 
 		await waitFor(() => {
-			expect(global.fetch).toHaveBeenCalledWith("/api/analytics");
+			expect(getAnalytics).toHaveBeenCalledTimes(1);
 		});
-
-		expect(global.fetch).toHaveBeenCalledTimes(1);
 	});
 
 	it("handles fetch network error", async () => {
 		const networkError = new Error("Network error");
-		fetchMock.mockRejectedValueOnce(networkError);
+		getAnalyticsMock.mockRejectedValueOnce(networkError);
 
 		const { result } = renderHook(() => useAnalytics());
 
@@ -625,7 +623,7 @@ describe("useAnalytics", () => {
 	});
 
 	it("handles non-Error thrown values", async () => {
-		fetchMock.mockRejectedValueOnce("String error thrown");
+		getAnalyticsMock.mockRejectedValueOnce("String error thrown");
 
 		const { result } = renderHook(() => useAnalytics());
 
