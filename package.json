@@ -18,10 +18,10 @@
 		"shared"
 	],
 	"scripts": {
-		"lint": "biome check --write frontend/ api/ shared/",
-		"lint:api": "biome check --write api/",
-		"lint:frontend": "biome check --write frontend/",
-		"lint:shared": "biome check --write shared/",
+		"lint": "biome check frontend/ api/ shared/",
+		"lint:api": "biome check api/",
+		"lint:frontend": "biome check frontend/",
+		"lint:shared": "biome check shared/",
 		"format": "biome format --write frontend/ api/ shared/",
 		"format:api": "biome format --write api/",
 		"format:frontend": "biome format --write frontend/",

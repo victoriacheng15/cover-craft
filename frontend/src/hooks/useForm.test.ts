@@ -1,22 +1,34 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { FONT_OPTIONS, SIZE_PRESETS, useForm } from "./useForm";
+import { useForm } from "./useForm";
 
 // Mock the API utilities
-vi.mock("@/_utils", () => ({
-	downloadImage: vi.fn(),
+vi.mock("@/services", () => ({
 	generateCoverImage: vi.fn(),
 	sendDownloadEvent: vi.fn(),
 	sendGenerateEvent: vi.fn(),
 }));
 
-import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
+// Mock the lib utilities
+vi.mock("@/lib", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@/lib")>();
+	return {
+		...actual,
+		downloadImage: vi.fn(),
+	};
+});
+
 import {
-	downloadImage,
+	MAX_SUBTITLE_LENGTH,
+	MAX_TITLE_LENGTH,
+	SIZE_PRESETS,
+} from "@cover-craft/shared";
+import { downloadImage } from "@/lib";
+import {
 	generateCoverImage,
 	sendDownloadEvent,
 	sendGenerateEvent,
-} from "@/_utils";
+} from "@/services";
 
 const downloadImageMock = vi.mocked(downloadImage);
 const generateCoverImageMock = vi.mocked(generateCoverImage);
@@ -541,25 +553,6 @@ describe("useForm", () => {
 			expect(result.current.error).toBe(errorMessage);
 
 			consoleErrorSpy.mockRestore();
-		});
-	});
-
-	describe("exports", () => {
-		it("exports SIZE_PRESETS", () => {
-			expect(SIZE_PRESETS).toEqual([
-				{ label: "Post (1200 × 627)", width: 1200, height: 627 },
-				{ label: "Square (1080 × 1080)", width: 1080, height: 1080 },
-			]);
-		});
-
-		it("exports FONT_OPTIONS", () => {
-			expect(FONT_OPTIONS).toEqual([
-				"Montserrat",
-				"Roboto",
-				"Lato",
-				"Playfair Display",
-				"Open Sans",
-			]);
 		});
 	});
 });

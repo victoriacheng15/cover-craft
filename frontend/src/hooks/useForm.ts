@@ -6,12 +6,12 @@ import {
 	SIZE_PRESETS,
 } from "@cover-craft/shared";
 import { useState } from "react";
+import { calculatePreviewDimensions, downloadImage } from "@/lib";
 import {
-	downloadImage,
 	generateCoverImage,
 	sendDownloadEvent,
 	sendGenerateEvent,
-} from "@/_utils";
+} from "@/services";
 import { useContrastCheck } from "./useContrastCheck";
 
 export interface FormData {
@@ -55,21 +55,7 @@ export function useForm() {
 	};
 
 	const getPreviewDimensions = () => {
-		const selectedSize = SIZE_PRESETS.find(
-			(preset) => preset.label === formData.size,
-		);
-
-		if (!selectedSize) {
-			return {
-				width: SIZE_PRESETS[0].width * 0.5,
-				height: SIZE_PRESETS[0].height * 0.5,
-			};
-		}
-
-		return {
-			width: selectedSize.width * 0.5,
-			height: selectedSize.height * 0.5,
-		};
+		return calculatePreviewDimensions(formData.size);
 	};
 
 	const handleGenerate = async () => {
@@ -159,5 +145,3 @@ export function useForm() {
 		contrastCheck,
 	};
 }
-
-export { SIZE_PRESETS, FONT_OPTIONS };

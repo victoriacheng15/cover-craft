@@ -1,4 +1,10 @@
 export {
+	downloadImage,
+	type FileSystemFileHandle,
+	type FileSystemWritableFileStream,
+	type SaveFilePickerOptions,
+} from "./download";
+export {
 	fontFamilyMap,
 	lato,
 	montserrat,
@@ -6,4 +12,4 @@ export {
 	playfairDisplay,
 	roboto,
 } from "./fonts";
-export { cn } from "./utils";
+export { calculatePreviewDimensions, cn } from "./utils";

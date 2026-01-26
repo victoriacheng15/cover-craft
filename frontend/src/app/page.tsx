@@ -1,8 +1,8 @@
 "use client";
 
-import { Principles } from "@/components/landing/Principles";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { OriginStory } from "@/components/landing/OriginStory";
+import { Principles } from "@/components/landing/Principles";
 import { SourceCodeLink } from "@/components/landing/SourceCodeLink";
 import MainLayout from "@/components/layout/MainLayout";
 

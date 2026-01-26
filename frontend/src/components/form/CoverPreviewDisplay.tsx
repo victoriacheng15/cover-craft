@@ -18,6 +18,14 @@ export default function CoverPreviewDisplay({
 	getPreviewDimensions,
 	handleDownload,
 }: CoverPreviewDisplayProps) {
+	const { width, height } = getPreviewDimensions();
+
+	// Calculate font sizes based on preview height for responsiveness
+	// Logic ported from CanvasPreview to ensure WYSIWYG accuracy
+	const headingFontSize = Math.max(24, Math.round(height * 0.09));
+	const subheadingFontSize = Math.max(16, Math.round(height * 0.07));
+	const lineSpacing = headingFontSize * 1.2;
+
 	return (
 		<Card
 			className="w-full md:min-w-[300px] flex flex-col items-center"
@@ -37,18 +45,24 @@ export default function CoverPreviewDisplay({
 							backgroundColor: formData.backgroundColor,
 							color: formData.textColor,
 							fontFamily: fontFamilyMap[formData.font],
-							width: `min(${getPreviewDimensions().width}px, 100%)`,
+							width: `min(${width}px, 100%)`,
 							height: `auto`,
-							aspectRatio: `${getPreviewDimensions().width} / ${getPreviewDimensions().height}`,
+							aspectRatio: `${width} / ${height}`,
 						}}
 						role="img"
 						aria-label={`Preview: ${formData.title || "Title"} - ${formData.subtitle || "Subtitle"}`}
 					>
 						<div className="text-center px-4">
-							<h2 className="text-2xl" style={{ fontWeight: 700 }}>
+							<h2 style={{ fontWeight: 700, fontSize: `${headingFontSize}px` }}>
 								{formData.title || "Title Preview"}
 							</h2>
-							<p className="text-lg" style={{ fontWeight: 400 }}>
+							<p
+								style={{
+									fontWeight: 400,
+									fontSize: `${subheadingFontSize}px`,
+									marginTop: `${lineSpacing / 2}px`,
+								}}
+							>
 								{formData.subtitle || "Subtitle Preview"}
 							</p>
 						</div>
@@ -61,8 +75,8 @@ export default function CoverPreviewDisplay({
 						<Image
 							src={generatedImageUrl || ""}
 							alt={`Generated cover image: ${formData.title}`}
-							width={getPreviewDimensions().width}
-							height={getPreviewDimensions().height}
+							width={width}
+							height={height}
 							className="max-w-full h-auto object-contain rounded-xl border border-gray-300"
 							unoptimized
 						/>
