@@ -410,7 +410,8 @@ describe("generateCoverImage", () => {
 			const response = await generateCoverImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			expect(response.headers).toHaveProperty("Content-Type");
-			expect(response.headers["Content-Type"]).toContain("image/png");
+			const headers = response.headers as Record<string, string>;
+			expect(headers["Content-Type"]).toContain("image/png");
 			// Assert metric saved
 			expect(savedSuccessMetrics.length).toBeGreaterThan(0);
 			const saved = savedSuccessMetrics[0];
@@ -472,7 +473,8 @@ describe("generateCoverImage", () => {
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
-			expect(response.headers["Content-Type"]).toBe("image/png");
+			const headers = response.headers as Record<string, string>;
+			expect(headers["Content-Type"]).toBe("image/png");
 		});
 
 		it("should set Content-Disposition for download", async () => {
@@ -488,8 +490,9 @@ describe("generateCoverImage", () => {
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
-			expect(response.headers["Content-Disposition"]).toBeDefined();
-			expect(response.headers["Content-Disposition"]).toContain("attachment");
+			const headers = response.headers as Record<string, string>;
+			expect(headers["Content-Disposition"]).toBeDefined();
+			expect(headers["Content-Disposition"]).toContain("attachment");
 		});
 
 		it("should set Cache-Control headers", async () => {
@@ -505,9 +508,10 @@ describe("generateCoverImage", () => {
 			});
 
 			const response = await generateCoverImage(mockRequest, mockContext);
-			expect(response.headers["Cache-Control"]).toBeDefined();
-			expect(response.headers["X-Generation-Duration"]).toBeDefined();
-			expect(Number(response.headers["X-Generation-Duration"])).toEqual(
+			const headers = response.headers as Record<string, string>;
+			expect(headers["Cache-Control"]).toBeDefined();
+			expect(headers["X-Generation-Duration"]).toBeDefined();
+			expect(Number(headers["X-Generation-Duration"])).toEqual(
 				expect.any(Number),
 			);
 		});

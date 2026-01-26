@@ -17,7 +17,7 @@ import {
 	TITLE_LENGTH_THRESHOLDS,
 	type WcagLevel,
 } from "@cover-craft/shared";
-import { getMetricModel } from "./mongoose";
+import { getMetricModel, type MetricModel } from "./mongoose";
 
 // ===================================================================================
 // Internal Types & Interfaces
@@ -75,17 +75,6 @@ type PerformanceByDateAggregate = {
 	avgDuration: number;
 };
 
-// Interface for Mongoose Model to support aggregation
-interface MetricModel {
-	countDocuments(filter: Record<string, unknown>): Promise<number>;
-	aggregate(pipeline: unknown[]): {
-		then<T>(
-			onfulfilled?: (value: unknown[]) => T | Promise<T>,
-			onrejected?: (reason: unknown) => T | Promise<T>,
-		): Promise<T>;
-	};
-}
-
 interface DataFilter {
 	status: string;
 	titleLength: Record<string, number>;
@@ -125,7 +114,6 @@ function getSizePresetLabel(
 // Fetch user engagement metrics
 async function fetchUserEngagement(
 	Metric: MetricModel,
-	_completeDataFilter: DataFilter,
 	thirtyDaysAgo: Date,
 ): Promise<UserEngagement> {
 	// UI Generation Attempts (GENERATE_CLICK raw count)
@@ -826,11 +814,7 @@ export async function fetchAggregatedAnalytics(
 		const thirtyDaysAgo = new Date();
 		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-		const userEngagement = await fetchUserEngagement(
-			Metric,
-			completeDataFilter,
-			thirtyDaysAgo,
-		);
+		const userEngagement = await fetchUserEngagement(Metric, thirtyDaysAgo);
 
 		const featurePopularity = await fetchFeaturePopularity(
 			Metric,

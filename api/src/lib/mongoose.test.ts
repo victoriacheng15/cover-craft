@@ -14,7 +14,7 @@ let connectSpy: ReturnType<typeof vi.spyOn>;
 describe("mongoose lib helpers", () => {
 	beforeEach(() => {
 		vi.resetModules();
-		connectSpy = vi.spyOn(mongoose, "connect").mockResolvedValue(undefined);
+		connectSpy = vi.spyOn(mongoose, "connect").mockResolvedValue(mongoose);
 		logMock.mockReset();
 		errorMock.mockReset();
 		delete process.env.MONGODB_URI;

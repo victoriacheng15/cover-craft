@@ -17,12 +17,7 @@ import {
 	METRIC_STATUS_SUCCESS,
 	METRIC_STATUS_VALIDATION_ERROR,
 	type MetricPayload,
-	type ValidationError,
-	validateColors,
-	validateContrast,
-	validateFont,
-	validateSize,
-	validateTextLength,
+	validateImageParams,
 } from "@cover-craft/shared";
 import { Canvas, registerFont } from "canvas";
 import { FONT_CONFIG } from "../lib/fontConfig";
@@ -109,9 +104,13 @@ async function extractParams(
 	return params;
 }
 
-function getContrastRatio(color1: string, color2: string): number {
+function getContrastRatio(color1?: string, color2?: string): number {
+	if (!color1 || !color2) return 1; // Default to 1:1 ratio if colors missing
+
 	const rgb1 = hexToRgb(color1);
 	const rgb2 = hexToRgb(color2);
+
+	if (!rgb1 || !rgb2) return 1;
 
 	const lum1 = getRelativeLuminance(rgb1);
 	const lum2 = getRelativeLuminance(rgb2);
@@ -120,18 +119,6 @@ function getContrastRatio(color1: string, color2: string): number {
 	const darker = Math.min(lum1, lum2);
 
 	return (lighter + 0.05) / (darker + 0.05);
-}
-
-function validateParams(params: ImageParams): ValidationError[] {
-	const errors: ValidationError[] = [];
-
-	errors.push(...validateSize(params.width, params.height));
-	errors.push(...validateColors(params.backgroundColor, params.textColor));
-	errors.push(...validateFont(params.font));
-	errors.push(...validateTextLength(params.title, params.subtitle));
-	errors.push(...validateContrast(params.backgroundColor, params.textColor));
-
-	return errors;
 }
 
 function buildMetricPayload(
@@ -150,6 +137,10 @@ function buildMetricPayload(
 async function generatePNG(params: ImageParams): Promise<Buffer> {
 	const canvas = new Canvas(params.width, params.height);
 	const ctx = canvas.getContext("2d");
+
+	if (!ctx) {
+		throw new Error("Failed to get 2d context from canvas");
+	}
 
 	// Draw background
 	ctx.fillStyle = params.backgroundColor;
@@ -215,7 +206,7 @@ export async function generateCoverImage(
 		};
 
 		// Validate parameters
-		const validationErrors = validateParams(params);
+		const validationErrors = validateImageParams(params);
 		if (validationErrors.length > 0) {
 			const validationMessage = validationErrors
 				.map((e) => `${e.field}: ${e.message}`)
@@ -342,10 +333,14 @@ export async function generateCoverImage(
 			await storeMetricsToMongoDB(
 				buildMetricPayload(METRIC_STATUS_ERROR, {
 					duration: partialDuration,
-					size: {
-						width: extractedParams?.width,
-						height: extractedParams?.height,
-					},
+					size:
+						extractedParams?.width !== undefined &&
+						extractedParams?.height !== undefined
+							? {
+									width: extractedParams.width,
+									height: extractedParams.height,
+								}
+							: undefined,
 					font: extractedParams?.font,
 					titleLength: extractedParams?.title?.length,
 					subtitleLength: extractedParams?.subtitle?.length,

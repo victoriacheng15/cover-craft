@@ -1,7 +1,26 @@
 import type { InvocationContext } from "@azure/functions";
-import mongoose from "mongoose";
+import mongoose, { type Model } from "mongoose";
 
 let mongoConnected = false;
+
+// Interface for the Metric document
+export interface MetricDocument {
+	event: string;
+	timestamp: Date;
+	status: string;
+	errorMessage?: string;
+	size?: {
+		width: number;
+		height: number;
+	};
+	font?: string;
+	titleLength?: number;
+	subtitleLength?: number;
+	contrastRatio?: number;
+	wcagLevel?: string;
+	duration?: number;
+	clientDuration?: number;
+}
 
 export const metricSchema = new mongoose.Schema({
 	// Core event data
@@ -58,18 +77,22 @@ export interface StructuredLog {
 	details?: Record<string, unknown>;
 }
 
-export function getLogModel() {
+// Define model interfaces
+export interface LogModel extends Model<StructuredLog> {}
+export interface MetricModel extends Model<MetricDocument> {}
+
+export function getLogModel(): LogModel {
 	if (mongoose.models.Log) {
-		return mongoose.models.Log;
+		return mongoose.models.Log as LogModel;
 	}
-	return mongoose.model("Log", logSchema);
+	return mongoose.model<StructuredLog, LogModel>("Log", logSchema);
 }
 
-export function getMetricModel() {
+export function getMetricModel(): MetricModel {
 	if (mongoose.models.Metric) {
-		return mongoose.models.Metric;
+		return mongoose.models.Metric as MetricModel;
 	}
-	return mongoose.model("Metric", metricSchema);
+	return mongoose.model<MetricDocument, MetricModel>("Metric", metricSchema);
 }
 
 export async function connectMongoDB(

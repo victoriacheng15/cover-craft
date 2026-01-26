@@ -4,6 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 // Mock dependencies
 vi.mock("../lib/mongoose", () => ({
 	connectMongoDB: vi.fn().mockResolvedValue(undefined),
+	getLogModel: vi.fn(() => {
+		const mockModel = vi.fn();
+		mockModel.prototype.save = vi.fn().mockResolvedValue(undefined);
+		return mockModel;
+	}),
 }));
 
 import { healthCheck } from "./healthCheck";
