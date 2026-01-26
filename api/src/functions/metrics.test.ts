@@ -9,9 +9,13 @@ vi.mock("../lib/mongoose", () => {
 		.fn()
 		.mockResolvedValue({ _id: "test-id" });
 
+	const mockLogModel = vi.fn();
+	mockLogModel.prototype.save = vi.fn().mockResolvedValue({ _id: "log-id" });
+
 	return {
 		connectMongoDB: vi.fn().mockResolvedValue(undefined),
 		getMetricModel: vi.fn(() => mockMetricModel),
+		getLogModel: vi.fn(() => mockLogModel),
 	};
 });
 
