@@ -8,6 +8,7 @@ This directory contains the architectural decisions made during the evolution of
 | [002](./002-serverless-backend-architecture.md) | **Serverless Backend Architecture** | Selection of Azure Functions for a zero-maintenance, event-driven, and cost-effective backend. | Accepted |
 | [003](./003-in-app-analytics-strategy.md) | **In-App Analytics & Visualization Strategy** | Development of a custom, privacy-first analytics dashboard to visualize user engagement and system health. | Accepted |
 | [004](./004-full-stack-monorepo-orchestration.md) | **Full-Stack Monorepo Orchestration** | Consolidation of frontend, backend, and shared libraries into a unified workspace for improved velocity and consistency. | Accepted |
+| [005](./005-randomize-colors-feature.md) | **Randomize Colors Feature** | Implementation of a client-side random color generator integrated with existing form state and contrast validation checks. | Proposed |
 
 ---
 

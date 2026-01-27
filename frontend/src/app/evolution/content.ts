@@ -71,7 +71,7 @@ export const chapters: Chapter[] = [
 	},
 	{
 		title: "Launch & Operations",
-		period: "Jan 01, 2026 - Present",
+		period: "Jan 01, 2026 - Jan 24, 2026",
 		intro:
 			"Hardening for production. Launched publicly, enhanced observability with structured logging, and evolved towards a monorepo for long-term maintainability and velocity.",
 		timeline: [
@@ -101,6 +101,21 @@ export const chapters: Chapter[] = [
 					"Investigated and resolved 404 errors encountered on deployed links by auditing the full deployment lifecycle.",
 				lessonLearned:
 					"Debugged 404 errors by comparing GitHub and Azure Blob Storage artifacts. This process of elimination revealed that npm workspace symlinking excluded native dependencies (canvas, mongodb) from the function package. Resolved this by hardening the CI/CD workflow to ensure a self-contained, workspace-aware bundle, ensuring deployment integrity.",
+			},
+		],
+	},
+	{
+		title: "Design Automation & Color",
+		period: "Jan 27, 2026 - Present",
+		intro:
+			"Expanding capabilities with design automation. Focusing on smart color randomization that balances variety with strict accessibility standards to streamline the user experience.",
+		timeline: [
+			{
+				date: "2026-01-27",
+				title: "ADR-005: Algorithmic Color Randomization",
+				description:
+					"Proposed a randomization system to automate the selection of background and text colors. This architectural decision prioritizes accessibility by embedding WCAG AA compliance checks directly into the selection logic, ensuring that 'random' pairings are readable.",
+				adrPath: "005-randomize-colors-feature",
 			},
 		],
 	},
