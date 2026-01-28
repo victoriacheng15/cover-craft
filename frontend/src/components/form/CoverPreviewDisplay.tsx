@@ -20,12 +20,6 @@ export default function CoverPreviewDisplay({
 }: CoverPreviewDisplayProps) {
 	const { width, height } = getPreviewDimensions();
 
-	// Calculate font sizes based on preview height for responsiveness
-	// Logic ported from CanvasPreview to ensure WYSIWYG accuracy
-	const headingFontSize = Math.max(24, Math.round(height * 0.09));
-	const subheadingFontSize = Math.max(16, Math.round(height * 0.07));
-	const lineSpacing = headingFontSize * 1.2;
-
 	return (
 		<Card
 			className="w-full md:min-w-[300px] flex flex-col items-center"
@@ -48,19 +42,25 @@ export default function CoverPreviewDisplay({
 							width: `min(${width}px, 100%)`,
 							height: `auto`,
 							aspectRatio: `${width} / ${height}`,
+							containerType: "inline-size",
 						}}
 						role="img"
 						aria-label={`Preview: ${formData.title || "Title"} - ${formData.subtitle || "Subtitle"}`}
 					>
 						<div className="text-center px-4">
-							<h2 style={{ fontWeight: 700, fontSize: `${headingFontSize}px` }}>
+							<h2
+								style={{
+									fontWeight: 700,
+									fontSize: "max(16px, 7.5cqi)",
+								}}
+							>
 								{formData.title || "Title Preview"}
 							</h2>
 							<p
 								style={{
 									fontWeight: 400,
-									fontSize: `${subheadingFontSize}px`,
-									marginTop: `${lineSpacing / 2}px`,
+									fontSize: "max(12px, 5.5cqi)",
+									marginTop: "max(9px, 4.5cqi)",
 								}}
 							>
 								{formData.subtitle || "Subtitle Preview"}
