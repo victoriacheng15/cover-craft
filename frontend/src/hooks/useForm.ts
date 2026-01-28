@@ -95,6 +95,10 @@ export function useForm() {
 			// Send minimal payload (intent + client performance)
 			sendGenerateEvent({
 				clientDuration,
+				size: {
+					width: selectedSize.width,
+					height: selectedSize.height,
+				},
 			});
 
 			setGeneratedImage(blob);

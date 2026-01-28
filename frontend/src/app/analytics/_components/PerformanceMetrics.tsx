@@ -80,7 +80,7 @@ export function PerformanceMetrics({
 							<Tooltip />
 							<Legend />
 							<Line type="monotone" dataKey="p50" stroke="#3b82f6" name="P50" />
-							<Line type="monotone" dataKey="p95" stroke="#f59e0b" name="P95" />
+							<Line type="monotone" dataKey="p95" stroke="#8b5cf6" name="P95" />
 							<Line type="monotone" dataKey="p99" stroke="#ef4444" name="P99" />
 						</LineChart>
 					</ResponsiveContainer>
@@ -107,7 +107,7 @@ export function PerformanceMetrics({
 							/>
 							<Tooltip />
 							<Legend />
-							<Line type="monotone" dataKey="p50" stroke="#10b981" name="P50" />
+							<Line type="monotone" dataKey="p50" stroke="#3b82f6" name="P50" />
 							<Line type="monotone" dataKey="p95" stroke="#8b5cf6" name="P95" />
 							<Line type="monotone" dataKey="p99" stroke="#ec4899" name="P99" />
 						</LineChart>
@@ -126,6 +126,7 @@ export function PerformanceMetrics({
 							<tr className="border-b border-gray-100">
 								<th className="text-left p-2">Size</th>
 								<th className="text-right p-2">Avg Backend (ms)</th>
+								<th className="text-right p-2">P95 Backend (ms)</th>
 								<th className="text-right p-2">Avg Client (ms)</th>
 								<th className="text-right p-2">Avg Total (ms)</th>
 							</tr>
@@ -139,6 +140,9 @@ export function PerformanceMetrics({
 									<td className="p-2 font-medium">{sizeMetric.size}</td>
 									<td className="text-right p-2">
 										{sizeMetric.avgBackendDuration?.toFixed(0) || "-"}
+									</td>
+									<td className="text-right p-2 text-orange-600 font-medium">
+										{sizeMetric.p95BackendDuration?.toFixed(0) || "-"}
 									</td>
 									<td className="text-right p-2">
 										{sizeMetric.avgClientDuration?.toFixed(0) || "-"}
