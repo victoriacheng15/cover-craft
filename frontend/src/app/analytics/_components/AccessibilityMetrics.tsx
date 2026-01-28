@@ -28,57 +28,83 @@ export function AccessibilityMetrics({
 			<SectionTitle as="h3" size="md">
 				Accessibility Compliance
 			</SectionTitle>
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-				{/* WCAG Distribution */}
-				<Card>
-					<SectionTitle as="h4" size="sm" className="mb-4">
-						WCAG Level Distribution
-					</SectionTitle>
-					<ResponsiveContainer width="100%" height={300}>
-						<PieChart>
-							<Pie
-								data={accessibilityCompliance.wcagDistribution}
-								dataKey="count"
-								nameKey="level"
-								cx="50%"
-								cy="50%"
-								outerRadius={100}
-								label
-							>
-								{accessibilityCompliance.wcagDistribution.map((entry, idx) => (
-									<Cell
-										key={`cell-wcag-${entry.level}`}
-										fill={COLORS[idx % COLORS.length]}
-									/>
-								))}
-							</Pie>
-							<Tooltip />
-							<Legend />
-						</PieChart>
-					</ResponsiveContainer>
-				</Card>
-
-				{/* Contrast Ratio Stats */}
-				<Card>
-					<SectionTitle as="h4" size="sm" className="mb-4">
-						Contrast Ratio Statistics
-					</SectionTitle>
-					<div className="grid grid-cols-1 gap-4">
-						{[
-							{
-								title: "Average Contrast Ratio",
-								value:
-									accessibilityCompliance.contrastStats.avgContrastRatio.toFixed(
-										2,
-									),
-								color: "blue" as const,
-							},
-						].map((card) => (
-							<KPICard key={card.title} {...card} />
-						))}
+			<Card className="mb-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+					{/* WCAG Distribution */}
+					<div className="flex flex-col h-full">
+						<SectionTitle
+							as="h4"
+							size="sm"
+							className="mb-6 text-center md:text-left"
+						>
+							WCAG Level Distribution
+						</SectionTitle>
+						<div className="flex-1 flex items-center justify-center">
+							<ResponsiveContainer width="100%" height={250}>
+								<PieChart>
+									<Pie
+										data={accessibilityCompliance.wcagDistribution}
+										dataKey="count"
+										nameKey="level"
+										cx="50%"
+										cy="50%"
+										outerRadius={80}
+										label
+									>
+										{accessibilityCompliance.wcagDistribution.map(
+											(entry, idx) => (
+												<Cell
+													key={`cell-wcag-${entry.level}`}
+													fill={COLORS[idx % COLORS.length]}
+												/>
+											),
+										)}
+									</Pie>
+									<Tooltip />
+									<Legend />
+								</PieChart>
+							</ResponsiveContainer>
+						</div>
 					</div>
-				</Card>
-			</div>
+
+					{/* Contrast Ratio Stats */}
+					<div className="flex flex-col h-full">
+						<SectionTitle as="h4" size="sm" className="mb-6">
+							Contrast Ratio Statistics
+						</SectionTitle>
+						<div className="grid grid-cols-1 gap-3">
+							{[
+								{
+									title: "Average Contrast",
+									value:
+										accessibilityCompliance.contrastStats.avgContrastRatio.toFixed(
+											2,
+										),
+									color: "blue" as const,
+								},
+								{
+									title: "Minimum Contrast",
+									value:
+										accessibilityCompliance.contrastStats.minContrastRatio.toFixed(
+											2,
+										),
+									color: "white" as const,
+								},
+								{
+									title: "Maximum Contrast",
+									value:
+										accessibilityCompliance.contrastStats.maxContrastRatio.toFixed(
+											2,
+										),
+									color: "white" as const,
+								},
+							].map((card) => (
+								<KPICard key={card.title} {...card} />
+							))}
+						</div>
+					</div>
+				</div>
+			</Card>
 
 			{/* WCAG Trend */}
 			<Card className="mt-6 w-full min-w-0">
