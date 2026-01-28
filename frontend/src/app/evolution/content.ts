@@ -8,7 +8,6 @@ export interface TimelineEvent {
 
 export interface Chapter {
 	title: string;
-	period: string;
 	intro: string;
 	timeline: TimelineEvent[];
 }
@@ -16,7 +15,6 @@ export interface Chapter {
 export const chapters: Chapter[] = [
 	{
 		title: "Inception & Architecture",
-		period: "Apr 05, 2025 - Sep 23, 2025",
 		intro:
 			"Transitioning from local scripting to a disciplined cloud-native approach. Established a 'Design-First' foundation and migrated core logic to a stateless serverless architecture.",
 		timeline: [
@@ -44,7 +42,6 @@ export const chapters: Chapter[] = [
 	},
 	{
 		title: "Foundation & Delivery",
-		period: "Oct 27, 2025 - Dec 13, 2025",
 		intro:
 			"Shifted focus to UX and rigorous delivery. Defined Next.js frontend architecture, implemented privacy-compliant analytics, and enforced quality via automated CI/CD and testing.",
 		timeline: [
@@ -71,7 +68,6 @@ export const chapters: Chapter[] = [
 	},
 	{
 		title: "Launch & Operations",
-		period: "Jan 01, 2026 - Jan 24, 2026",
 		intro:
 			"Hardening for production. Launched publicly, enhanced observability with structured logging, and evolved towards a monorepo for long-term maintainability and velocity.",
 		timeline: [
@@ -106,7 +102,6 @@ export const chapters: Chapter[] = [
 	},
 	{
 		title: "Design Automation & Color",
-		period: "Jan 27, 2026 - Present",
 		intro:
 			"Expanding capabilities with design automation. Focusing on smart color randomization that balances variety with strict accessibility standards to streamline the user experience.",
 		timeline: [
