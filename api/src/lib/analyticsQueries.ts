@@ -72,7 +72,7 @@ type WcagTrendAggregate = {
 
 type PerformanceByDateAggregate = {
 	_id: string;
-	avgDuration: number;
+	durations: number[];
 };
 
 interface DataFilter {
@@ -91,6 +91,11 @@ function calculatePercentile(values: number[], p: number): number {
 	const sorted = values.sort((a, b) => a - b);
 	const index = Math.ceil((p / 100) * sorted.length) - 1;
 	return sorted[Math.max(0, index)];
+}
+
+function calculateAverage(values: number[]): number {
+	if (values.length === 0) return 0;
+	return values.reduce((a, b) => a + b, 0) / values.length;
 }
 
 function getSizePresetLabel(
@@ -647,7 +652,7 @@ async function fetchPerformanceMetrics(
 				_id: {
 					$dateToString: { format: "%Y-%m-%d", date: "$timestamp" },
 				},
-				avgDuration: { $avg: "$duration" },
+				durations: { $push: "$duration" },
 			},
 		},
 		{ $sort: { _id: 1 } },
@@ -668,7 +673,7 @@ async function fetchPerformanceMetrics(
 				_id: {
 					$dateToString: { format: "%Y-%m-%d", date: "$timestamp" },
 				},
-				avgDuration: { $avg: "$clientDuration" },
+				durations: { $push: "$clientDuration" },
 			},
 		},
 		{ $sort: { _id: 1 } },
@@ -768,7 +773,10 @@ async function fetchPerformanceMetrics(
 			p99BackendDuration: Number(backendP99.toFixed(2)),
 			backendDurationTrend: backendDurationTrend.map((item) => ({
 				date: item._id,
-				avgDuration: Number(item.avgDuration.toFixed(2)),
+				avgDuration: Number(calculateAverage(item.durations).toFixed(2)),
+				p50: Number(calculatePercentile(item.durations, 50).toFixed(2)),
+				p95: Number(calculatePercentile(item.durations, 95).toFixed(2)),
+				p99: Number(calculatePercentile(item.durations, 99).toFixed(2)),
 			})),
 		},
 		clientPerformance: {
@@ -780,7 +788,10 @@ async function fetchPerformanceMetrics(
 			p99ClientDuration: Number(clientP99.toFixed(2)),
 			clientDurationTrend: clientDurationTrend.map((item) => ({
 				date: item._id,
-				avgDuration: Number(item.avgDuration.toFixed(2)),
+				avgDuration: Number(calculateAverage(item.durations).toFixed(2)),
+				p50: Number(calculatePercentile(item.durations, 50).toFixed(2)),
+				p95: Number(calculatePercentile(item.durations, 95).toFixed(2)),
+				p99: Number(calculatePercentile(item.durations, 99).toFixed(2)),
 			})),
 		},
 		networkLatency: {
