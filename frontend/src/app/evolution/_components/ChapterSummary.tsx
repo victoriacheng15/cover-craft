@@ -14,9 +14,6 @@ export default function ChapterSummary({ chapter }: ChapterSummaryProps) {
 					</span>
 					{chapter.title}
 				</h2>
-				<span className="text-sm font-bold tracking-wide text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-					{chapter.period}
-				</span>
 			</div>
 			<p className="text-gray-600 leading-relaxed pl-6 border-l-2 border-gray-100 ml-2">
 				{chapter.intro}
