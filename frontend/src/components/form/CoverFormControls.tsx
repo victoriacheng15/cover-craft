@@ -26,6 +26,7 @@ interface CoverFormControlsProps {
 	contrastCheck: ContrastCheckResult;
 	handleGenerate: () => void;
 	handleReset: () => void;
+	handleRandomizeColors: () => void;
 }
 
 export default function CoverFormControls({
@@ -36,6 +37,7 @@ export default function CoverFormControls({
 	contrastCheck,
 	handleGenerate,
 	handleReset,
+	handleRandomizeColors,
 }: CoverFormControlsProps) {
 	const errorId = "form-error-message";
 
@@ -169,7 +171,7 @@ export default function CoverFormControls({
 				</div>
 			</div>
 
-			<div className="flex gap-4">
+			<div className="flex gap-10 items-end">
 				<div className="flex-1">
 					<FormField label="Background Color" htmlFor="background-color">
 						<ColorPicker
@@ -195,6 +197,16 @@ export default function CoverFormControls({
 						/>
 					</FormField>
 				</div>
+
+				<Button
+					variant="outline"
+					onClick={handleRandomizeColors}
+					aria-label="Randomize background and text colors"
+					type="button"
+					className="flex-shrink-0"
+				>
+					Randomize Colors
+				</Button>
 			</div>
 
 			<FormField label="Font" htmlFor="font">

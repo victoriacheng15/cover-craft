@@ -19,9 +19,11 @@ vi.mock("@/lib", async (importOriginal) => {
 });
 
 import {
+	getContrastRatio,
 	MAX_SUBTITLE_LENGTH,
 	MAX_TITLE_LENGTH,
 	SIZE_PRESETS,
+	WCAG_AA_THRESHOLD,
 } from "@cover-craft/shared";
 import { downloadImage } from "@/lib";
 import {
@@ -553,6 +555,49 @@ describe("useForm", () => {
 			expect(result.current.error).toBe(errorMessage);
 
 			consoleErrorSpy.mockRestore();
+		});
+	});
+
+	describe("handleRandomizeColors", () => {
+		it("updates backgroundColor and textColor with valid hex codes exceeding WCAG AA threshold", () => {
+			const { result } = renderHook(() => useForm());
+
+			act(() => {
+				result.current.handleRandomizeColors();
+			});
+
+			const newBg = result.current.formData.backgroundColor;
+			const newText = result.current.formData.textColor;
+
+			expect(newBg).toMatch(/^#[0-9a-f]{6}$/i);
+			expect(newText).toMatch(/^#[0-9a-f]{6}$/i);
+
+			const ratio = getContrastRatio(newBg, newText);
+			expect(ratio).not.toBeNull();
+			expect(ratio).toBeGreaterThanOrEqual(WCAG_AA_THRESHOLD + 1);
+		});
+
+		it("generates different colors on multiple calls, all exceeding WCAG AA threshold", () => {
+			const { result } = renderHook(() => useForm());
+			const colors: Array<{ bg: string; text: string }> = [];
+
+			for (let i = 0; i < 5; i++) {
+				act(() => {
+					result.current.handleRandomizeColors();
+				});
+				const bg = result.current.formData.backgroundColor;
+				const text = result.current.formData.textColor;
+				colors.push({ bg, text });
+
+				const ratio = getContrastRatio(bg, text);
+				expect(ratio).toBeGreaterThanOrEqual(5.5);
+			}
+
+			const uniqueBgs = new Set(colors.map((c) => c.bg));
+			const uniqueTexts = new Set(colors.map((c) => c.text));
+
+			expect(uniqueBgs.size).toBeGreaterThan(1);
+			expect(uniqueTexts.size).toBeGreaterThan(1);
 		});
 	});
 });

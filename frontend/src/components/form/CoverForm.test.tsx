@@ -98,10 +98,10 @@ describe("CoverForm", () => {
 
 		// Color pickers
 		const bgColorInput = within(formCard).getByLabelText(
-			/Background Color/i,
+			/^Background Color$/i,
 		) as HTMLInputElement;
 		const textColorInput = within(formCard).getByLabelText(
-			/Text Color/i,
+			/^Text Color$/i,
 		) as HTMLInputElement;
 
 		expect(bgColorInput.value).toBe("#374151");
@@ -151,8 +151,8 @@ describe("CoverForm", () => {
 	it("renders all color picker inputs", () => {
 		renderCoverForm();
 
-		const bgColor = screen.getByLabelText(/Background Color/i);
-		const textColor = screen.getByLabelText(/Text Color/i);
+		const bgColor = screen.getByLabelText(/^Background Color$/i);
+		const textColor = screen.getByLabelText(/^Text Color$/i);
 
 		expect(bgColor).toBeInTheDocument();
 		expect(textColor).toBeInTheDocument();
@@ -311,8 +311,8 @@ describe("CoverForm", () => {
 		const handleInputChange = vi.fn();
 		renderCoverForm({ handleInputChange });
 
-		const bgColorInput = screen.getByLabelText(/Background Color/i);
-		const textColorInput = screen.getByLabelText(/Text Color/i);
+		const bgColorInput = screen.getByLabelText(/^Background Color$/i);
+		const textColorInput = screen.getByLabelText(/^Text Color$/i);
 
 		fireEvent.change(bgColorInput, { target: { value: "#123456" } });
 		fireEvent.change(textColorInput, { target: { value: "#abcdef" } });

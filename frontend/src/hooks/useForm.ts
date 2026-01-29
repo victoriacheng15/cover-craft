@@ -1,9 +1,11 @@
 import {
 	DEFAULT_FILENAME,
 	FONT_OPTIONS,
+	getContrastRatio,
 	MAX_SUBTITLE_LENGTH,
 	MAX_TITLE_LENGTH,
 	SIZE_PRESETS,
+	WCAG_AA_THRESHOLD,
 } from "@cover-craft/shared";
 import { useState } from "react";
 import { calculatePreviewDimensions, downloadImage } from "@/lib";
@@ -136,6 +138,32 @@ export function useForm() {
 		setIsGenerating(false);
 	};
 
+	const handleRandomizeColors = () => {
+		const randomColor = () =>
+			`#${Math.floor(Math.random() * 16777215)
+				.toString(16)
+				.padStart(6, "0")}`;
+
+		// WCAG_AA_THRESHOLD = 4.5
+		const RANDOMIZE_THRESHOLD = 6.0;
+
+		let bgColor: string;
+		let textColor: string;
+		let ratio: number | null = null;
+
+		do {
+			bgColor = randomColor();
+			textColor = randomColor();
+			ratio = getContrastRatio(bgColor, textColor);
+		} while (ratio === null || ratio < RANDOMIZE_THRESHOLD);
+
+		setFormData((prev) => ({
+			...prev,
+			backgroundColor: bgColor,
+			textColor: textColor,
+		}));
+	};
+
 	return {
 		formData,
 		isGenerating,
@@ -146,6 +174,7 @@ export function useForm() {
 		handleGenerate,
 		handleDownload,
 		handleReset,
+		handleRandomizeColors,
 		contrastCheck,
 	};
 }
