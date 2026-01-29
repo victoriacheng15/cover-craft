@@ -16,6 +16,7 @@ export default function CoverForm() {
 		handleGenerate,
 		handleDownload,
 		handleReset,
+		handleRandomizeColors,
 		contrastCheck,
 	} = useForm();
 
@@ -31,6 +32,7 @@ export default function CoverForm() {
 				contrastCheck={contrastCheck}
 				handleGenerate={handleGenerate}
 				handleReset={handleReset}
+				handleRandomizeColors={handleRandomizeColors}
 			/>
 
 			<CoverPreviewDisplay

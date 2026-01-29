@@ -12,7 +12,7 @@ export default function ColorPicker({
 		<input
 			type="color"
 			className={cn(
-				"h-10 w-16 rounded-md border border-input p-0 cursor-pointer",
+				"h-10 w-full rounded-md border border-input p-0 cursor-pointer",
 				"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
 				className,
 			)}
