@@ -5,7 +5,6 @@ import {
 	MAX_SUBTITLE_LENGTH,
 	MAX_TITLE_LENGTH,
 	SIZE_PRESETS,
-	WCAG_AA_THRESHOLD,
 } from "@cover-craft/shared";
 import { useState } from "react";
 import { calculatePreviewDimensions, downloadImage } from "@/lib";

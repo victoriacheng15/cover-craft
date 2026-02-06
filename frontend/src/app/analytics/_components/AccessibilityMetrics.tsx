@@ -121,18 +121,17 @@ export function AccessibilityMetrics({
 						<YAxis allowDecimals={false} />
 						<Tooltip />
 						<Legend />
-						{Object.keys(accessibilityCompliance.wcagTrend[0] || {})
-							.filter((key) => key !== "date")
-							.map((level, idx) => (
-								<Line
-									key={`line-${level}`}
-									type="monotone"
-									dataKey={level}
-									stroke={COLORS[idx % COLORS.length]}
-									strokeWidth={2}
-									dot={{ r: 3 }}
-								/>
-							))}
+						{["AAA", "AA"].map((level, idx) => (
+							<Line
+								key={`line-${level}`}
+								type="monotone"
+								dataKey={level}
+								stroke={COLORS[idx % COLORS.length]}
+								strokeWidth={2}
+								dot={{ r: 3 }}
+								connectNulls
+							/>
+						))}
 					</LineChart>
 				</ResponsiveContainer>
 			</Card>
