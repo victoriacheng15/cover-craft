@@ -69,8 +69,8 @@ describe("useAnalytics", () => {
 					maxContrastRatio: 8.0,
 				},
 				wcagTrend: [
-					{ date: "2025-12-01", AAA: 2, AA: 0, FAIL: 0 },
-					{ date: "2025-12-02", AAA: 3, AA: 0, FAIL: 0 },
+					{ date: "2025-12-01", AAA: 2, AA: 0 },
+					{ date: "2025-12-02", AAA: 3, AA: 0 },
 				],
 			},
 			performanceMetrics: {
@@ -99,7 +99,6 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		// @ts-expect-error
 		getAnalyticsMock.mockResolvedValueOnce({
 			success: true,
 			data: mockData,
@@ -152,7 +151,6 @@ describe("useAnalytics", () => {
 			generateBySize: [],
 		};
 
-		// @ts-expect-error
 		getAnalyticsMock.mockResolvedValueOnce(mockData);
 
 		const { result } = renderHook(() => useAnalytics());
@@ -235,7 +233,6 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		// @ts-expect-error
 		getAnalyticsMock.mockResolvedValueOnce({
 			success: true,
 			data: mockData,
@@ -316,7 +313,6 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		// @ts-expect-error
 		getAnalyticsMock.mockResolvedValueOnce({
 			success: true,
 			data: mockData,
@@ -405,7 +401,6 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		// @ts-expect-error
 		getAnalyticsMock.mockResolvedValueOnce({
 			success: true,
 			data: mockData,
@@ -491,7 +486,6 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		// @ts-expect-error
 		getAnalyticsMock.mockResolvedValueOnce({
 			success: true,
 			data: mockData,
@@ -572,7 +566,6 @@ describe("useAnalytics", () => {
 			},
 		};
 
-		// @ts-expect-error
 		getAnalyticsMock.mockResolvedValueOnce({
 			success: true,
 			data: mockData,
@@ -595,7 +588,6 @@ describe("useAnalytics", () => {
 	});
 
 	it("calls fetch on component mount", async () => {
-		// @ts-expect-error
 		getAnalyticsMock.mockResolvedValueOnce({
 			success: true,
 			data: {},

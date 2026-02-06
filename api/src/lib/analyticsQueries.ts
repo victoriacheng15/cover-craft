@@ -487,8 +487,7 @@ async function fetchAccessibilityCompliance(
 	thirtyDaysAgo: Date,
 	_totalCoversGenerated: number,
 ): Promise<AccessibilityCompliance> {
-	// WCAG level distribution (complete data only)
-	const wcagDistribution = (await Metric.aggregate([
+	const wcagDistributionRaw = (await Metric.aggregate([
 		{
 			$match: {
 				event: IMAGE_GENERATED_EVENT,
@@ -502,6 +501,16 @@ async function fetchAccessibilityCompliance(
 			},
 		},
 	])) as WcagDistributionAggregate[];
+
+	// Ensure all levels are present in distribution
+	const levels: WcagLevel[] = ["AAA", "AA"];
+	const wcagDistribution = levels.map((level) => {
+		const found = wcagDistributionRaw.find((item) => item._id === level);
+		return {
+			level,
+			count: found ? found.count : 0,
+		};
+	});
 
 	// Average contrast ratio (complete data only)
 	const contrastStats = (await Metric.aggregate([
@@ -545,10 +554,7 @@ async function fetchAccessibilityCompliance(
 	])) as WcagTrendAggregate[];
 
 	return {
-		wcagDistribution: wcagDistribution.map((item) => ({
-			level: item._id,
-			count: item.count,
-		})),
+		wcagDistribution,
 		contrastStats: contrastStats[0] || {
 			_id: null,
 			avgContrastRatio: 0,
@@ -563,7 +569,11 @@ async function fetchAccessibilityCompliance(
 				if (existing) {
 					existing[level] = item.count;
 				} else {
-					const entry: WcagTrendItem = { date };
+					const entry: WcagTrendItem = {
+						date,
+						AAA: 0,
+						AA: 0,
+					};
 					entry[level] = item.count;
 					acc.push(entry);
 				}
@@ -819,7 +829,7 @@ export async function fetchAggregatedAnalytics(
 			status: METRIC_STATUS_SUCCESS,
 			titleLength: { $gt: 0 },
 			contrastRatio: { $gt: 0 },
-			wcagLevel: { $in: ["AAA", "AA", "FAIL"] },
+			wcagLevel: { $in: ["AAA", "AA"] },
 		};
 
 		const thirtyDaysAgo = new Date();
