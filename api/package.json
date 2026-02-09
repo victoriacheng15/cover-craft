@@ -14,7 +14,7 @@
 		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
-		"@azure/functions": "^4.10.0",
+		"@azure/functions": "^4.11.2",
 		"@cover-craft/shared": "file:../shared",
 		"canvas": "^3.2.0",
 		"mongoose": "^9.1.2"
