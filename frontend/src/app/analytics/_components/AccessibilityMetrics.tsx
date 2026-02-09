@@ -12,11 +12,32 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { Card, KPICard, SectionTitle } from "@/components/ui";
+import { Card, KPICard, SectionTitle, Skeleton } from "@/components/ui";
 
 interface AccessibilityMetricsProps {
 	accessibilityCompliance: AccessibilityComplianceType;
 	COLORS: string[];
+}
+
+export function AccessibilityMetricsSkeleton() {
+	return (
+		<section>
+			<SectionTitle as="h3" size="md">
+				Accessibility Compliance
+			</SectionTitle>
+			<Card className="mb-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+					<div className="h-[250px] w-full bg-gray-100 rounded-lg animate-pulse" />
+					<div className="grid grid-cols-1 gap-3 w-full">
+						{["a1", "a2", "a3"].map((id) => (
+							<Skeleton key={`acc-kpi-${id}`} className="h-20 w-full" />
+						))}
+					</div>
+				</div>
+			</Card>
+			<Card className="h-[350px]" />
+		</section>
+	);
 }
 
 export function AccessibilityMetrics({

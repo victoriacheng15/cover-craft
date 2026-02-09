@@ -15,6 +15,25 @@ interface UserEngagementProps {
 	dailyTrendData: { date: string; count: number }[];
 }
 
+export function UserEngagementSkeleton() {
+	return (
+		<section>
+			<SectionTitle as="h3" size="md">
+				User Engagement
+			</SectionTitle>
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+				{["e1", "e2", "e3", "e4", "e5", "e6"].map((id) => (
+					<Card key={`kpi-skeleton-${id}`} className="h-24" />
+				))}
+			</div>
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				<Card className="h-[300px]" />
+				<Card className="h-[300px]" />
+			</div>
+		</section>
+	);
+}
+
 export function UserEngagement({
 	userEngagement,
 	dailyTrendData,

@@ -6,5 +6,16 @@ import KPICard from "./KPICard";
 import Nav from "./Nav";
 import SectionTitle from "./SectionTitle";
 import Select from "./Select";
+import Skeleton from "./Skeleton";
 
-export { Button, Card, ColorPicker, Input, KPICard, SectionTitle, Nav, Select };
+export {
+	Button,
+	Card,
+	ColorPicker,
+	Input,
+	KPICard,
+	SectionTitle,
+	Nav,
+	Select,
+	Skeleton,
+};
