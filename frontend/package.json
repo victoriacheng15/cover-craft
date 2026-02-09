@@ -26,7 +26,7 @@
 		"@types/react-dom": "^19",
 		"@vitest/coverage-v8": "^4.0.16",
 		"babel-plugin-react-compiler": "1.0.0",
-		"jsdom": "^27.4.0",
+		"jsdom": "^28.0.0",
 		"tailwindcss": "^4",
 		"typescript": "^5.9.3",
 		"vite-tsconfig-paths": "^6.0.4",
