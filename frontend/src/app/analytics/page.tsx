@@ -3,10 +3,22 @@
 import MainLayout from "@/components/layout/MainLayout";
 import { SectionTitle } from "@/components/ui";
 import { useAnalytics } from "@/hooks";
-import { AccessibilityMetrics } from "./_components/AccessibilityMetrics";
-import { FeaturePopularity } from "./_components/FeaturePopularity";
-import { PerformanceMetrics } from "./_components/PerformanceMetrics";
-import { UserEngagement } from "./_components/UserEngagement";
+import {
+	AccessibilityMetrics,
+	AccessibilityMetricsSkeleton,
+} from "./_components/AccessibilityMetrics";
+import {
+	FeaturePopularity,
+	FeaturePopularitySkeleton,
+} from "./_components/FeaturePopularity";
+import {
+	PerformanceMetrics,
+	PerformanceMetricsSkeleton,
+} from "./_components/PerformanceMetrics";
+import {
+	UserEngagement,
+	UserEngagementSkeleton,
+} from "./_components/UserEngagement";
 
 export default function AnalyticsPage() {
 	const {
@@ -28,9 +40,18 @@ export default function AnalyticsPage() {
 						<SectionTitle size="lg">Analytics</SectionTitle>
 					</div>
 				</div>
-				{loading && <p>Loading analytics...</p>}
-				{error && <p className="text-red-600">{error}</p>}
-				{userEngagement &&
+
+				{error && <p className="text-red-600 mb-8">{error}</p>}
+
+				{loading ? (
+					<div className="flex flex-col gap-8">
+						<UserEngagementSkeleton />
+						<FeaturePopularitySkeleton />
+						<AccessibilityMetricsSkeleton />
+						<PerformanceMetricsSkeleton />
+					</div>
+				) : (
+					userEngagement &&
 					featurePopularity &&
 					accessibilityCompliance &&
 					performanceMetrics && (
@@ -52,7 +73,8 @@ export default function AnalyticsPage() {
 
 							<PerformanceMetrics performanceMetrics={performanceMetrics} />
 						</div>
-					)}
+					)
+				)}
 				<div className="mt-12 pl-4 border-l-4 border-emerald-200 py-1">
 					<p className="text-sm text-gray-600 italic leading-relaxed">
 						<span className="font-semibold not-italic text-emerald-800">

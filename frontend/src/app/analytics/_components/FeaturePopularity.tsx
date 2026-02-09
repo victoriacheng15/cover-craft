@@ -23,6 +23,26 @@ interface FeaturePopularityProps {
 	COLORS: string[];
 }
 
+export function FeaturePopularitySkeleton() {
+	return (
+		<section>
+			<SectionTitle as="h3" size="md">
+				Feature Popularity
+			</SectionTitle>
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
+				<Card className="h-[350px]" />
+				<Card className="h-[350px]" />
+			</div>
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
+				<Card className="h-[350px]" />
+				<Card className="h-[350px]" />
+			</div>
+			<Card className="h-[250px] mb-6" />
+			<Card className="h-48" />
+		</section>
+	);
+}
+
 export function FeaturePopularity({
 	featurePopularity,
 	COLORS,

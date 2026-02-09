@@ -9,10 +9,30 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { Card, KPICard, SectionTitle } from "@/components/ui";
+import { Card, KPICard, SectionTitle, Skeleton } from "@/components/ui";
 
 interface PerformanceMetricsProps {
 	performanceMetrics: PerformanceMetricsType;
+}
+
+export function PerformanceMetricsSkeleton() {
+	return (
+		<section>
+			<SectionTitle as="h3" size="md">
+				Performance Metrics
+			</SectionTitle>
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+				{["p1", "p2", "p3", "p4"].map((id) => (
+					<Skeleton key={`perf-kpi-${id}`} className="h-24 w-full" />
+				))}
+			</div>
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+				<Card className="h-[350px]" />
+				<Card className="h-[350px]" />
+			</div>
+			<Card className="h-64" />
+		</section>
+	);
 }
 
 export function PerformanceMetrics({

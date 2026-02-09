@@ -122,4 +122,17 @@ export const chapters: Chapter[] = [
 			},
 		],
 	},
+	{
+		title: "UX Refinement - Skeleton Loaders",
+		intro:
+			"Optimizing the Analytics with skeleton loaders to improve perceived performance and eliminate layout shifts during data fetching.",
+		timeline: [
+			{
+				date: "2026-02-08",
+				title: "Skeleton Loaders Implementation",
+				description:
+					"Implemented a 'Skeleton Loader' pattern for the Analytics to eliminate layout shift and ensure a stable UI during asynchronous data fetching.",
+			},
+		],
+	},
 ];
