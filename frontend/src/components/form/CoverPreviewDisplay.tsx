@@ -49,16 +49,16 @@ export default function CoverPreviewDisplay({
 					>
 						<div className="text-center px-4">
 							<h2
+								className="font-bold"
 								style={{
-									fontWeight: 700,
 									fontSize: "max(16px, 7.5cqi)",
 								}}
 							>
 								{formData.title || "Title Preview"}
 							</h2>
 							<p
+								className="font-normal"
 								style={{
-									fontWeight: 400,
 									fontSize: "max(12px, 5.5cqi)",
 									marginTop: "max(9px, 4.5cqi)",
 								}}
