@@ -18,6 +18,8 @@ export const LENGTH_DISTRIBUTION = {
 	LONG_PERCENT: 1.25, // 125% of MAX_TITLE_LENGTH (can exceed max)
 } as const;
 
+export const MAX_BATCH_SIZE = 5;
+
 export const TITLE_LENGTH_THRESHOLDS = {
 	SHORT_MAX: Math.floor(MAX_TITLE_LENGTH * LENGTH_DISTRIBUTION.SHORT_PERCENT),
 	MEDIUM_MAX: Math.floor(MAX_TITLE_LENGTH * LENGTH_DISTRIBUTION.MEDIUM_PERCENT),
@@ -198,6 +200,8 @@ export const VALIDATION_MESSAGES = {
 	INVALID_COLOR: "Color must be a valid HEX format (e.g., #FFFFFF or #FFF)",
 	INVALID_FONT: `Font must be one of: ${FONT_OPTIONS.join(", ")}`,
 	INVALID_CONTRAST: `Contrast ratio must be at least ${WCAG_AA_THRESHOLD} for WCAG AA compliance`,
+	BATCH_EMPTY: "Batch request must contain at least one item",
+	BATCH_TOO_LARGE: `Batch request cannot exceed ${MAX_BATCH_SIZE} items`,
 } as const;
 
 export interface ValidationError {
@@ -336,6 +340,33 @@ export function validateImageParams(params: ImageParams): ValidationError[] {
 	errors.push(...validateFont(params.font));
 	errors.push(...validateTextLength(params.title, params.subtitle));
 	errors.push(...validateContrast(params.backgroundColor, params.textColor));
+
+	return errors;
+}
+
+export function validateBatchRequest(
+	requests: ImageParams[],
+): ValidationError[] {
+	if (!requests || requests.length === 0) {
+		return [{ field: "batch", message: VALIDATION_MESSAGES.BATCH_EMPTY }];
+	}
+
+	if (requests.length > MAX_BATCH_SIZE) {
+		return [{ field: "batch", message: VALIDATION_MESSAGES.BATCH_TOO_LARGE }];
+	}
+
+	const errors: ValidationError[] = [];
+	requests.forEach((req, index) => {
+		const itemErrors = validateImageParams(req);
+		if (itemErrors.length > 0) {
+			errors.push(
+				...itemErrors.map((e) => ({
+					field: `requests[${index}].${e.field}`,
+					message: e.message,
+				})),
+			);
+		}
+	});
 
 	return errors;
 }
