@@ -4,6 +4,7 @@ This directory contains the architectural decisions made during the evolution of
 
 | ID | Title | Description | Status |
 | :--- | :--- | :--- | :--- |
+| [006](./006-batch-image-generation-architecture.md) | **Asynchronous Job Queue Architecture** | Formalization of the architectural shift from synchronous HTTP processing to a stateless Background Worker model backed by MongoDB. | Proposed |
 | [005](./005-randomize-colors-feature.md) | **Randomize Colors Feature** | Implementation of a client-side random color generator integrated with existing form state and contrast validation checks. | Accepted |
 | [004](./004-full-stack-monorepo-orchestration.md) | **Full-Stack Monorepo Orchestration** | Consolidation of frontend, backend, and shared libraries into a unified workspace for improved velocity and consistency. | Accepted |
 | [003](./003-in-app-analytics-strategy.md) | **In-App Analytics & Visualization Strategy** | Development of a custom, privacy-first analytics dashboard to visualize user engagement and system health. | Accepted |
