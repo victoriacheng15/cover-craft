@@ -10,13 +10,13 @@ export type ApiErrorResponse = {
 };
 
 /**
- * Client-side function to call the generateCoverImage endpoint and get blob
+ * Client-side function to call the generateImage endpoint and get blob
  */
-export async function generateCoverImage(
+export async function generateImage(
 	params: ImageParams,
 ): Promise<{ blob: Blob; clientDuration: number; duration?: number }> {
 	const startTime = performance.now();
-	const response = await fetch("/api/generateCoverImage", {
+	const response = await fetch("/api/generateImage", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",

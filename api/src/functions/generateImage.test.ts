@@ -5,7 +5,7 @@ import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
 import { Canvas } from "canvas";
 import { describe, expect, it, vi } from "vitest";
 import * as mongooseLib from "../lib/mongoose";
-import { generateCoverImage } from "./generateCoverImage";
+import { generateImage } from "./generateImage";
 
 interface MetricDocument {
 	event: string;
@@ -26,7 +26,7 @@ type MetricModelConstructor = new (doc: MetricDocument) => MetricInstance;
 const logMock = vi.fn();
 const errorMock = vi.fn();
 
-describe("generateCoverImage", () => {
+describe("generateImage", () => {
 	// Mock InvocationContext
 	const mockContext = {
 		log: logMock,
@@ -43,7 +43,7 @@ describe("generateCoverImage", () => {
 		body: Record<string, unknown> = {},
 	): HttpRequest =>
 		({
-			url: "http://localhost:7071/api/generateCoverImage",
+			url: "http://localhost:7071/api/generateImage",
 			query: new Map(Object.entries(query)),
 			text: vi.fn().mockResolvedValue(JSON.stringify(body)),
 			getHeader: vi.fn((header: string) => {
@@ -65,7 +65,7 @@ describe("generateCoverImage", () => {
 				filename: "test-cover",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 		});
 
@@ -84,7 +84,7 @@ describe("generateCoverImage", () => {
 				},
 			);
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 		});
 
@@ -103,7 +103,7 @@ describe("generateCoverImage", () => {
 				},
 			);
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			// Should use values from body
 		});
@@ -132,7 +132,7 @@ describe("generateCoverImage", () => {
 				},
 			);
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			// Query param should take precedence
 		});
@@ -152,7 +152,7 @@ describe("generateCoverImage", () => {
 				text: vi.fn().mockResolvedValue("invalid json {"),
 			};
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			// Should succeed using query params
 			expect(response.status).toBe(200);
 		});
@@ -169,7 +169,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			// Should return 200 since query params are sufficient
 			expect(response.status).toBe(200);
 		});
@@ -187,7 +187,7 @@ describe("generateCoverImage", () => {
 				subtitle: "Width",
 				filename: "test",
 			});
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 		});
 
@@ -201,7 +201,7 @@ describe("generateCoverImage", () => {
 				title: "Test",
 				filename: "test",
 			});
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
 
@@ -215,7 +215,7 @@ describe("generateCoverImage", () => {
 				title: "Test",
 				filename: "test",
 			});
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
 
@@ -230,7 +230,7 @@ describe("generateCoverImage", () => {
 				subtitle: "Height",
 				filename: "test",
 			});
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 		});
 
@@ -244,7 +244,7 @@ describe("generateCoverImage", () => {
 				title: "Test",
 				filename: "test",
 			});
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
 
@@ -258,7 +258,7 @@ describe("generateCoverImage", () => {
 				title: "Test",
 				filename: "test",
 			});
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
 
@@ -274,7 +274,7 @@ describe("generateCoverImage", () => {
 			});
 
 			vi.spyOn(validators, "hexToRgb").mockReturnValue({ r: 0, g: 0, b: 0 });
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			// Invalid color will fail validation
 			expect([400, 500]).toContain(response.status);
 		});
@@ -291,7 +291,7 @@ describe("generateCoverImage", () => {
 			});
 
 			vi.spyOn(validators, "hexToRgb").mockReturnValue({ r: 0, g: 0, b: 0 });
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			// Invalid color will fail validation
 			expect([400, 500]).toContain(response.status);
 		});
@@ -309,7 +309,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 		});
 
@@ -325,7 +325,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
 
@@ -342,7 +342,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 		});
 
@@ -359,7 +359,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
 
@@ -374,7 +374,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 		});
 	});
@@ -407,7 +407,7 @@ describe("generateCoverImage", () => {
 				FakeMetricSuccessModel as MetricModelConstructor,
 			);
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			expect(response.headers).toHaveProperty("Content-Type");
 			const headers = response.headers as Record<string, string>;
@@ -436,7 +436,7 @@ describe("generateCoverImage", () => {
 			vi.spyOn(mongooseLib, "connectMongoDB").mockRejectedValue(
 				new Error("db down"),
 			);
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			expect(mockContext.log).toHaveBeenCalled();
 		});
@@ -453,7 +453,7 @@ describe("generateCoverImage", () => {
 				filename: "test-buffer",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			expect(response.body).toBeDefined();
 		});
@@ -472,7 +472,7 @@ describe("generateCoverImage", () => {
 				filename: "test-header",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			const headers = response.headers as Record<string, string>;
 			expect(headers["Content-Type"]).toBe("image/png");
 		});
@@ -489,7 +489,7 @@ describe("generateCoverImage", () => {
 				filename: "test-download",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			const headers = response.headers as Record<string, string>;
 			expect(headers["Content-Disposition"]).toBeDefined();
 			expect(headers["Content-Disposition"]).toContain("attachment");
@@ -507,7 +507,7 @@ describe("generateCoverImage", () => {
 				filename: "test-cache",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			const headers = response.headers as Record<string, string>;
 			expect(headers["Cache-Control"]).toBeDefined();
 			expect(headers["X-Generation-Duration"]).toBeDefined();
@@ -544,7 +544,7 @@ describe("generateCoverImage", () => {
 				FakeValidationMetricModel as MetricModelConstructor,
 			);
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 			expect(typeof response.body).toBe("string");
 			expect(savedValidationMetrics.length).toBeGreaterThan(0);
@@ -568,7 +568,7 @@ describe("generateCoverImage", () => {
 				text: vi.fn().mockResolvedValue(""),
 			};
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			expect(response.body).toBeDefined();
 		});
@@ -587,7 +587,7 @@ describe("generateCoverImage", () => {
 			vi.spyOn(mongooseLib, "connectMongoDB").mockRejectedValue(
 				new Error("db down"),
 			);
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 			expect(mockContext.log).toHaveBeenCalled();
 		});
@@ -603,7 +603,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 			expect(response.body).toBeDefined();
 		});
@@ -619,7 +619,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 			expect(response.body).toBeDefined();
 		});
@@ -654,7 +654,7 @@ describe("generateCoverImage", () => {
 				throw new Error("canvas explosion");
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(500);
 			expect(response.body).toBeDefined();
 			const parsedBody = JSON.parse(response.body as string);
@@ -679,7 +679,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect([200, 400]).toContain(response.status);
 		});
 
@@ -694,7 +694,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect([200, 400]).toContain(response.status);
 		});
 
@@ -709,7 +709,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect([200, 400]).toContain(response.status);
 		});
 
@@ -724,7 +724,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect([200, 400]).toContain(response.status);
 		});
 	});
@@ -741,7 +741,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(200);
 		});
 
@@ -756,7 +756,7 @@ describe("generateCoverImage", () => {
 				filename: "test",
 			});
 
-			const response = await generateCoverImage(mockRequest, mockContext);
+			const response = await generateImage(mockRequest, mockContext);
 			expect(response.status).toBe(400);
 			const body = JSON.parse(response.body as string);
 			expect(body.details).toContainEqual(

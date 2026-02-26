@@ -1,16 +1,16 @@
 import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { proxyGenerateCoverImage } from "./generateCoverImage";
+import { proxyGenerateImage } from "./generateImage";
 
 const fetchMock: MockedFunction<typeof fetch> = vi.fn();
 global.fetch = fetchMock;
 
-describe("generateCoverImage", () => {
+describe("generateImage", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	it("forwards body to proxy generateCoverImage endpoint", async () => {
+	it("forwards body to proxy generateImage endpoint", async () => {
 		const body = {
 			width: 1200,
 			height: 627,
@@ -25,10 +25,10 @@ describe("generateCoverImage", () => {
 		// @ts-expect-error
 		fetchMock.mockResolvedValueOnce(fakeResponse);
 
-		const response = await proxyGenerateCoverImage(body);
+		const response = await proxyGenerateImage(body);
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			expect.stringMatching(/generateCoverImage$/),
+			expect.stringMatching(/generateImage$/),
 			{
 				method: "POST",
 				headers: {

@@ -4,7 +4,7 @@ import { useForm } from "./useForm";
 
 // Mock the API utilities
 vi.mock("@/services", () => ({
-	generateCoverImage: vi.fn(),
+	generateImage: vi.fn(),
 	sendDownloadEvent: vi.fn(),
 	sendGenerateEvent: vi.fn(),
 }));
@@ -27,13 +27,13 @@ import {
 } from "@cover-craft/shared";
 import { downloadImage } from "@/lib";
 import {
-	generateCoverImage,
+	generateImage,
 	sendDownloadEvent,
 	sendGenerateEvent,
 } from "@/services";
 
 const downloadImageMock = vi.mocked(downloadImage);
-const generateCoverImageMock = vi.mocked(generateCoverImage);
+const generateImageMock = vi.mocked(generateImage);
 const sendGenerateEventMock = vi.mocked(sendGenerateEvent);
 const sendDownloadEventMock = vi.mocked(sendDownloadEvent);
 // Mock FileReader
@@ -205,7 +205,7 @@ describe("useForm", () => {
 	describe("handleGenerate", () => {
 		it("generates image successfully with all fields", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			generateCoverImageMock.mockResolvedValueOnce({
+			generateImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 123,
 			});
@@ -222,7 +222,7 @@ describe("useForm", () => {
 				await result.current.handleGenerate();
 			});
 
-			expect(generateCoverImage).toHaveBeenCalledWith({
+			expect(generateImage).toHaveBeenCalledWith({
 				width: 1200,
 				height: 627,
 				backgroundColor: "#374151",
@@ -247,7 +247,7 @@ describe("useForm", () => {
 
 		it("generates image with default filename when not provided", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			generateCoverImageMock.mockResolvedValueOnce({
+			generateImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 120,
 				duration: 30,
@@ -263,7 +263,7 @@ describe("useForm", () => {
 				await result.current.handleGenerate();
 			});
 
-			expect(generateCoverImage).toHaveBeenCalledWith(
+			expect(generateImage).toHaveBeenCalledWith(
 				expect.objectContaining({
 					filename: "cover",
 				}),
@@ -272,7 +272,7 @@ describe("useForm", () => {
 
 		it("sets isGenerating to false after generation completes", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			generateCoverImageMock.mockResolvedValueOnce({
+			generateImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 140,
 				duration: 45,
@@ -293,7 +293,7 @@ describe("useForm", () => {
 
 		it("resets formData after successful generation", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			generateCoverImageMock.mockResolvedValueOnce({
+			generateImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 160,
 				duration: 60,
@@ -320,7 +320,7 @@ describe("useForm", () => {
 
 		it("handles generation error with Error instance", async () => {
 			const errorMessage = "Generation failed";
-			generateCoverImageMock.mockRejectedValueOnce(new Error(errorMessage));
+			generateImageMock.mockRejectedValueOnce(new Error(errorMessage));
 
 			// Mock console.error to suppress error output during test
 			const consoleErrorSpy = vi
@@ -348,7 +348,7 @@ describe("useForm", () => {
 		});
 
 		it("handles generation error with non-Error object", async () => {
-			generateCoverImageMock.mockRejectedValueOnce("String error");
+			generateImageMock.mockRejectedValueOnce("String error");
 
 			// Mock console.error to suppress error output during test
 			const consoleErrorSpy = vi
@@ -377,7 +377,7 @@ describe("useForm", () => {
 
 		it("throws error for invalid size selection", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			generateCoverImageMock.mockResolvedValueOnce({
+			generateImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 110,
 				duration: 55,
@@ -417,7 +417,7 @@ describe("useForm", () => {
 				);
 			});
 
-			expect(generateCoverImage).not.toHaveBeenCalled();
+			expect(generateImage).not.toHaveBeenCalled();
 			expect(sendGenerateEventMock).not.toHaveBeenCalled();
 		});
 
@@ -440,13 +440,13 @@ describe("useForm", () => {
 				);
 			});
 
-			expect(generateCoverImage).not.toHaveBeenCalled();
+			expect(generateImage).not.toHaveBeenCalled();
 			expect(sendGenerateEventMock).not.toHaveBeenCalled();
 		});
 
 		it("generates image with Square preset", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			generateCoverImageMock.mockResolvedValueOnce({
+			generateImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 130,
 				duration: 70,
@@ -464,7 +464,7 @@ describe("useForm", () => {
 			});
 
 			await waitFor(() => {
-				expect(generateCoverImage).toHaveBeenCalledWith(
+				expect(generateImage).toHaveBeenCalledWith(
 					expect.objectContaining({
 						width: 1080,
 						height: 1080,
@@ -477,7 +477,7 @@ describe("useForm", () => {
 	describe("handleDownload", () => {
 		it("downloads generated image with custom filename", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			generateCoverImageMock.mockResolvedValueOnce({
+			generateImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 99,
 				duration: 40,
@@ -524,7 +524,7 @@ describe("useForm", () => {
 
 		it("handles download error", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			generateCoverImageMock.mockResolvedValueOnce({
+			generateImageMock.mockResolvedValueOnce({
 				blob: mockBlob,
 				clientDuration: 200,
 				duration: 80,

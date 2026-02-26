@@ -1,14 +1,10 @@
-import {
-	handleApiError,
-	type ImageParams,
-	proxyGenerateCoverImage,
-} from "@/_utils";
+import { handleApiError, type ImageParams, proxyGenerateImage } from "@/_utils";
 
 export async function POST(request: Request) {
 	try {
 		const body: ImageParams = await request.json();
 
-		const response = await proxyGenerateCoverImage(body);
+		const response = await proxyGenerateImage(body);
 
 		if (!response.ok) {
 			// Try to parse JSON error body returned by backend (validation errors carry details)

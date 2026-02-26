@@ -44,12 +44,12 @@ for (const font of FONT_CONFIG) {
 	}
 }
 
-export async function generateCoverImage(
+export async function generateImage(
 	request: HttpRequest,
 	context: InvocationContext,
 ): Promise<HttpResponseInit> {
 	const logger = createLogger(context);
-	logger.info("generateCoverImage function triggered");
+	logger.info("generateImage function triggered");
 
 	let startTime: number | undefined;
 	let extractedParams: Partial<ImageParams> | undefined;
@@ -252,8 +252,8 @@ export async function generateCoverImage(
 	}
 }
 
-app.http("generateCoverImage", {
+app.http("generateImage", {
 	methods: ["GET", "POST"],
 	authLevel: "anonymous",
-	handler: generateCoverImage,
+	handler: generateImage,
 });

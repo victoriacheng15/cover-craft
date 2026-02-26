@@ -10,11 +10,11 @@ export type ApiErrorResponse = {
 };
 
 /**
- * Server-side proxy handler for the generateCoverImage endpoint
+ * Server-side proxy handler for the generateImage endpoint
  */
-export async function proxyGenerateCoverImage(body: ImageParams) {
+export async function proxyGenerateImage(body: ImageParams) {
 	const API_URL = process.env.AZURE_FUNCTION_URL;
-	const response = await fetch(`${API_URL}/generateCoverImage`, {
+	const response = await fetch(`${API_URL}/generateImage`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
