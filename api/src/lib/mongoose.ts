@@ -49,6 +49,31 @@ export const metricSchema = new mongoose.Schema({
 	clientDuration: { type: Number },
 });
 
+export interface JobDocument {
+	status: "pending" | "processing" | "completed" | "failed";
+	requests: Record<string, unknown>[];
+	results: string[];
+	error?: string;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+export const jobSchema = new mongoose.Schema(
+	{
+		status: {
+			type: String,
+			enum: ["pending", "processing", "completed", "failed"],
+			default: "pending",
+			required: true,
+			index: true,
+		},
+		requests: { type: [mongoose.Schema.Types.Mixed], required: true },
+		results: { type: [String], default: [] },
+		error: { type: String },
+	},
+	{ timestamps: true },
+);
+
 // Define the Log schema
 const logSchema = new mongoose.Schema(
 	{
@@ -80,12 +105,20 @@ export interface StructuredLog {
 // Define model interfaces
 export interface LogModel extends Model<StructuredLog> {}
 export interface MetricModel extends Model<MetricDocument> {}
+export interface JobModel extends Model<JobDocument> {}
 
 export function getLogModel(): LogModel {
 	if (mongoose.models.Log) {
 		return mongoose.models.Log as LogModel;
 	}
 	return mongoose.model<StructuredLog, LogModel>("Log", logSchema);
+}
+
+export function getJobModel(): JobModel {
+	if (mongoose.models.Job) {
+		return mongoose.models.Job as JobModel;
+	}
+	return mongoose.model<JobDocument, JobModel>("Job", jobSchema);
 }
 
 export function getMetricModel(): MetricModel {
