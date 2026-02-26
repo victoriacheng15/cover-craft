@@ -10,7 +10,7 @@ Users currently have to manually select both background and text colors when cre
 
 ## Decision Outcome
 
-We will implement a "Randomize Colors" feature within the existing frontend architecture, prioritizing "Accessibility by Design."
+Implementation of a "Randomize Colors" feature within the existing frontend architecture, prioritizing "Accessibility by Design."
 
 - **Logic Location:** The randomization logic will be centralized in the `useForm` hook (`frontend/src/hooks/useForm.ts`) to maintain state management consistency.
 - **Algorithmic Accessibility:** The logic uses a validation loop that generates color pairs until a combination meets or exceeds a contrast threshold of **6.0:1** (exceeding the WCAG AA 4.5:1 requirement). This ensures immediate readability and high-quality starting points.
@@ -23,7 +23,7 @@ We will implement a "Randomize Colors" feature within the existing frontend arch
 ### Positive
 
 - **[Enhanced UX]**: Users can quickly generate ideas without manual effort.
-- **[Accessibility First]**: By embedding compliance into the algorithm, we eliminate the risk of generating "broken" or unreadable designs.
+- **[Accessibility First]**: By embedding compliance into the algorithm, the risk of generating "broken" or unreadable designs is eliminated.
 - **[Seamless Integration]**: Reuses existing state management and contrast calculation logic.
 - **[Flexibility]**: Does not lock the user into the random selection; manual overrides remain available.
 
@@ -103,4 +103,4 @@ console.table(results);
 | 10.0 | 120 | 563 | 0.1772 |
 | 15.0 | 3732 | 27212 | 4.5170 |
 
-These results confirm that the "Accessibility by Design" validation loop is safe for production use. Even at our 6.0 target, the impact on UI responsiveness is negligible (well under the 16ms frame budget).
+These results confirm that the "Accessibility by Design" validation loop is safe for production use. Even at the 6.0 target, the impact on UI responsiveness is negligible (well under the 16ms frame budget).

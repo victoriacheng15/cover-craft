@@ -135,4 +135,18 @@ export const chapters: Chapter[] = [
 			},
 		],
 	},
+	{
+		title: "Scale & Asynchronous Architecture",
+		intro:
+			"Scaling the platform to handle bulk operations. Formalizing the architectural shift towards an asynchronous job processing queue to support generating multiple covers simultaneously.",
+		timeline: [
+			{
+				date: "2026-02-26",
+				title: "ADR 006: Asynchronous Job Queue Architecture",
+				description:
+					"Proposed the decision to transition from synchronous HTTP processing to a stateless Background Worker model. This architecture prioritizes UI responsiveness during batch operations by utilizing MongoDB for job state and Azure Timer Triggers for distributed processing.",
+				adrPath: "006-batch-image-generation-architecture",
+			},
+		],
+	},
 ];
