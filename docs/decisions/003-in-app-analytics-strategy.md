@@ -18,13 +18,16 @@ A **Custom In-App Analytics Dashboard** was built using React and Recharts, inte
 
 ## Consequences
 
-- **Positive:**
-  - Complete control over data visualization and aggregation logic (e.g., handling synthetic traffic for statistical significance).
-  - Zero cost for visualization tools (compared to SaaS dashboards).
-  - Seamless integration with the existing component system (UI consistency).
-- **Negative/Trade-offs:**
-  - Development effort required to build and maintain charts and data hooks.
-  - Client-side data transformation can be heavy if the dataset grows significantly (may need server-side aggregation in the future).
+### Positive
+
+- **[Full Control]**: Complete control over data visualization and aggregation logic (e.g., handling synthetic traffic for statistical significance).
+- **[Zero Cost]**: Zero cost for visualization tools (compared to SaaS dashboards).
+- **[UI Consistency]**: Seamless integration with the existing component system (UI consistency).
+
+### Negative
+
+- **[Maintenance Effort]**: Development effort required to build and maintain charts and data hooks.
+- **[Client-side Performance]**: Client-side data transformation can be heavy if the dataset grows significantly (may need server-side aggregation in the future).
 
 ## Verification
 

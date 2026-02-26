@@ -18,13 +18,16 @@ A **Full-Stack Monorepo** strategy was adopted.
 
 ## Consequences
 
-- **Positive:**
-  - Eliminated type inconsistencies by sharing TypeScript interfaces across the entire stack.
-  - Reduced engineering overhead by standardizing tooling, linting, and testing configurations.
-  - Improved development velocity through atomic commits and simplified local development setup.
-- **Negative/Trade-offs:**
-  - Increased complexity in workspace-aware tooling configuration (e.g., managing multiple TypeScript project references and linting boundaries).
-  - Increased complexity in artifact bundling, particularly ensuring native dependencies (e.g., `canvas`) are correctly included in workspace-aware deployments.
+### Positive
+
+- **[Type Consistency]**: Eliminated type inconsistencies by sharing TypeScript interfaces across the entire stack.
+- **[Standardized Tooling]**: Reduced engineering overhead by standardizing tooling, linting, and testing configurations.
+- **[Improved Velocity]**: Improved development velocity through atomic commits and simplified local development setup.
+
+### Negative
+
+- **[Tooling Complexity]**: Increased complexity in workspace-aware tooling configuration (e.g., managing multiple TypeScript project references and linting boundaries).
+- **[Bundling Complexity]**: Increased complexity in artifact bundling, particularly ensuring native dependencies (e.g., `canvas`) are correctly included in workspace-aware deployments.
 
 ## Verification
 

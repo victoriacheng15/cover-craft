@@ -18,13 +18,16 @@ A **Design-First Methodology** was adopted.
 
 ## Consequences
 
-- **Positive:**
-  - Improved data modeling accuracy by resolving structural requirements upfront.
-  - Enabled "laser focus" on execution, facilitating faster project completion by resolving architectural ambiguity before coding.
-  - High-level overview of parameters significantly reduced the need for mid-implementation API or schema changes.
-- **Negative/Trade-offs:**
-  - Significant upfront planning time is required before implementation can begin.
-  - Initial velocity appears slower as no code is produced during the design phase.
+### Positive
+
+- **[Improved Accuracy]**: Improved data modeling accuracy by resolving structural requirements upfront.
+- **[Focused Execution]**: Enabled "laser focus" on execution, facilitating faster project completion by resolving architectural ambiguity before coding.
+- **[Reduced Changes]**: High-level overview of parameters significantly reduced the need for mid-implementation API or schema changes.
+
+### Negative
+
+- **[Upfront Planning]**: Significant upfront planning time is required before implementation can begin.
+- **[Slower Initial Velocity]**: Initial velocity appears slower as no code is produced during the design phase.
 
 ## Verification
 
