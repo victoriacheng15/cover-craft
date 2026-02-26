@@ -4,9 +4,21 @@ import {
 	type HttpResponseInit,
 	type InvocationContext,
 } from "@azure/functions";
-import type { MetricPayload } from "@cover-craft/shared";
+import { IMAGE_GENERATED_EVENT, type MetricPayload } from "@cover-craft/shared";
 import { createLogger } from "../lib/logger";
 import { connectMongoDB, getMetricModel } from "../lib/mongoose";
+
+export function buildMetricPayload(
+	status: MetricPayload["status"],
+	metricsData: Omit<MetricPayload, "event" | "timestamp" | "status">,
+): MetricPayload {
+	return {
+		event: IMAGE_GENERATED_EVENT,
+		timestamp: new Date().toISOString(),
+		status,
+		...metricsData,
+	};
+}
 
 // POST /api/metrics
 // Receives metrics/events from the frontend and stores to MongoDB for persistence
