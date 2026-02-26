@@ -1,5 +1,5 @@
 export { getAnalytics } from "./analytics";
-export { generateCoverImage, type ImageParams } from "./cover";
+export { generateImage, type ImageParams } from "./cover";
 export { type HealthResponse, health } from "./health";
 export {
 	type EventType,

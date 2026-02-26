@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { calculatePreviewDimensions, downloadImage } from "@/lib";
 import {
-	generateCoverImage,
+	generateImage,
 	sendDownloadEvent,
 	sendGenerateEvent,
 } from "@/services";
@@ -83,7 +83,7 @@ export function useForm() {
 				return;
 			}
 
-			const { blob, clientDuration } = await generateCoverImage({
+			const { blob, clientDuration } = await generateImage({
 				width: selectedSize.width,
 				height: selectedSize.height,
 				backgroundColor: formData.backgroundColor,

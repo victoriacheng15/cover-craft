@@ -1,11 +1,11 @@
 import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { generateCoverImage } from "./cover";
+import { generateImage } from "./cover";
 
 const fetchMock: MockedFunction<typeof fetch> = vi.fn();
 global.fetch = fetchMock;
 
-describe("generateCoverImage", () => {
+describe("generateImage", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -33,9 +33,9 @@ describe("generateCoverImage", () => {
 			},
 		});
 
-		const result = await generateCoverImage(params);
+		const result = await generateImage(params);
 
-		expect(fetchMock).toHaveBeenCalledWith("/api/generateCoverImage", {
+		expect(fetchMock).toHaveBeenCalledWith("/api/generateImage", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -66,9 +66,7 @@ describe("generateCoverImage", () => {
 			json: async () => ({ error: "Invalid parameters" }),
 		});
 
-		await expect(generateCoverImage(params)).rejects.toThrow(
-			"Invalid parameters",
-		);
+		await expect(generateImage(params)).rejects.toThrow("Invalid parameters");
 	});
 
 	it("throws generic error when no error message in response", async () => {
@@ -89,7 +87,7 @@ describe("generateCoverImage", () => {
 			json: async () => ({}),
 		});
 
-		await expect(generateCoverImage(params)).rejects.toThrow(
+		await expect(generateImage(params)).rejects.toThrow(
 			"Failed to generate cover image",
 		);
 	});
@@ -116,7 +114,7 @@ describe("generateCoverImage", () => {
 			json: async () => ({ error: "Invalid payload", details }),
 		});
 
-		await expect(generateCoverImage(params)).rejects.toMatchObject({
+		await expect(generateImage(params)).rejects.toMatchObject({
 			details,
 		});
 	});
@@ -141,7 +139,7 @@ describe("generateCoverImage", () => {
 			},
 		});
 
-		await expect(generateCoverImage(params)).rejects.toThrow(
+		await expect(generateImage(params)).rejects.toThrow(
 			"Failed to generate cover image",
 		);
 	});

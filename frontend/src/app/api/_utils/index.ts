@@ -5,8 +5,8 @@ export {
 } from "./errorHandler";
 export {
 	type ImageParams,
-	proxyGenerateCoverImage,
-} from "./generateCoverImage";
+	proxyGenerateImage,
+} from "./generateImage";
 export { type HealthResponse, proxyHealth } from "./health";
 export {
 	DOWNLOAD_CLICK_EVENT,
