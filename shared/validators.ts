@@ -83,11 +83,11 @@ export interface ValidationError {
 export function hexToRgb(
 	hex: string,
 ): { r: number; g: number; b: number } | null {
-	const cleaned = hex.replace("#", "");
-	if (!HEX_COLOR_REGEX.test(hex)) {
+	if (!hex || typeof hex !== "string" || !HEX_COLOR_REGEX.test(hex)) {
 		return null;
 	}
 
+	const cleaned = hex.replace("#", "");
 	const hexValue =
 		cleaned.length === 3
 			? cleaned

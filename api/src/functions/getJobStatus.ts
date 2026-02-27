@@ -4,8 +4,13 @@ import {
 	type HttpResponseInit,
 	type InvocationContext,
 } from "@azure/functions";
+import type { Types } from "mongoose";
 import { createLogger } from "../lib/logger";
-import { connectMongoDB, getJobModel } from "../lib/mongoose";
+import { connectMongoDB, getJobModel, type JobDocument } from "../lib/mongoose";
+
+interface JobWithId extends JobDocument {
+	_id: Types.ObjectId;
+}
 
 export async function getJobStatus(
 	request: HttpRequest,
@@ -26,7 +31,38 @@ export async function getJobStatus(
 			};
 		}
 
-		const job = await Job.findById(jobId);
+		let job: JobWithId | null = null;
+
+		// 1. Try full ObjectId lookup first
+		if (jobId.length === 24 && /^[0-9a-fA-F]{24}$/.test(jobId)) {
+			job = (await Job.findById(jobId)) as JobWithId | null;
+		}
+		// 2. Try partial lookup for 8-character hex strings (last 8 chars)
+		else if (jobId.length === 8 && /^[0-9a-fA-F]{8}$/.test(jobId)) {
+			const results = await Job.aggregate([
+				{
+					$addFields: {
+						idStr: { $toString: "$_id" },
+					},
+				},
+				{
+					$match: {
+						idStr: { $regex: `${jobId}$` },
+					},
+				},
+				{ $limit: 1 },
+			]);
+			job = results.length > 0 ? (results[0] as JobWithId) : null;
+		} else {
+			return {
+				status: 400,
+				jsonBody: {
+					error:
+						"Invalid Job ID format. Provide either the full 24-character ID or the last 8 characters.",
+				},
+			};
+		}
+
 		if (!job) {
 			logger.warn("Job not found", { jobId });
 			return {
@@ -40,7 +76,7 @@ export async function getJobStatus(
 		return {
 			status: 200,
 			jsonBody: {
-				id: job._id,
+				id: job._id.toString(),
 				status: job.status,
 				progress: job.results.length,
 				total: job.requests.length,

@@ -1,6 +1,6 @@
 import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { generateImage } from "./cover";
+import { generateBatchImages, generateImage, getBatchJobStatus } from "./cover";
 
 const fetchMock: MockedFunction<typeof fetch> = vi.fn();
 global.fetch = fetchMock;
@@ -141,6 +141,89 @@ describe("generateImage", () => {
 
 		await expect(generateImage(params)).rejects.toThrow(
 			"Failed to generate cover image",
+		);
+	});
+});
+
+describe("generateBatchImages", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("submits batch request and returns jobId", async () => {
+		const params = [
+			{
+				width: 1200,
+				height: 627,
+				backgroundColor: "#374151",
+				textColor: "#f9fafb",
+				font: "Montserrat",
+				title: "Batch 1",
+				filename: "test-1",
+			},
+		];
+
+		fetchMock.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ jobId: "batch-123" }),
+		});
+
+		const result = await generateBatchImages(params);
+
+		expect(fetchMock).toHaveBeenCalledWith("/api/generateImages", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(params),
+		});
+		expect(result.jobId).toBe("batch-123");
+	});
+
+	it("throws error when batch submission fails", async () => {
+		fetchMock.mockResolvedValueOnce({
+			ok: false,
+			json: async () => ({ error: "Max batch size exceeded" }),
+		});
+
+		await expect(generateBatchImages([])).rejects.toThrow(
+			"Max batch size exceeded",
+		);
+	});
+});
+
+describe("getBatchJobStatus", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("fetches job status correctly", async () => {
+		const mockResponse = {
+			id: "job-123",
+			status: "processing",
+			progress: 1,
+			total: 2,
+			results: [],
+		};
+
+		fetchMock.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		});
+
+		const result = await getBatchJobStatus("job-123");
+
+		expect(fetchMock).toHaveBeenCalledWith("/api/jobStatus?jobId=job-123");
+		expect(result).toEqual(mockResponse);
+	});
+
+	it("throws error when status fetch fails", async () => {
+		fetchMock.mockResolvedValueOnce({
+			ok: false,
+		});
+
+		await expect(getBatchJobStatus("invalid-id")).rejects.toThrow(
+			"Failed to fetch job status",
 		);
 	});
 });

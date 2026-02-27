@@ -6,19 +6,13 @@ import { useAnalytics } from "@/hooks";
 import {
 	AccessibilityMetrics,
 	AccessibilityMetricsSkeleton,
-} from "./_components/AccessibilityMetrics";
-import {
 	FeaturePopularity,
 	FeaturePopularitySkeleton,
-} from "./_components/FeaturePopularity";
-import {
 	PerformanceMetrics,
 	PerformanceMetricsSkeleton,
-} from "./_components/PerformanceMetrics";
-import {
 	UserEngagement,
 	UserEngagementSkeleton,
-} from "./_components/UserEngagement";
+} from "./_components";
 
 export default function AnalyticsPage() {
 	const {

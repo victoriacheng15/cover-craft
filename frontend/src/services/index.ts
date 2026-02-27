@@ -1,5 +1,11 @@
 export { getAnalytics } from "./analytics";
-export { generateImage, type ImageParams } from "./cover";
+export {
+	generateBatchImages,
+	generateImage,
+	getBatchJobStatus,
+	type ImageParams,
+	type JobStatusResponse,
+} from "./cover";
 export { type HealthResponse, health } from "./health";
 export {
 	type EventType,

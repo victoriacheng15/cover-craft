@@ -7,7 +7,9 @@ export {
 	type ImageParams,
 	proxyGenerateImage,
 } from "./generateImage";
+export { proxyGenerateImages } from "./generateImages";
 export { type HealthResponse, proxyHealth } from "./health";
+export { proxyJobStatus } from "./jobStatus";
 export {
 	DOWNLOAD_CLICK_EVENT,
 	type EventType,
