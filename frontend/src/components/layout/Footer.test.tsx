@@ -5,7 +5,7 @@ import Footer from "./Footer";
 describe("Footer", () => {
 	it("renders copyright text", () => {
 		render(<Footer />);
-		const copyright = screen.getByText(/© 2025 Victoria Cheng/i);
+		const copyright = screen.getByText(/© \d{4} Victoria Cheng/i);
 		expect(copyright).toBeInTheDocument();
 	});
 

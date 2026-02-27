@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useAnalytics } from "./useAnalytics";
 
 // Mock the API utilities
-vi.mock("@/services/analytics", () => ({
+vi.mock("@/services", () => ({
 	getAnalytics: vi.fn(),
 }));
 
-import { getAnalytics } from "@/services/analytics";
+import { getAnalytics } from "@/services";
 
 const getAnalyticsMock = vi.mocked(getAnalytics);
 

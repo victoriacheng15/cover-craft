@@ -14,11 +14,8 @@ import {
 	SectionTitle,
 	Select,
 } from "@/components/ui";
-import type { ContrastCheckResult } from "@/hooks/useContrastCheck";
-import type { FormData } from "@/hooks/useForm";
-import ColorContrastMessage from "./ColorContrastMessage";
-import ColorControls from "./ColorControls";
-import FormField from "./FormField";
+import type { ContrastCheckResult, FormData } from "@/hooks";
+import { ColorContrastMessage, ColorControls, FormField } from "./index";
 
 interface CoverFormControlsProps {
 	formData: FormData;

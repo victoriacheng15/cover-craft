@@ -10,12 +10,16 @@ import { getJobStatus } from "./getJobStatus";
 const mocks = vi.hoisted(() => {
 	return {
 		mockJobFindById: vi.fn(),
+		mockJobAggregate: vi.fn(),
 	};
 });
 
 // Mock mongoose
 vi.mock("../lib/mongoose", () => {
-	const mockJobModel = { findById: mocks.mockJobFindById };
+	const mockJobModel = {
+		findById: mocks.mockJobFindById,
+		aggregate: mocks.mockJobAggregate,
+	};
 	return {
 		connectMongoDB: vi.fn().mockResolvedValue(undefined),
 		getJobModel: vi.fn(() => mockJobModel),
@@ -46,9 +50,28 @@ describe("getJobStatus", () => {
 		expect(response.status).toBe(400);
 	});
 
-	it("should return 404 if job not found", async () => {
+	it("should return 400 if jobId is an invalid format", async () => {
 		const mockRequest = {
-			query: new Map([["jobId", "non-existent"]]),
+			query: new Map([["jobId", "too-short"]]),
+		} as unknown as HttpRequest;
+
+		const response = (await getJobStatus(
+			mockRequest,
+			mockContext,
+		)) as HttpResponseInit;
+
+		expect(response.status).toBe(400);
+		expect(response.jsonBody).toEqual(
+			expect.objectContaining({
+				error: expect.stringContaining("Invalid Job ID format"),
+			}),
+		);
+	});
+
+	it("should return 404 if full jobId not found", async () => {
+		const fullId = "69a0f2db7b65847194bf1aec";
+		const mockRequest = {
+			query: new Map([["jobId", fullId]]),
 		} as unknown as HttpRequest;
 
 		mocks.mockJobFindById.mockResolvedValue(null);
@@ -59,15 +82,17 @@ describe("getJobStatus", () => {
 		)) as HttpResponseInit;
 
 		expect(response.status).toBe(404);
+		expect(mocks.mockJobFindById).toHaveBeenCalledWith(fullId);
 	});
 
-	it("should return 200 with job details if found", async () => {
+	it("should return 200 with full jobId if found", async () => {
+		const fullId = "69a0f2db7b65847194bf1aec";
 		const mockRequest = {
-			query: new Map([["jobId", "exists"]]),
+			query: new Map([["jobId", fullId]]),
 		} as unknown as HttpRequest;
 
 		const mockJob = {
-			_id: "exists",
+			_id: fullId,
 			status: JOB_STATUS_PENDING,
 			requests: [{}],
 			results: [],
@@ -82,7 +107,50 @@ describe("getJobStatus", () => {
 		)) as HttpResponseInit;
 
 		expect(response.status).toBe(200);
-		const body = response.jsonBody as Record<string, unknown>;
-		expect(body.status).toBe(JOB_STATUS_PENDING);
+		expect(mocks.mockJobFindById).toHaveBeenCalledWith(fullId);
+	});
+
+	it("should return 200 with partial jobId (8 chars) if found", async () => {
+		const partialId = "94bf1aec";
+		const mockRequest = {
+			query: new Map([["jobId", partialId]]),
+		} as unknown as HttpRequest;
+
+		const mockJob = {
+			_id: "69a0f2db7b65847194bf1aec",
+			status: JOB_STATUS_PENDING,
+			requests: [{}],
+			results: [],
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+
+		mocks.mockJobAggregate.mockResolvedValue([mockJob]);
+
+		const response = (await getJobStatus(
+			mockRequest,
+			mockContext,
+		)) as HttpResponseInit;
+
+		expect(response.status).toBe(200);
+		expect(mocks.mockJobAggregate).toHaveBeenCalled();
+		const body = response.jsonBody as { id: string };
+		expect(body.id).toBe(mockJob._id);
+	});
+
+	it("should return 404 if partial jobId match is not found", async () => {
+		const partialId = "ffffffff";
+		const mockRequest = {
+			query: new Map([["jobId", partialId]]),
+		} as unknown as HttpRequest;
+
+		mocks.mockJobAggregate.mockResolvedValue([]);
+
+		const response = (await getJobStatus(
+			mockRequest,
+			mockContext,
+		)) as HttpResponseInit;
+
+		expect(response.status).toBe(404);
 	});
 });

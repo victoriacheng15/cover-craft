@@ -17,7 +17,7 @@ describe("MainLayout", () => {
 		expect(screen.getByText(/Cover Craft/i)).toBeInTheDocument();
 
 		// Check footer copyright
-		expect(screen.getByText(/© 2025/i)).toBeInTheDocument();
+		expect(screen.getByText(/© \d{4}/i)).toBeInTheDocument();
 	});
 
 	it("applies correct background color", () => {

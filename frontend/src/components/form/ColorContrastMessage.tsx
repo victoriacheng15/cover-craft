@@ -1,4 +1,4 @@
-import type { ContrastCheckResult } from "@/hooks/useContrastCheck";
+import type { ContrastCheckResult } from "@/hooks";
 
 interface ColorContrastMessageProps {
 	contrastCheck: ContrastCheckResult;
