@@ -5,10 +5,12 @@ import type { ImageParams } from "@cover-craft/shared";
  */
 export async function proxyGenerateImages(body: ImageParams[]) {
 	const API_URL = process.env.AZURE_FUNCTION_URL;
+	const API_KEY = process.env.AZURE_FUNCTION_KEY;
 	const response = await fetch(`${API_URL}/generateImages`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
+			"x-functions-key": API_KEY || "",
 		},
 		body: JSON.stringify(body),
 	});

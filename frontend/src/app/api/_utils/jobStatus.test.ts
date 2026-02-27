@@ -21,6 +21,11 @@ describe("proxyJobStatus", () => {
 
 		expect(fetchMock).toHaveBeenCalledWith(
 			"http://mock-api/getJobStatus?jobId=job-123",
+			{
+				headers: {
+					"x-functions-key": "",
+				},
+			},
 		);
 		expect(response).toBe(fakeResponse);
 	});
