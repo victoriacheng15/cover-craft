@@ -34,6 +34,7 @@ describe("proxyGenerateImages", () => {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				"x-functions-key": "",
 			},
 			body: JSON.stringify(body),
 		});
