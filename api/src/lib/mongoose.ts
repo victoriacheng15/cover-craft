@@ -3,6 +3,16 @@ import mongoose, { type Model } from "mongoose";
 
 let mongoConnected = false;
 
+import {
+	JOB_STATUS_COMPLETED,
+	JOB_STATUS_FAILED,
+	JOB_STATUS_PENDING,
+	JOB_STATUS_PROCESSING,
+	METRIC_STATUS_ERROR,
+	METRIC_STATUS_SUCCESS,
+	METRIC_STATUS_VALIDATION_ERROR,
+} from "@cover-craft/shared";
+
 // Interface for the Metric document
 export interface MetricDocument {
 	event: string;
@@ -28,7 +38,11 @@ export const metricSchema = new mongoose.Schema({
 	timestamp: { type: Date, required: true, index: true },
 	status: {
 		type: String,
-		enum: ["success", "error", "validation_error"],
+		enum: [
+			METRIC_STATUS_SUCCESS,
+			METRIC_STATUS_ERROR,
+			METRIC_STATUS_VALIDATION_ERROR,
+		],
 		required: true,
 	},
 	errorMessage: String,
@@ -50,7 +64,7 @@ export const metricSchema = new mongoose.Schema({
 });
 
 export interface JobDocument {
-	status: "pending" | "processing" | "completed" | "failed";
+	status: string;
 	requests: Record<string, unknown>[];
 	results: string[];
 	error?: string;
@@ -62,8 +76,13 @@ export const jobSchema = new mongoose.Schema(
 	{
 		status: {
 			type: String,
-			enum: ["pending", "processing", "completed", "failed"],
-			default: "pending",
+			enum: [
+				JOB_STATUS_PENDING,
+				JOB_STATUS_PROCESSING,
+				JOB_STATUS_COMPLETED,
+				JOB_STATUS_FAILED,
+			],
+			default: JOB_STATUS_PENDING,
 			required: true,
 			index: true,
 		},
