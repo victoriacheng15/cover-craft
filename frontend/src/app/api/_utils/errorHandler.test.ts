@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleApiError } from "./errorHandler";
 
 describe("errorHandler", () => {
+	beforeEach(() => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+	});
+
 	describe("handleApiError", () => {
 		it("returns 500 status with error message for Error instance", () => {
 			const error = new Error("Test error message");
