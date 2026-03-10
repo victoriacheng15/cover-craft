@@ -8,7 +8,7 @@ export default function Footer() {
 
 				<nav aria-label="Social links" className="flex items-center gap-4">
 					<a
-						href="https://github.com/victoriacheng15/cover-craft"
+						href="https://github.com/victoriacheng15"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="hover:text-emerald-700 transition-colors"

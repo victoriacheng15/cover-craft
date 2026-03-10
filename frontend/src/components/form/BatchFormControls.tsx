@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button, SectionTitle } from "@/components/ui";
+import SchemaReference from "./SchemaReference";
 
 interface BatchFormControlsProps {
 	jsonInput: string;
@@ -84,7 +85,7 @@ export default function BatchFormControls({
 				</label>
 				<textarea
 					id="batch-json-input"
-					className={`w-full h-64 p-4 font-mono text-sm border-2 rounded-lg focus:outline-none transition-colors ${
+					className={`w-full h-80 p-4 font-mono text-sm border-2 rounded-lg focus:outline-none transition-colors ${
 						error
 							? "border-red-500 focus:border-red-600"
 							: "border-gray-200 focus:border-emerald-500"
@@ -93,13 +94,17 @@ export default function BatchFormControls({
 					onChange={(e) => setJsonInput(e.target.value)}
 					placeholder={`[
   {
-    "title": "Clean Architecture",
-    "width": 800,
-    "height": 600,
-    "backgroundColor": "#374151"
+    "title": "Change this title",
+    "subtitle": "Change this example subtitle",
+    "width": 1200,
+    "height": 627,
+    "backgroundColor": "#1e293b",
+    "textColor": "#f8fafc",
+    "font": "Montserrat"
   }
 ]`}
 				/>
+				<SchemaReference />
 			</fieldset>
 
 			{error && (

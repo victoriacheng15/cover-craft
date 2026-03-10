@@ -23,6 +23,7 @@ describe("BatchFormControls", () => {
 		expect(
 			screen.getByRole("textbox", { name: /JSON Payload/i }),
 		).toBeInTheDocument();
+		expect(screen.getByText(/Schema Reference/i)).toBeInTheDocument();
 	});
 
 	it("calls setJsonInput when typing in textarea", () => {

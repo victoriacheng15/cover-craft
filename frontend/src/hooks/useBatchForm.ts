@@ -9,8 +9,20 @@ import {
 	type JobStatusResponse,
 } from "@/services";
 
+const DEFAULT_JSON_EXAMPLE = `[
+  {
+    "title": "Change this title",
+    "subtitle": "Change this example subtitle",
+    "width": 1200,
+    "height": 627,
+    "backgroundColor": "#1e293b",
+    "textColor": "#f8fafc",
+    "font": "Montserrat"
+  }
+]`;
+
 export function useBatchForm() {
-	const [jsonInput, setJsonInput] = useState<string>("");
+	const [jsonInput, setJsonInput] = useState<string>(DEFAULT_JSON_EXAMPLE);
 	const [jobId, setJobId] = useState<string | null>(null);
 	const [status, setStatus] = useState<JobStatusResponse | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,7 +49,12 @@ export function useBatchForm() {
 					setIsValid(false);
 				} else {
 					setError(null);
-					setIsValid(true);
+					// Disable submission if input is semantically identical to the default example
+					const normalizedInput = JSON.stringify(parsed);
+					const normalizedDefault = JSON.stringify(
+						JSON.parse(DEFAULT_JSON_EXAMPLE),
+					);
+					setIsValid(normalizedInput !== normalizedDefault);
 				}
 			} catch (err) {
 				setError(
@@ -132,7 +149,7 @@ export function useBatchForm() {
 
 	const handleReset = () => {
 		stopPolling();
-		setJsonInput("");
+		setJsonInput(DEFAULT_JSON_EXAMPLE);
 		setJobId(null);
 		setStatus(null);
 		setError(null);
