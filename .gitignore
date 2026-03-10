@@ -71,6 +71,9 @@ typings/
 # next.js build output
 .next
 
+# Azurite local storage
+__azurite_db__/
+
 # nuxt.js build output
 .nuxt
 
