@@ -28,11 +28,11 @@ describe("useBatchForm", () => {
 	it("initializes with default state", () => {
 		const { result } = renderHook(() => useBatchForm());
 
-		expect(result.current.jsonInput).toBe("");
+		expect(result.current.jsonInput).toContain("Change this title");
 		expect(result.current.jobId).toBe(null);
 		expect(result.current.status).toBe(null);
 		expect(result.current.isSubmitting).toBe(false);
-		expect(result.current.isValid).toBe(false);
+		expect(result.current.isValid).toBe(false); // Should be false for default example
 		expect(result.current.error).toBe(null);
 	});
 
@@ -40,7 +40,7 @@ describe("useBatchForm", () => {
 		const { result } = renderHook(() => useBatchForm());
 		const validJson = JSON.stringify([
 			{
-				title: "Test",
+				title: "Different Title",
 				width: 100,
 				height: 100,
 				backgroundColor: "#000000",
@@ -252,7 +252,7 @@ describe("useBatchForm", () => {
 			result.current.handleReset();
 		});
 
-		expect(result.current.jsonInput).toBe("");
+		expect(result.current.jsonInput).toContain("Change this title");
 		expect(result.current.error).toBe(null);
 	});
 });
