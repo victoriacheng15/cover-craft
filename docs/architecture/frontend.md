@@ -1,6 +1,6 @@
 # Frontend Architecture
 
-The frontend is a **Next.js (App Router)** application that provides a real-time editing experience. It uses a **Proxy Layer** to communicate with the Azure Functions backend, ensuring the client remains decoupled from the serverless infrastructure.
+The frontend is a **Next.js (App Router)** application that provides a real-time editing experience for single images and a high-throughput batch generation interface for bulk creation. It uses a **Proxy Layer** to communicate with the Azure Functions backend, ensuring the client remains decoupled from the serverless infrastructure.
 
 ## Core Tech Stack
 
@@ -12,77 +12,82 @@ The frontend is a **Next.js (App Router)** application that provides a real-time
 
 ## System Architecture
 
+The frontend orchestrates two distinct workflows: direct rendering for previews and polling-based retrieval for batch jobs.
+
 ```mermaid
 graph LR
     Client[Browser] --> Proxy[Next.js API Routes]
-    Proxy --> Backend[Azure Functions]
-    Client --> Analytics[Recharts Dashboard]
+    
+    subgraph ProxyLayer["Proxy Layer (BFF)"]
+        Proxy
+    end
+    
+    subgraph Backend["Azure Functions"]
+        Sync[generateImage]
+        Async[generateImages]
+        Status[jobStatus]
+    end
+
+    Proxy --> Sync
+    Proxy --> Async
+    Proxy --> Status
+    
+    Client -->|1. Submit Batch| Async
+    Client -->|2. Poll Status| Status
+    Client -->|3. Preview| Sync
 ```
 
 ## Architectural Patterns
 
-### 1. The Proxy Pattern
+### 1. The Proxy Pattern (BFF)
 
-All client requests to `POST /api/generateCoverImage` or `GET /api/analytics` are handled by Next.js route handlers.
+All client requests to image generation, analytics, or job status endpoints are handled by Next.js route handlers.
 
-- **Benefit:** Hides the Azure Function endpoint, prevents CORS issues, and allows for request/response transformation before reaching the client.
+- **Benefit:** Hides the Azure Function endpoint, prevents CORS issues, and allows for request/response transformation (e.g., error mapping) before reaching the client.
 
-### 2. Hybrid Rendering
+### 2. Dual-Mode Generation
 
-- **Live Preview:** Uses standard React state and inline CSS (via `fontFamilyMap`) for instantaneous visual feedback while typing.
-- **Final Render:** The "Generate" button triggers a server-side request to the Azure Function, which uses `node-canvas` to produce a high-fidelity PNG buffer.
+- **Synchronous (Single):** The `useForm` hook triggers a direct request to the `generateImage` endpoint for instantaneous visual feedback and single-image downloads.
+- **Asynchronous (Batch):** The `useBatchForm` hook submits a bulk request to `generateImages`, receives a `jobId`, and initiates a polling lifecycle to track progress until completion.
 
-### 3. Progressive Enhancement (Downloads)
+### 3. Progressive UI Updates
 
-The application attempts to use the **FileSystem API** for downloads to provide a better user experience (file picker), with a standard `<a>` tag fallback for legacy browsers.
+- **Skeleton Loaders:** Standardized across analytics and batch result components to eliminate layout shifts during asynchronous data fetching.
+- **Batch Results Display:** Dynamically renders generated assets as they become available via the polling mechanism, providing real-time progress visualization.
 
 ## Component Structure
 
 | Type | Examples | Responsibility |
 | :--- | :--- | :--- |
-| **Pages** | `page.tsx` (Landing), `generate/page.tsx`, `evolution/page.tsx`, `analytics/page.tsx` | Entry points for the application's distinct routes. |
-| **Landing** | `HeroSection`, `OriginStory`, `DesignPrinciples` | Semantic sections of the landing page, decomposed for readability. |
-| **Analytics** | `UserEngagement`, `FeaturePopularity`, `PerformanceMetrics` | Domain-specific visualization components for the analytics dashboard. |
-| **Forms** | `CoverForm`, `FormField` | Encapsulates input logic, contrast validation, and error state. |
-| **UI** | `Button`, `Input`, `Card`, `SectionTitle`, `ColorPicker` | Stateless, reusable atoms styled with Tailwind. |
+| **Pages** | `generate/page.tsx`, `generate/batch/page.tsx`, `analytics/page.tsx` | Entry points for single vs batch generation and dashboards. |
+| **Batch UI** | `BatchFormControls`, `BatchResultsDisplay` | Specialized components for bulk parameter configuration and result visualization. |
+| **Forms** | `CoverForm`, `FormField` | Encapsulates input logic, contrast validation, and single-image preview synchronization. |
+| **UI** | `Button`, `Card`, `Skeleton` | Stateless, reusable atoms styled with Tailwind. |
 
 ## Custom Hooks (The Logic Layer)
 
 | Hook | Source | Responsibility |
 | :--- | :--- | :--- |
-| `useForm` | `hooks/useForm.ts` | Orchestrates form state, validation, and the generate/download workflow. |
+| `useForm` | `hooks/useForm.ts` | Orchestrates single-image state, preview synchronization, and download workflow. |
+| `useBatchForm` | `hooks/useBatchForm.ts` | Manages bulk job submission, status polling, and result aggregation. |
 | `useContrastCheck` | `hooks/useContrastCheck.ts` | Performs debounced (300ms) WCAG AA compliance checks on color pairs. |
-| `useAnalytics` | `hooks/useAnalytics.ts` | Manages the lifecycle of the analytics data fetch. |
 
 ## Data Models
 
-### Form State
+### Batch Job State
 
 ```typescript
-interface FormData {
-  size: string;             // Label e.g., "Post (1200 × 627)"
-  title: string;            // Max 40 chars
-  subtitle?: string;        // Max 70 chars
-  backgroundColor: string;  // Hex
-  textColor: string;        // Hex
-  font: string;             // Valid FONT_OPTIONS entry
-  filename: string;         // User-defined or default
-}
-```
-
-### Analytics Result
-
-```typescript
-interface AnalyticsResult {
-  userEngagement: { uiGenerationAttempts: number; totalSuccessfulGenerations: number; uiUsagePercent: number; apiUsagePercent: number; totalDownloads: number };
-  featurePopularity: { topFonts: Array<{ font: string; count: number }> };
-  accessibilityCompliance: { wcagDistribution: Array<{ level: string; count: number }> };
-  performanceMetrics: { backendPerformance: { p95BackendDuration: number } };
+interface BatchJobState {
+  jobId: string | null;
+  status: "pending" | "processing" | "completed" | "failed";
+  progress: number; // processed / total * 100
+  results: Array<{ url: string; fileName: string }>;
+  error?: string;
 }
 ```
 
 ## Accessibility & Validation
 
-- **WCAG AA Enforced:** The "Generate" button is programmatically disabled unless the contrast ratio is ≥ 4.5:1.
-- **Screen Reader Support:** Includes `aria-live="polite"` on preview updates and `role="alert"` for validation errors.
-- **Focus Management:** Standard keyboard navigation with visible focus rings.
+- **WCAG AA Enforced:** Generation buttons (Single and Batch) are programmatically disabled unless contrast ratios meet the ≥ 4.5:1 threshold.
+- **Live Regions:** Uses `aria-live="polite"` for batch progress updates to ensure screen readers are notified of background job completion.
+- **Focus Management:** Ensures consistent keyboard navigation during the transition from form submission to result display.
