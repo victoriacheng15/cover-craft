@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Button, Card, SectionTitle } from "@/components/ui";
 import type { FormData } from "@/hooks";
-import { fontFamilyMap } from "@/lib";
+import { PreviewCanvas } from "./PreviewCanvas";
 
 interface CoverPreviewDisplayProps {
 	formData: FormData;
@@ -34,38 +34,23 @@ export default function CoverPreviewDisplay({
 				<>
 					<SectionTitle size="lg">Live Preview</SectionTitle>
 					<div
-						className="flex justify-center items-center rounded-xl border border-gray-300 max-w-full"
-						style={{
-							backgroundColor: formData.backgroundColor,
-							color: formData.textColor,
-							fontFamily: fontFamilyMap[formData.font],
-							width: `min(${width}px, 100%)`,
-							height: `auto`,
-							aspectRatio: `${width} / ${height}`,
-							containerType: "inline-size",
-						}}
+						className="flex justify-center items-center rounded-xl border border-gray-300 max-w-full overflow-hidden"
 						role="img"
 						aria-label={`Preview: ${formData.title || "Title"} - ${formData.subtitle || "Subtitle"}`}
 					>
-						<div className="text-center px-4">
-							<h2
-								className="font-bold"
-								style={{
-									fontSize: "max(16px, 7.5cqi)",
-								}}
-							>
-								{formData.title || "Title Preview"}
-							</h2>
-							<p
-								className="font-normal"
-								style={{
-									fontSize: "max(12px, 5.5cqi)",
-									marginTop: "max(9px, 4.5cqi)",
-								}}
-							>
-								{formData.subtitle || "Subtitle Preview"}
-							</p>
-						</div>
+						<PreviewCanvas
+							params={{
+								title: formData.title,
+								subtitle: formData.subtitle,
+								font: formData.font,
+								backgroundColor: formData.backgroundColor,
+								textColor: formData.textColor,
+								width,
+								height,
+								filename: formData.filename,
+							}}
+							className="w-full h-auto"
+						/>
 					</div>
 				</>
 			) : (

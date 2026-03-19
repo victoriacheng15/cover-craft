@@ -9,4 +9,4 @@ export const IMAGE_CONFIG = {
 		subheadingPercentage: 0.055, // 5.5% of max dimension
 		lineSpacingMultiplier: 1.2,
 	},
-};
+} as const;

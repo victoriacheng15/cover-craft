@@ -11,6 +11,18 @@ vi.mock("@/hooks", async () => {
 	};
 });
 
+// Mock PreviewCanvas to avoid canvas issues in tests and make params testable
+vi.mock("./PreviewCanvas", () => ({
+	PreviewCanvas: ({ params }: { params: any }) => (
+		<div data-testid="preview-canvas">
+			<span>{params.title || "Title Preview"}</span>
+			<span>{params.subtitle || "Subtitle Preview"}</span>
+			<span data-testid="preview-bg">{params.backgroundColor}</span>
+			<span data-testid="preview-text">{params.textColor}</span>
+		</div>
+	),
+}));
+
 import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
 import { useForm as useFormHook } from "@/hooks";
 
@@ -341,10 +353,9 @@ describe("CoverForm", () => {
 			name: /Preview: Preview Title - Preview Subtitle/i,
 		});
 
-		expect(previewRegion).toHaveStyle({
-			backgroundColor: "#000000",
-			color: "#ffffff",
-		});
+		expect(previewRegion).toBeInTheDocument();
+		expect(screen.getByText("#000000")).toBeInTheDocument();
+		expect(screen.getByText("#ffffff")).toBeInTheDocument();
 	});
 
 	it("renders contrast indicator when status is provided", () => {

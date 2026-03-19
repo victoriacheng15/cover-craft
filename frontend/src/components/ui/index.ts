@@ -16,8 +16,8 @@ export {
 	FormError,
 	Input,
 	KPICard,
-	SectionTitle,
 	Nav,
+	SectionTitle,
 	Select,
 	Skeleton,
 };
