@@ -1,164 +1,131 @@
 # Backend Architecture
 
-The backend is a serverless API built on Azure Functions (v4, Node.js), responsible for image generation, metrics collection, and analytics aggregation. It interacts with MongoDB for persistence and uses `node-canvas` for server-side rendering.
+The backend is a serverless API built on Azure Functions (v4, Node.js), responsible for high-fidelity image generation, metrics collection, and asynchronous batch processing. It leverages a dual-path execution model to balance immediate UI feedback with scalable bulk operations.
 
 ## Core Tech Stack
 
 - **Runtime:** Azure Functions (Node.js 20+)
 - **Rendering:** `canvas` (Server-side implementation of HTML5 Canvas)
 - **Database:** MongoDB (via `mongoose`)
+- **Messaging:** Azure Queue Storage (for asynchronous job orchestration)
 - **Testing:** Vitest
-- **Shared Logic:** `@cover-craft/shared` (Types & Validators)
+- **Shared Logic:** `@cover-craft/shared` (Validators, Job Status Constants, and Types)
 
 ## System Architecture
 
+The platform implements two distinct execution patterns optimized for different workloads:
+
 ```mermaid
-graph TB
+graph TD
+    Client[Client Browser]
     subgraph Azure["Azure Function App"]
-        GCI["POST /generateCoverImage<br/>(Render PNG)"]
-        Metrics["POST /metrics<br/>(Ingest Events)"]
-        Analytics["GET /analytics<br/>(Aggregate Data)"]
-        Health["GET /health"]
+        Gateway[API Gateway / Router]
+        
+        subgraph SyncPath["Synchronous Path (Single)"]
+            Single["POST /generateImage<br/>(Immediate Render)"]
+        end
+        
+        subgraph AsyncPath["Asynchronous Path (Bulk)"]
+            Bulk["POST /generateImages<br/>(Queue Job)"]
+            Status["GET /jobStatus/{id}<br/>(Poll Progress)"]
+            Worker["Timer Trigger: processJobs<br/>(Background Worker)"]
+        end
+        
+        Render[Canvas Rendering Engine]
+        Queue[Azure Queue Storage]
     end
 
     subgraph Data["Data Layer"]
         Mongo[(MongoDB)]
     end
 
-    Client --> GCI
-    Client --> Metrics
-    Client --> Analytics
+    Client --> Gateway
+    Gateway --> Single
+    Gateway --> Bulk
+    Gateway --> Status
     
-    Metrics -->|Write| Mongo
-    Analytics -->|Read| Mongo
+    Single --> Render
+    Single --> Mongo
+    
+    Bulk --> Queue
+    Bulk --> Mongo
+    
+    Queue --> Worker
+    Worker --> Render
+    Worker --> Mongo
 ```
 
 ## Functions
 
-### 1. Generate Cover Image
+### 1. Generate Single Image (Synchronous)
 
-**Endpoint:** `POST /api/generateCoverImage`
+**Endpoint:** `POST /api/generateImage`
 
-Generates a PNG based on parameters. Uses `shared/validators.ts` to enforce constraints before rendering.
+Direct, low-latency rendering path for immediate UI preview and single-image downloads.
 
-- **Input:** `ImageParams` (JSON or Query Params)
-- **Output:** `image/png` Buffer
-- **Key Logic:**
-    1. **Validation:**
-        - `width/height`: 1px - 1200px
-        - `title`: Max 40 chars
-        - `subtitle`: Max 70 chars
-        - `colors`: Hex format only
-        - **Contrast:** WCAG AA (ratio ≥ 4.5:1) checked via `getContrastRatio()`
-    2. **Rendering:**
-        - Uses `canvas` to draw background and text.
-        - Dynamic font sizing: Title (9% of height), Subtitle (7% of height).
-    3. **Telemetry:**
-        - Records execution duration (`Server-Timing` header).
-        - Async write to `metrics` collection on success/failure.
+- **Validation:** Enforces WCAG AA contrast (ratio ≥ 4.5:1) and strict schema validation via `shared/validators.ts`.
+- **Output:** Returns an `image/png` buffer directly to the requester.
+- **Telemetry:** Records execution duration and accessibility metrics in MongoDB.
 
-### 2. Metrics Ingestion
+### 2. Bulk Image Generation (Asynchronous)
 
-**Endpoint:** `POST /api/metrics`
+**Endpoint:** `POST /api/generateImages`
 
-Ingests client-side performance and usage data.
+Decoupled entry point for batch processing. Validates the request and persists a "pending" job state before offloading to the queue.
 
-- **Schema:** `MetricPayload` (defined in `shared/metricPayload.ts`)
-- **Persistence:** stored in `metrics` collection via Mongoose.
+- **Workflow:**
+    1. Validates the batch request (array of image configurations).
+    2. Creates a `Job` document in MongoDB with `status: 'pending'`.
+    3. Pushes the `jobId` to Azure Queue Storage.
+    4. Returns the `jobId` immediately to the client.
 
-### 3. Analytics Aggregation
+### 3. Job Status Tracking
 
-**Endpoint:** `GET /api/analytics`
+**Endpoint:** `GET /api/jobStatus/{id}`
 
-Performs on-the-fly aggregation of the `metrics` collection.
+Allows the frontend to poll the current progress of a batch operation.
 
-- **Architecture:** Logic is decomposed into `api/src/lib/analyticsQueries.ts` (Repository Pattern) to separate data access from the HTTP handler.
-- **Pipeline Stages:**
-  - **User Engagement:** Counts `generate_click` vs `download_click`.
-  - **Performance:** Calculates P50/P95/P99 latencies for backend vs client duration.
-  - **Accessibility:** Aggregates WCAG compliance (AAA/AA/FAIL).
-  - **Trends:** Hourly/Daily grouping of usage.
+- **Status States:** `pending` -> `processing` -> `completed` | `failed`.
+- **Response:** Includes the total count, processed count, and an array of generated image URLs (Base64 or Blob storage links).
+
+### 4. Process Jobs (Background Worker)
+
+**Trigger:** Timer Trigger (configurable interval) or Queue Trigger.
+
+The core orchestration engine for batch workloads.
+
+- **Logic:**
+    1. Picks up `jobId` from the queue.
+    2. Updates MongoDB status to `processing`.
+    3. Iteratively calls the `Canvas Rendering Engine` for each item in the batch.
+    4. Updates the job document with progress and generated assets.
+    5. Marks the job as `completed` upon success.
+
+### 5. Analytics & Metrics
+
+**Endpoints:** `POST /api/metrics`, `GET /api/analytics`
+
+- **Ingestion:** Captures P95/P99 latencies, WCAG compliance rates, and feature usage.
+- **Aggregation:** Uses MongoDB aggregation pipelines (`api/src/lib/analyticsQueries.ts`) to provide on-the-fly system health insights.
 
 ## Data Models
 
-The backend relies on shared TypeScript definitions to ensure type safety across the API and Database interactions.
+The backend utilizes shared models from `@cover-craft/shared` to maintain strict contract integrity.
 
-### Metric Payload (Ingress)
-
-*Source: `shared/metricPayload.ts` (via `@cover-craft/shared`)*
+### Job Schema (Persistence)
 
 ```typescript
-export interface MetricPayload {
-    event: "generate_click" | "download_click" | "image_generated";
-    timestamp: string;
-    status: "success" | "error" | "validation_error";
-    
-    // Performance
-    duration?: number;       // Backend execution time (ms)
-    clientDuration?: number; // Total client-side wait time (ms)
-    
-    // Usage Context
-    size?: { width: number; height: number };
-    font?: string;
-    wcagLevel?: "AAA" | "AA" | "FAIL";
-    contrastRatio?: number;
-    titleLength?: number;
-    subtitleLength?: number;
+export interface IJob {
+    jobId: string;
+    status: "pending" | "processing" | "completed" | "failed";
+    totalImages: number;
+    processedImages: number;
+    results: Array<{
+        url: string; // Base64 or Storage Link
+        fileName: string;
+    }>;
+    error?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
-```
-
-### Analytics Result (Egress)
-
-*Source: `shared/analytics.ts` (via `@cover-craft/shared`)*
-
-```typescript
-export type AnalyticsResult = {
-    userEngagement: {
-        uiGenerationAttempts: number;
-        totalSuccessfulGenerations: number;
-        uiUsagePercent: number;
-        apiUsagePercent: number;
-        totalDownloads: number;
-        downloadRate: number;
-        hourlyTrend: Array<{ hour: number; count: number }>;
-    };
-    featurePopularity: {
-        topFonts: Array<{ font: string; count: number }>;
-        topSizes: Array<{ size: string; count: number }>;
-        subtitleUsagePercent: number;
-    };
-    accessibilityCompliance: {
-        wcagDistribution: Array<{ level: string; count: number }>;
-        contrastStats: { avgContrastRatio: number; minContrastRatio: number; maxContrastRatio: number };
-    };
-    performanceMetrics: {
-        backendPerformance: { avgBackendDuration: number; p95BackendDuration: number };
-        clientPerformance: { avgClientDuration: number; p95ClientDuration: number };
-        networkLatency: { avgNetworkLatency: number };
-    };
-};
-```
-
-### Mongoose Schema (Persistence)
-
-*Source: `api/src/lib/mongoose.ts`*
-
-```typescript
-const metricSchema = new mongoose.Schema({
-    event: { type: String, required: true, index: true },
-    timestamp: { type: Date, required: true, index: true },
-    status: { type: String, enum: ["success", "error", "validation_error"] },
-    
-    // Metadata
-    size: { width: Number, height: Number },
-    font: String,
-    titleLength: Number,
-    subtitleLength: Number,
-    
-    // Accessibility & Performance
-    contrastRatio: Number,
-    wcagLevel: String,
-    duration: Number,
-    clientDuration: Number
-});
 ```

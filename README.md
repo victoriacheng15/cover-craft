@@ -1,52 +1,104 @@
 # 🎨 Cover Craft
 
-**A Design-First, Full-Stack Monorepo engineered for Reliability, Accessibility, and Scale.**
+A resilient, design-first image generation platform meticulously engineered to showcase modern serverless architecture, full-stack observability, and automated accessibility standards. It delivers a high-performance engine for creating WCAG-compliant cover images, leveraging a unified TypeScript monorepo and cloud-native telemetry.
 
-Cover Craft is a cloud-native platform that bridges the gap between creative automation and rigorous system design. It demonstrates professional engineering standards by enforcing **WCAG AA accessibility compliance** and **data privacy** through its core architecture. Built as a TypeScript monorepo, it prioritizes engineering velocity and type safety, ensuring a stable and maintainable foundation from inception to launch.
+Built using Next.js and orchestrated on Azure Functions, the platform unifies server-side canvas rendering, real-time analytics, and batch processing into a single, cohesive system. It's designed for operational excellence, demonstrating how to build an accessible, and maintainable application from the ground up while enforcing strict data privacy and stateless reliability.
 
----
+🌐 [Project Portal](https://cover-craft-seven.vercel.app)
 
-## 🚀 Live Site
+📚 [Documentation Hub: Architecture, ADRs & Operations](./docs/README.md)
 
-[View Live Site - Let's Generate Image!](https://cover-craft-seven.vercel.app)
 
----
 
-## 🧭 Engineering Principles
+### Key Milestones
 
-- **🎨 Shift-Left Accessibility:** Automated WCAG AA contrast validation is baked into the generation pipeline, preventing inaccessible output by design.
-- **🔒 Privacy by Design:** A zero-data architecture with no cookies, no tracking, and no persistence, ensuring complete user anonymity.
-- **🖼️ Stateless Reliability:** Server-side rendering via Azure Functions ensures consistent visual fidelity and cross-platform rendering accuracy.
-- **📊 Privacy-First Observability:** Structured, anonymized telemetry provides system insights and performance monitoring without compromising user privacy.
+[View Complete Evolution Log](https://cover-craft-seven.vercel.app/evolution)
 
----
-
-## 📚 Documentation
-
-The project follows a "Documentation as Code" philosophy:
-
-- [**Technical Documentation**](./docs/README.md) — Comprehensive architecture, Architectural Decision Records, and operational guides.
+- **Ch 1: Inception & Architecture** – Migrated to cloud-native serverless architecture with a Design-First methodology.
+- **Ch 2: Foundation & Delivery** – Established Next.js frontend, CI/CD pipelines, and privacy-first analytics.
+- **Ch 3: Launch & Operations** – Hardened production observability and unified full-stack monorepo orchestration.
+- **Ch 4: Design Automation & Color** – Engineered algorithmic color randomization for guaranteed WCAG accessibility.
+- **Ch 5: UX Refinement** – Optimized perceived performance with standardized skeleton loader patterns.
+- **Ch 6: Scale & Asynchronous Architecture** – Architected event-driven batch processing via Azure Queue Storage.
 
 ---
 
-## 🧰 Tech Stacks
+## 🛠️ Tech Stack
 
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6.svg?style=for-the-badge&logo=TypeScript&logoColor=white) ![Next.js](https://img.shields.io/badge/Next.js-000000.svg?style=for-the-badge&logo=nextdotjs&logoColor=white) ![React](https://img.shields.io/badge/React-61DAFB.svg?style=for-the-badge&logo=React&logoColor=black) ![Tailwind%20CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4.svg?style=for-the-badge&logo=Tailwind-CSS&logoColor=white) ![Azure Functions](https://img.shields.io/badge/Azure%20Functions-0078D4.svg?style=for-the-badge&logo=Azure-Functions&logoColor=white) ![MongoDB](https://img.shields.io/badge/MongoDB-47A248.svg?style=for-the-badge&logo=MongoDB&logoColor=white)
+The platform leverages a set of modern technologies for its core functions:
 
----
-
-## ✨ Core Capabilities
-
-- **Dynamic Generation:** Server-side PNG rendering with custom fonts, colors, and presets.
-- **Accessibility First:** Integrated WCAG AA contrast validation (ratio ≥ 4.5:1) enforcing "Shift-Left" accessibility.
-- **Live Preview:** Real-time CSS-driven preview synchronized with backend Canvas logic.
-- **Analytics Dashboard:** On-the-fly MongoDB aggregation for P95/P99 performance metrics and usage trends.
-- **Type Safety:** Shared validation and payload logic across the entire stack.
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6.svg?style=for-the-badge&logo=TypeScript&logoColor=white) ![Next.js](https://img.shields.io/badge/Next.js-000000.svg?style=for-the-badge&logo=nextdotjs&logoColor=white) ![React](https://img.shields.io/badge/React-61DAFB.svg?style=for-the-badge&logo=React&logoColor=black) ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4.svg?style=for-the-badge&logo=Tailwind-CSS&logoColor=white) ![Azure Functions](https://img.shields.io/badge/Azure_Functions-0078D4?style=for-the-badge&logo=azure-functions&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-5FA04E.svg?style=for-the-badge&logo=nodedotjs&logoColor=white) ![MongoDB](https://img.shields.io/badge/MongoDB-47A248.svg?style=for-the-badge&logo=MongoDB&logoColor=white) ![Vitest](https://img.shields.io/badge/Vitest-00FF74.svg?style=for-the-badge&logo=Vitest&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?style=for-the-badge&logo=GitHub-Actions&logoColor=white)
 
 ---
 
-## 🚀 Ready to Explore?
+## 🏗️ System Architecture
 
-Don't just take my word for it—interact with the real data.
+The platform implements two distinct execution patterns for image generation, optimized for performance and user experience:
 
-👉 **[Launch Cover Craft](https://cover-craft-seven.vercel.app)**
+1. **Single Generation (Synchronous):** Direct, low-latency rendering path for immediate UI feedback.
+2. **Bulk Generation (Asynchronous):** Decoupled, event-driven workflow using Azure Queue Storage for high-concurrency batch processing.
+
+### Architecture Overview
+
+```mermaid
+graph TD
+    User([User])
+    subgraph "Frontend (Next.js)"
+        UI[React UI]
+    end
+
+    subgraph "Backend (Azure Functions)"
+        Gateway[API Gateway]
+        Single[Generate Single Image]
+        Bulk[Generate Images]
+        Render[Canvas Rendering Engine]
+        Queue[Azure Queue Storage]
+        Worker[Process Jobs]
+    end
+
+    DB[(MongoDB)]
+
+    User <--> UI
+    UI <--> Gateway
+
+    %% Path A: Single Generation
+    Gateway -- "Sync" --> Single
+    Single --> Render
+    Single --> DB
+
+    %% Path B: Bulk Generation
+    Gateway -- "Async" --> Bulk
+    Bulk --> Queue
+    Queue --> Worker
+    Worker --> Render
+    Worker --> DB
+```
+
+---
+
+## 🚀 Key Achievements & Capabilities
+
+### ☸️ Platform Engineering & Infrastructure
+
+- **Elastic Cloud Ingress:** Deployed an elastic backend on Azure Functions, ensuring zero-cost idling and rapid scaling for bursty generation workloads.
+- **Monorepo Orchestration:** Unified frontend, backend, and shared logic into a single TypeScript monorepo, standardizing the build toolchain and testing (Vitest) across the stack.
+- **Zero-Persistence Privacy:** Implemented a zero-persistence architecture for user data, utilizing stateless rendering pipelines to ensure complete anonymity and GDPR alignment.
+
+### 🏗️ Software Architecture & Design
+
+- **Shift-Left Accessibility Engine:** Engineered a WCAG AA contrast validation engine directly into the generation pipeline, preventing the creation of inaccessible content at the source.
+- **Event-Driven Batch Workflow:** Built a resilient batch generation workflow using Azure Queue Storage and background workers (Process Jobs) to handle high-concurrency requests asynchronously.
+- **Contract-Driven Development:** Leveraged shared validation schemas (Zod) to enforce strict type safety and request validation across the entire stack, ensuring 100% API contract integrity.
+
+### 🔭 Observability & Performance
+
+- **High-Fidelity Telemetry:** Standardized telemetry ingestion into MongoDB, providing on-the-fly aggregation for P95/P99 rendering performance and usage trends.
+- **Synthetic Monitoring & Health:** Implemented comprehensive health check endpoints and synthetic monitoring to ensure high availability and proactive failure detection of the serverless stack.
+- **Agentic Operational Readiness:** Designed the system to be AI-agent ready, with structured logging and clear domain isolation to facilitate automated maintenance and troubleshooting.
+
+---
+
+## 📋 Operational Governance
+
+- **Decision Framework:** Adopted Architectural Decision Records (ADRs) to document system evolution and manage technical debt.
+- **CI/CD Excellence:** Automated quality gates for linting, type-checking, and unit testing via GitHub Actions, ensuring every commit meets production standards.
