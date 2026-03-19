@@ -2,6 +2,7 @@
  * Utility for generating cover images via the backend API
  */
 import type { ImageParams, ValidationError } from "@cover-craft/shared";
+
 export type { ImageParams };
 
 export type ApiErrorResponse = {

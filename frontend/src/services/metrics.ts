@@ -6,13 +6,14 @@ import {
 	type MetricStatus,
 	type WcagLevel,
 } from "@cover-craft/shared";
+
 export {
 	DOWNLOAD_CLICK_EVENT,
+	type EventType,
 	GENERATE_CLICK_EVENT,
+	type MetricPayload,
 	type MetricStatus,
 	type WcagLevel,
-	type EventType,
-	type MetricPayload,
 };
 
 /**

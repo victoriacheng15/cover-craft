@@ -1,28 +1,37 @@
+"use client";
+
 import type { ImageParams } from "@cover-craft/shared";
 import { IMAGE_CONFIG } from "@cover-craft/shared";
-import { Canvas } from "canvas";
+import { useEffect, useRef } from "react";
 
-// Generate PNG image
-export async function generatePNG(params: ImageParams): Promise<Buffer> {
-	const canvas = new Canvas(params.width, params.height);
-	const ctx = canvas.getContext("2d");
+interface PreviewCanvasProps {
+	params: ImageParams;
+	className?: string;
+}
 
-	if (!ctx) {
-		throw new Error("Failed to get 2d context from canvas");
-	}
+export function PreviewCanvas({ params, className }: PreviewCanvasProps) {
+	const canvasRef = useRef<HTMLCanvasElement>(null);
 
-	try {
+	useEffect(() => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+
+		const ctx = canvas.getContext("2d");
+		if (!ctx) return;
+
+		// Clear canvas
+		ctx.clearRect(0, 0, params.width, params.height);
+
 		// Draw background
 		ctx.fillStyle = params.backgroundColor;
 		ctx.fillRect(0, 0, params.width, params.height);
 
-		// Calculate text positioning based on canvas dimensions
+		// Calculate text positioning (same logic as backend)
 		const padding = IMAGE_CONFIG.dimensions.padding;
 		const maxTextWidth = params.width - padding * 2;
 		const centerX = params.width / 2;
 		const centerY = params.height / 2;
 
-		// Calculate font sizes based on the larger dimension
 		const scaleBase = Math.max(params.width, params.height);
 		const headingFontSize = Math.max(
 			IMAGE_CONFIG.typography.headingMinSize,
@@ -35,29 +44,35 @@ export async function generatePNG(params: ImageParams): Promise<Buffer> {
 		const lineSpacing =
 			headingFontSize * IMAGE_CONFIG.typography.lineSpacingMultiplier;
 
-		// Draw heading with bold font weight
+		// Draw heading
 		ctx.fillStyle = params.textColor;
 		ctx.font = `bold ${headingFontSize}px "${params.font}"`;
 		ctx.textAlign = "center";
 		ctx.textBaseline = "middle";
 
-		// If subtitle exists, position title above center; otherwise, center vertically
 		const headingY = params.subtitle ? centerY - lineSpacing / 2 : centerY;
-		ctx.fillText(params.title, centerX, headingY, maxTextWidth);
+		ctx.fillText(params.title || "Your Title", centerX, headingY, maxTextWidth);
 
-		// Draw subheading with regular font weight
+		// Draw subheading
 		if (params.subtitle) {
 			ctx.font = `normal ${subheadingFontSize}px "${params.font}"`;
-			ctx.fillStyle = params.textColor;
 			const subheadingY = centerY + lineSpacing / 2;
 			ctx.fillText(params.subtitle, centerX, subheadingY, maxTextWidth);
 		}
+	}, [params]);
 
-		// Convert canvas to PNG buffer
-		return canvas.toBuffer("image/png");
-	} catch (error) {
-		throw new Error(
-			`Canvas manipulation failed: ${error instanceof Error ? error.message : String(error)}`,
-		);
-	}
+	return (
+		<canvas
+			ref={canvasRef}
+			width={params.width}
+			height={params.height}
+			className={className}
+			style={{
+				maxWidth: "100%",
+				height: "auto",
+				display: "block",
+				borderRadius: "inherit",
+			}}
+		/>
+	);
 }
