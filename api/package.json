@@ -17,7 +17,7 @@
 		"@azure/functions": "^4.11.2",
 		"@azure/storage-queue": "^12.29.0",
 		"@cover-craft/shared": "file:../shared",
-		"canvas": "^3.2.0",
+		"canvas": "^3.2.2",
 		"mongoose": "^9.3.0"
 	},
 	"devDependencies": {
