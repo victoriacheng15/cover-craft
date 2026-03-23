@@ -36,7 +36,7 @@
 		"start:api": "mkdir -p __azurite_db__ && azurite --silent --location ./__azurite_db__ & npm run build:shared && npm run start --workspace=api"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.7",
+		"@biomejs/biome": "2.4.8",
 		"@cover-craft/shared": "./shared",
 		"api": "./api",
 		"azurite": "^3.35.0",
