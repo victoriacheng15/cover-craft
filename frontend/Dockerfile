@@ -3,18 +3,20 @@ FROM node:24-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 make g++ pkgconfig pixman-dev cairo-dev pango-dev libjpeg-turbo-dev giflib-dev
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ecaf1593a5976ef24#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
 COPY shared/package.json ./shared/
 COPY frontend/package.json ./frontend/
+COPY api/package.json ./api/
 
 # Clean install of frontend workspace dependencies
-# Note: We install ALL dependencies here (including dev) because Next.js build
-# requires TypeScript, Tailwind, and PostCSS to compile the application.
-RUN npm ci -w frontend --include-workspace-root
+# Note: We use --ignore-scripts to skip the compilation of native modules (like 'canvas')
+# that are not required for the frontend build but are present in the monorepo lockfile.
+RUN npm ci -w frontend --include-workspace-root --ignore-scripts
 
 # Rebuild the source code only when needed
 FROM base AS builder
