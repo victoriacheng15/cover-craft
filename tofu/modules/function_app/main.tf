@@ -38,6 +38,11 @@ variable "app_insights_instrumentation_key" {
   type = string
 }
 
+variable "tags" {
+  type    = map(string)
+  default = {}
+}
+
 # 1. Storage Container for Flex Consumption Deployment
 resource "azurerm_storage_container" "deploy" {
   name                 = "app-package"
@@ -52,6 +57,7 @@ resource "azurerm_service_plan" "flex_plan" {
   location            = var.location
   os_type             = "Linux"
   sku_name            = "FC1"
+  tags                = var.tags
 }
 
 # 3. Flex Consumption Function App
