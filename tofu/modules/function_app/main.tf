@@ -83,6 +83,5 @@ resource "azurerm_function_app_flex_consumption" "api" {
     "MONGODB_URI"                           = var.mongodb_uri
     "APPINSIGHTS_INSTRUMENTATIONKEY"        = var.app_insights_instrumentation_key
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = var.app_insights_connection_string
-    "SCM_DO_BUILD_DURING_DEPLOYMENT"        = "false"
   }
 }
