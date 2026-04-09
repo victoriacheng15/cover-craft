@@ -8,38 +8,29 @@ We use path-based triggering to ensure pipelines only run when relevant files ar
 
 | Workflow | File | Trigger | Purpose |
 | :--- | :--- | :--- | :--- |
-| **CI - Lint & Test** | `ci.yml` | Push/PR to `api/`, `frontend/`, `shared/` | Runs global linting and executes per-workspace test suites (`npm test --workspace=frontend`, `test:api`, etc.). Blocks merge on failure. |
-| **Frontend Deployment** | *Vercel Managed* | Push to `main` | Automatic deployment via Vercel's GitHub integration. |
-| **API Deployment** | `azure_function.yml` | Push to `main` (only `api/**`) | Builds, tests, prunes dev dependencies, and deploys the API to Azure Functions. |
+| **Infrastructure & Code Deployment** | `infra-deploy.yml` | Push to `main` | Orchestrates the entire deployment lifecycle: applies OpenTofu changes, builds and zip-deploys both the Next.js frontend and the Node.js 22 API to Azure. |
+| **CI - Lint & Test** | `ci.yml` | PR to `main` | Runs global linting and executes per-workspace test suites (`npm test --workspace=frontend`, `test:api`, etc.). Blocks merge on failure. |
 | **Markdown Linter** | `markdownlint.yml` | Push/PR to `**/*.md` | Validates Markdown formatting using a custom action. |
 
 ## Deployment Configuration
 
-### API (Azure Functions)
+### Platform Infrastructure (Azure)
 
-Configured via GitHub Actions and Azure Portal.
-
-| Variable | Value | Description |
-| :--- | :--- | :--- |
-| `AZURE_FUNCTIONAPP_NAME` | `cover-craft` | Name of the Function App resource. |
-| `NODE_VERSION` | `24.x` | Node.js runtime version for build and production. |
-
-### Frontend (Vercel)
-
-Managed via the Vercel Dashboard with automatic CD.
+Managed via OpenTofu (IaC) and orchestrated in Canada Central.
 
 | Setting | Value | Description |
 | :--- | :--- | :--- |
-| **Framework Preset** | `Next.js` | Optimized build configuration for App Router. |
-| **Build Command** | `npm run build` | Compiles the Next.js application. |
-| **Output Directory** | `.next` | Default Next.js build output. |
+| **Infrastructure Engine** | `OpenTofu` | Codified resource management via `.tf` files. |
+| **API Plan** | `Flex Consumption (FC1)` | High-performance serverless Node.js 22 runtime. |
+| **Frontend Plan** | `App Service (F1)` | Zero-cost Linux hosting for the Next.js standalone UI. |
+| **Primary Region** | `Canada Central` | Targeted regional deployment for performance and compliance. |
 
-## Secrets Management
+### Secrets Management
 
 | Secret Name | Required By | Description |
 | :--- | :--- | :--- |
-| `AZURE_CREDENTIALS` | `azure_function.yml` | Service principal credentials for `azure/login`. |
-| `MONGODB_URI` | `api` (Environment) | Connection string for MongoDB (configured in Azure & Vercel). |
+| `AZURE_CREDENTIALS` | `infra-deploy.yml` | Service principal credentials for `azure/login` and Tofu `ARM_*` auth. |
+| `MONGODB_URI` | `infra-deploy.yml` | Connection string for MongoDB (passed to Tofu as a variable). |
 
 ## Pipeline Architecture
 
@@ -56,12 +47,13 @@ graph LR
 
 ### 2. Continuous Deployment
 
-The project uses a multi-cloud strategy for optimal performance and cost.
+The entire platform is orchestrated as a single, cohesive unit on Azure.
 
 ```mermaid
-graph LR
-    Main([Merge to Main]) --> Vercel[Vercel: Frontend UI]
-    Main --> Azure[Azure: Backend API]
-    Vercel --> Live((Live App))
-    Azure --> Live
+graph TD
+    Main([Merge to Main]) --> Tofu[OpenTofu: Apply Infra]
+    Tofu --> DeployAPI[Zip Deploy: API]
+    Tofu --> DeployUI[Zip Deploy: Frontend]
+    DeployAPI --> Live((Live App))
+    DeployUI --> Live
 ```

@@ -1,10 +1,12 @@
 # Frontend Architecture
 
-The frontend is a **Next.js (App Router)** application that provides a real-time editing experience for single images and a high-throughput batch generation interface for bulk creation. It uses a **Proxy Layer** to communicate with the Azure Functions backend, ensuring the client remains decoupled from the serverless infrastructure.
+The frontend is a **Next.js (App Router)** application that provides a real-time editing experience for single images and a high-throughput batch generation interface for bulk creation. It is hosted on **Azure Web Apps (Linux F1 Tier)** and uses a **Proxy Layer** to communicate with the Azure Functions backend, ensuring the client remains decoupled from the serverless infrastructure.
 
 ## Core Tech Stack
 
 - **Framework:** Next.js 15+ (App Router)
+- **Hosting:** Azure Web Apps (Linux)
+- **Infrastructure:** OpenTofu / Terraform (IaC)
 - **Styling:** Tailwind CSS + CSS Variables (for dynamic font injection)
 - **State:** React Hooks (`useState`, `useMemo`, `useCallback`)
 - **Metrics:** Recharts (for analytics visualization)

@@ -1,10 +1,10 @@
 # 🎨 Cover Craft
 
-A resilient, design-first image generation platform meticulously engineered to showcase modern serverless architecture, full-stack observability, and automated accessibility standards. It delivers a high-performance engine for creating WCAG-compliant cover images, leveraging a unified TypeScript monorepo and cloud-native telemetry.
+A resilient, design-first image generation platform meticulously engineered to showcase modern serverless architecture, full-stack observability, and automated accessibility standards. It delivers a high-performance engine for creating WCAG-compliant cover images, leveraging a unified TypeScript monorepo and cloud-native telemetry with automated deployment to Azure Cloud.
 
 Built using Next.js and orchestrated on Azure Functions, the platform unifies server-side canvas rendering, real-time analytics, and batch processing into a single, cohesive system. It's designed for operational excellence, demonstrating how to build an accessible, and maintainable application from the ground up while enforcing strict data privacy and stateless reliability.
 
-🌐 [Project Portal](https://cover-craft-seven.vercel.app)
+🌐 [Project Portal](https://cover-craft-ui.azurewebsites.net/)
 
 📚 [Documentation Hub: Architecture, ADRs & Operations](./docs/README.md)
 
@@ -12,7 +12,7 @@ Built using Next.js and orchestrated on Azure Functions, the platform unifies se
 
 ### Key Milestones
 
-[View Complete Evolution Log](https://cover-craft-seven.vercel.app/evolution)
+[View Complete Evolution Log](https://cover-craft-ui.azurewebsites.net/evolution)
 
 - **Ch 1: Inception & Architecture** – Migrated to cloud-native serverless architecture with a Design-First methodology.
 - **Ch 2: Foundation & Delivery** – Established Next.js frontend, CI/CD pipelines, and privacy-first analytics.
@@ -20,6 +20,7 @@ Built using Next.js and orchestrated on Azure Functions, the platform unifies se
 - **Ch 4: Design Automation & Color** – Engineered algorithmic color randomization for guaranteed WCAG accessibility.
 - **Ch 5: UX Refinement** – Optimized perceived performance with standardized skeleton loader patterns.
 - **Ch 6: Scale & Asynchronous Architecture** – Architected event-driven batch processing via Azure Queue Storage.
+- **Ch 7: Infrastructure as Code** – Standardized platform management using Terraform (OpenTofu) for automated Azure deployments.
 
 ---
 
@@ -27,7 +28,7 @@ Built using Next.js and orchestrated on Azure Functions, the platform unifies se
 
 The platform leverages a set of modern technologies for its core functions:
 
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6.svg?style=for-the-badge&logo=TypeScript&logoColor=white) ![Next.js](https://img.shields.io/badge/Next.js-000000.svg?style=for-the-badge&logo=nextdotjs&logoColor=white) ![React](https://img.shields.io/badge/React-61DAFB.svg?style=for-the-badge&logo=React&logoColor=black) ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4.svg?style=for-the-badge&logo=Tailwind-CSS&logoColor=white) ![Azure Functions](https://img.shields.io/badge/Azure_Functions-0078D4?style=for-the-badge&logo=azure-functions&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-5FA04E.svg?style=for-the-badge&logo=nodedotjs&logoColor=white) ![MongoDB](https://img.shields.io/badge/MongoDB-47A248.svg?style=for-the-badge&logo=MongoDB&logoColor=white) ![Vitest](https://img.shields.io/badge/Vitest-00FF74.svg?style=for-the-badge&logo=Vitest&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?style=for-the-badge&logo=GitHub-Actions&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6.svg?style=for-the-badge&logo=TypeScript&logoColor=white) ![React](https://img.shields.io/badge/React-61DAFB.svg?style=for-the-badge&logo=React&logoColor=black) ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4.svg?style=for-the-badge&logo=Tailwind-CSS&logoColor=white) ![Azure Functions](https://img.shields.io/badge/Azure_Functions-0078D4?style=for-the-badge&logo=azure-functions&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-5FA04E.svg?style=for-the-badge&logo=nodedotjs&logoColor=white) ![MongoDB](https://img.shields.io/badge/MongoDB-47A248.svg?style=for-the-badge&logo=MongoDB&logoColor=white) ![Vitest](https://img.shields.io/badge/Vitest-00FF74.svg?style=for-the-badge&logo=Vitest&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?style=for-the-badge&logo=GitHub-Actions&logoColor=white) ![Terraform](https://img.shields.io/badge/Terraform-844FBA.svg?style=for-the-badge&logo=Terraform&logoColor=white)
 
 ---
 
@@ -80,6 +81,7 @@ graph TD
 
 ### ☸️ Platform Engineering & Infrastructure
 
+- **Automated IaC Deployment:** Standardized the entire platform infrastructure using Terraform (OpenTofu), orchestrating automated deployments to Azure Cloud via a resilient CI/CD pipeline.
 - **Elastic Cloud Ingress:** Deployed an elastic backend on Azure Functions, ensuring zero-cost idling and rapid scaling for bursty generation workloads.
 - **Monorepo Orchestration:** Unified frontend, backend, and shared logic into a single TypeScript monorepo, standardizing the build toolchain and testing (Vitest) across the stack.
 - **Zero-Persistence Privacy:** Implemented a zero-persistence architecture for user data, utilizing stateless rendering pipelines to ensure complete anonymity and GDPR alignment.

@@ -1,10 +1,12 @@
 # Backend Architecture
 
-The backend is a serverless API built on Azure Functions (v4, Node.js), responsible for high-fidelity image generation, metrics collection, and asynchronous batch processing. It leverages a dual-path execution model to balance immediate UI feedback with scalable bulk operations.
+The backend is a serverless API built on Azure Functions (v4, Node.js 22), responsible for high-fidelity image generation, metrics collection, and asynchronous batch processing. It leverages a dual-path execution model to balance immediate UI feedback with scalable bulk operations, hosted on the **Flex Consumption (`FC1`)** plan for optimal performance and regional stability.
 
 ## Core Tech Stack
 
-- **Runtime:** Azure Functions (Node.js 20+)
+- **Runtime:** Azure Functions (Node.js 22)
+- **Hosting:** Azure Functions Flex Consumption (`FC1`)
+- **Infrastructure:** OpenTofu / Terraform (IaC)
 - **Rendering:** `canvas` (Server-side implementation of HTML5 Canvas)
 - **Database:** MongoDB (via `mongoose`)
 - **Messaging:** Azure Queue Storage (for asynchronous job orchestration)

@@ -156,4 +156,17 @@ export const chapters: Chapter[] = [
 			},
 		],
 	},
+	{
+		title: "Infrastructure as Code",
+		intro:
+			"Standardized infrastructure management using Terraform (OpenTofu) to achieve full environmental sovereignty. Transitioned to a codified architecture to ensure deterministic deployments and eliminate configuration drift.",
+		timeline: [
+			{
+				date: "2026-04-09",
+				title: "Terraform IaC Orchestration",
+				description:
+					"Architected a codified platform using Terraform, replacing manual or provider-abstracted deployments with a deterministic Infrastructure-as-Code (IaC) model. This structural upgrade ensures a stable deployment lifecycle and establishes a resilient, multi-stage CI/CD pipeline for the entire platform.",
+			},
+		],
+	},
 ];
