@@ -58,5 +58,6 @@ resource "azurerm_linux_function_app" "api" {
     "MONGODB_URI"                           = var.mongodb_uri
     "APPINSIGHTS_INSTRUMENTATIONKEY"        = var.app_insights_instrumentation_key
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = var.app_insights_connection_string
+    "WEBSITE_RUN_FROM_PACKAGE"              = "1"
   }
 }
