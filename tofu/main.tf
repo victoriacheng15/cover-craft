@@ -14,10 +14,6 @@ terraform {
   }
 }
 
-provider "azurerm" {
-  features {}
-}
-
 # Variables
 variable "resource_group_name" {
   type    = string
@@ -39,6 +35,16 @@ variable "mongodb_uri" {
   sensitive = true
 }
 
+locals {
+  tags = {
+    project = var.app_name
+  }
+}
+
+provider "azurerm" {
+  features {}
+}
+
 # Data source for existing resource group (Frontend)
 data "azurerm_resource_group" "main" {
   name = var.resource_group_name
@@ -48,6 +54,7 @@ data "azurerm_resource_group" "main" {
 resource "azurerm_resource_group" "api" {
   name     = "${var.resource_group_name}-api"
   location = var.location
+  tags     = local.tags
 }
 
 # 1. Storage Account Module
@@ -56,6 +63,7 @@ module "storage" {
   resource_group_name = data.azurerm_resource_group.main.name
   location            = var.location
   app_name            = var.app_name
+  tags                = local.tags
 }
 
 # 2. Application Insights Module
@@ -64,6 +72,7 @@ module "application_insights" {
   resource_group_name = data.azurerm_resource_group.main.name
   location            = var.location
   app_name            = var.app_name
+  tags                = local.tags
 }
 
 # 3. App Service Module (Plan & Frontend)
@@ -72,6 +81,7 @@ module "app_service" {
   resource_group_name = data.azurerm_resource_group.main.name
   location            = var.location
   app_name            = var.app_name
+  tags                = local.tags
 }
 
 # 4. Function App Module (API)
@@ -87,4 +97,5 @@ module "function_app" {
   mongodb_uri                      = var.mongodb_uri
   app_insights_connection_string   = module.application_insights.connection_string
   app_insights_instrumentation_key = module.application_insights.instrumentation_key
+  tags                             = local.tags
 }
