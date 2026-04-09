@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.0"
+      version = "~> 4.21"
     }
   }
   backend "azurerm" {
@@ -80,8 +80,10 @@ module "function_app" {
   resource_group_name              = azurerm_resource_group.api.name
   location                         = var.location
   app_name                         = var.app_name
+  storage_account_id               = module.storage.id
   storage_account_name             = module.storage.name
   storage_account_access_key       = module.storage.primary_access_key
+  storage_container_endpoint       = module.storage.primary_blob_endpoint
   mongodb_uri                      = var.mongodb_uri
   app_insights_connection_string   = module.application_insights.connection_string
   app_insights_instrumentation_key = module.application_insights.instrumentation_key
