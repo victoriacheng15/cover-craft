@@ -1,45 +1,113 @@
-# 🎨 Cover Craft
+# Cover Craft
 
-A resilient, design-first image generation platform meticulously engineered to showcase modern serverless architecture, full-stack observability, and automated accessibility standards. It delivers a high-performance engine for creating WCAG-compliant cover images, leveraging a unified TypeScript monorepo and cloud-native telemetry with automated deployment to Azure Cloud.
+## What is this?
 
-Built using Next.js and orchestrated on Azure Functions, the platform unifies server-side canvas rendering, real-time analytics, and batch processing into a single, cohesive system. It's designed for operational excellence, demonstrating how to build an accessible, and maintainable application from the ground up while enforcing strict data privacy and stateless reliability.
+This is a serverless image generation platform built on Azure.
 
-🌐 [Project Portal](https://cover-craft-ui.azurewebsites.net/)
+It demonstrates how a real full-stack / cloud system would:
+- generate images synchronously and asynchronously
+- scale automatically using serverless architecture
+- enforce accessibility (WCAG) at the system level
+- process batch workloads using event-driven pipelines
+- deploy infrastructure using Infrastructure as Code
 
-📚 [Documentation Hub: Architecture, ADRs & Operations](./docs/README.md)
+The goal is to show how to build a scalable, accessible, and production-ready application using modern cloud architecture.
 
+🌐 [Project Portal](https://cover-craft-ui.azurewebsites.net/)  
+📚 [Full Documentation](./docs/README.md)
 
+---
 
-### Key Milestones
+## 🔍 What I Built (Quick Proof)
 
-[View Complete Evolution Log](https://cover-craft-ui.azurewebsites.net/evolution)
+- Serverless backend using Azure Functions (auto-scaling)
+- Dual execution model: synchronous + asynchronous processing
+- Event-driven batch processing using Azure Queue Storage
+- Canvas-based image rendering engine
+- WCAG AA accessibility validation built into generation logic
+- Full-stack TypeScript monorepo (frontend + backend)
+- CI/CD pipelines using GitHub Actions
+- Infrastructure as Code using Terraform (OpenTofu)
+- Real-time analytics and performance tracking
+- Stateless, privacy-first architecture (no user data stored)
 
-- **Ch 1: Inception & Architecture** – Migrated to cloud-native serverless architecture with a Design-First methodology.
-- **Ch 2: Foundation & Delivery** – Established Next.js frontend, CI/CD pipelines, and privacy-first analytics.
-- **Ch 3: Launch & Operations** – Hardened production observability and unified full-stack monorepo orchestration.
-- **Ch 4: Design Automation & Color** – Engineered algorithmic color randomization for guaranteed WCAG accessibility.
-- **Ch 5: UX Refinement** – Optimized perceived performance with standardized skeleton loader patterns.
-- **Ch 6: Scale & Asynchronous Architecture** – Architected event-driven batch processing via Azure Queue Storage.
-- **Ch 7: Infrastructure as Code** – Standardized platform management using Terraform (OpenTofu) for automated Azure deployments.
+---
+
+## 📦 Platform Projects
+
+This system is built as a collection of smaller full-stack and cloud projects:
+
+1. **Serverless API Platform**
+   - Azure Functions handling scalable backend workloads
+
+2. **Image Rendering Engine**
+   - Canvas-based dynamic image generation system
+
+3. **Async Batch Processing System**
+   - Queue-based architecture for high-concurrency workloads
+
+4. **Accessibility Engine**
+   - WCAG AA validation integrated into rendering pipeline
+
+5. **Frontend Application**
+   - Next.js UI with real-time feedback and UX optimization
+
+6. **CI/CD Pipeline**
+   - Automated build, test, and deployment using GitHub Actions
+
+7. **Infrastructure as Code**
+   - Terraform (OpenTofu) managing Azure resources
+
+8. **Analytics & Telemetry**
+   - Performance tracking (P95/P99) and usage insights
+
+9. **Validation Layer**
+   - Zod schema validation across frontend and backend
+
+10. **Monorepo Architecture**
+   - Shared types and logic across full-stack system
+
+---
+
+## 🧠 Problems I Solved
+
+- Slow image generation → added async queue-based processing
+- Poor scalability → used serverless functions for auto-scaling
+- Accessibility issues → enforced WCAG rules at generation time
+- Inconsistent validation → unified schemas across frontend/backend
+- Complex deployments → automated with CI/CD + IaC
+- Data privacy concerns → designed stateless, zero-persistence system
 
 ---
 
 ## 🛠️ Tech Stack
 
-The platform leverages a set of modern technologies for its core functions:
+**Frontend**
+- Next.js, React, Tailwind CSS
 
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6.svg?style=for-the-badge&logo=TypeScript&logoColor=white) ![React](https://img.shields.io/badge/React-61DAFB.svg?style=for-the-badge&logo=React&logoColor=black) ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4.svg?style=for-the-badge&logo=Tailwind-CSS&logoColor=white) ![Azure Functions](https://img.shields.io/badge/Azure_Functions-0078D4?style=for-the-badge&logo=azure-functions&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-5FA04E.svg?style=for-the-badge&logo=nodedotjs&logoColor=white) ![MongoDB](https://img.shields.io/badge/MongoDB-47A248.svg?style=for-the-badge&logo=MongoDB&logoColor=white) ![Vitest](https://img.shields.io/badge/Vitest-00FF74.svg?style=for-the-badge&logo=Vitest&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?style=for-the-badge&logo=GitHub-Actions&logoColor=white) ![Terraform](https://img.shields.io/badge/Terraform-844FBA.svg?style=for-the-badge&logo=Terraform&logoColor=white)
+**Backend**
+- Azure Functions (Node.js / TypeScript)
+- Canvas API for rendering
+
+**Cloud & Infrastructure**
+- Azure Queue Storage
+- MongoDB
+- Terraform (OpenTofu)
+
+**DevOps**
+- GitHub Actions (CI/CD)
+- Monorepo architecture
+
+**Testing**
+- Vitest
 
 ---
 
 ## 🏗️ System Architecture
 
-The platform implements two distinct execution patterns for image generation, optimized for performance and user experience:
-
-1. **Single Generation (Synchronous):** Direct, low-latency rendering path for immediate UI feedback.
-2. **Bulk Generation (Asynchronous):** Decoupled, event-driven workflow using Azure Queue Storage for high-concurrency batch processing.
-
-### Architecture Overview
+The platform supports two execution paths:
+- synchronous (fast response)
+- asynchronous (batch processing)
 
 ```mermaid
 graph TD
@@ -62,12 +130,10 @@ graph TD
     User <--> UI
     UI <--> Gateway
 
-    %% Path A: Single Generation
     Gateway -- "Sync" --> Single
     Single --> Render
     Single --> DB
 
-    %% Path B: Bulk Generation
     Gateway -- "Async" --> Bulk
     Bulk --> Queue
     Queue --> Worker
@@ -77,30 +143,82 @@ graph TD
 
 ---
 
-## 🚀 Key Achievements & Capabilities
+## 🔎 Example: Request Flow
 
-### ☸️ Platform Engineering & Infrastructure
+### Single Image (Fast Path)
+- User submits request
+- API generates image immediately
+- Response returned in real-time
 
-- **Automated IaC Deployment:** Standardized the entire platform infrastructure using Terraform (OpenTofu), orchestrating automated deployments to Azure Cloud via a resilient CI/CD pipeline.
-- **Elastic Cloud Ingress:** Deployed an elastic backend on Azure Functions, ensuring zero-cost idling and rapid scaling for bursty generation workloads.
-- **Monorepo Orchestration:** Unified frontend, backend, and shared logic into a single TypeScript monorepo, standardizing the build toolchain and testing (Vitest) across the stack.
-- **Zero-Persistence Privacy:** Implemented a zero-persistence architecture for user data, utilizing stateless rendering pipelines to ensure complete anonymity and GDPR alignment.
-
-### 🏗️ Software Architecture & Design
-
-- **Shift-Left Accessibility Engine:** Engineered a WCAG AA contrast validation engine directly into the generation pipeline, preventing the creation of inaccessible content at the source.
-- **Event-Driven Batch Workflow:** Built a resilient batch generation workflow using Azure Queue Storage and background workers (Process Jobs) to handle high-concurrency requests asynchronously.
-- **Contract-Driven Development:** Leveraged shared validation schemas (Zod) to enforce strict type safety and request validation across the entire stack, ensuring 100% API contract integrity.
-
-### 🔭 Observability & Performance
-
-- **High-Fidelity Telemetry:** Standardized telemetry ingestion into MongoDB, providing on-the-fly aggregation for P95/P99 rendering performance and usage trends.
-- **Synthetic Monitoring & Health:** Implemented comprehensive health check endpoints and synthetic monitoring to ensure high availability and proactive failure detection of the serverless stack.
-- **Agentic Operational Readiness:** Designed the system to be AI-agent ready, with structured logging and clear domain isolation to facilitate automated maintenance and troubleshooting.
+### Bulk Image (Scalable Path)
+- User submits batch request
+- Jobs pushed to queue
+- Worker processes images asynchronously
 
 ---
 
-## 📋 Operational Governance
+## ⚠️ Challenges
 
-- **Decision Framework:** Adopted Architectural Decision Records (ADRs) to document system evolution and manage technical debt.
-- **CI/CD Excellence:** Automated quality gates for linting, type-checking, and unit testing via GitHub Actions, ensuring every commit meets production standards.
+One challenge was handling large batch image generation efficiently.
+
+- **Problem:** High load caused slow response times
+- **Cause:** synchronous processing bottleneck
+- **Fix:** moved bulk requests to queue-based async processing using Azure Queue Storage
+
+---
+
+## 🚀 Project Evolution
+
+This platform evolved through several stages:
+
+- **Architecture Setup:** Designed serverless-first system
+- **Frontend + Backend:** Built full-stack Next.js + Functions
+- **Accessibility Engine:** Added WCAG validation
+- **Performance Optimization:** Improved UX with async processing
+- **Scaling:** Introduced queue-based batch system
+- **Infrastructure:** Automated deployment with Terraform
+
+👉 [View Full Evolution](https://cover-craft-ui.azurewebsites.net/evolution)
+
+---
+
+## 🚀 Getting Started
+
+<details>
+<summary><b>Local Setup</b></summary>
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Run frontend
+
+```bash
+npm run dev
+```
+
+### Deploy infrastructure
+
+```bash
+cd infra
+tofu init
+tofu apply
+```
+
+</details>
+
+---
+
+## 📌 Summary
+
+This project demonstrates how to build a scalable, production-ready application using:
+
+- Serverless architecture (Azure Functions)
+- Event-driven processing (queues)
+- Accessibility-first design (WCAG)
+- Infrastructure as Code
+- Full-stack TypeScript system
+
+It reflects how modern cloud applications are built and scaled in real environments.
