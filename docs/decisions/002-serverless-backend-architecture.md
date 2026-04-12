@@ -19,14 +19,14 @@ A **Serverless Backend** architecture was selected using Azure Functions (TypeSc
 
 ### Positive
 
-- **[Cost Efficiency]**: Reduced operational costs to near-zero via consumption-based pricing.
-- **[Automatic Scaling]**: Automatic horizontal scaling to handle spikes in traffic without manual intervention.
-- **[Reduced Complexity]**: Significant reduction in operational complexity (no OS updates or server patching).
+- **Cost Efficiency:** Reduced operational costs to near-zero via consumption-based pricing.
+- **Automatic Scaling:** Automatic horizontal scaling to handle spikes in traffic without manual intervention.
+- **Reduced Complexity:** Significant reduction in operational complexity (no OS updates or server patching).
 
 ### Negative
 
-- **[Cold Starts]**: Introduced "Cold Start" latency for the first request after periods of inactivity.
-- **[Local Debugging Complexity]**: Increased complexity in local debugging, requiring specialized emulation tools (Azure Core Tools).
+- **Cold Starts:** Introduced "Cold Start" latency for the first request after periods of inactivity.
+- **Local Debugging Complexity:** Increased complexity in local debugging, requiring specialized emulation tools (Azure Core Tools).
 
 ## Verification
 
