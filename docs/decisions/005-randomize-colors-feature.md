@@ -22,14 +22,14 @@ Implementation of a "Randomize Colors" feature within the existing frontend arch
 
 ### Positive
 
-- **[Enhanced UX]**: Users can quickly generate ideas without manual effort.
-- **[Accessibility First]**: By embedding compliance into the algorithm, the risk of generating "broken" or unreadable designs is eliminated.
-- **[Seamless Integration]**: Reuses existing state management and contrast calculation logic.
-- **[Flexibility]**: Does not lock the user into the random selection; manual overrides remain available.
+- **Enhanced UX:** Users can quickly generate ideas without manual effort.
+- **Accessibility First:** By embedding compliance into the algorithm, the risk of generating "broken" or unreadable designs is eliminated.
+- **Seamless Integration:** Reuses existing state management and contrast calculation logic.
+- **Flexibility:** Does not lock the user into the random selection; manual overrides remain available.
 
 ### Negative
 
-- **[Computational Overhead]**: A validation loop introduces a theoretical risk of multiple iterations. Benchmarks confirm this is negligible (avg ~0.03ms per generation) and does not impact UI responsiveness.
+- **Computational Overhead:** A validation loop introduces a theoretical risk of multiple iterations. Benchmarks confirm this is negligible (avg ~0.03ms per generation) and does not impact UI responsiveness.
 
 ## Verification
 

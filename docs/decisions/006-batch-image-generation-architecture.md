@@ -21,15 +21,15 @@ Implementation of an **Asynchronous Job Queue Architecture** for batch image gen
 
 ### Positive
 
-- **[Unblocked User Experience]**: Offloading processing to a background queue ensures the frontend remains responsive and avoids gateway timeouts during heavy multi-image computations.
-- **[Instantaneous Processing]**: Moving from Timer Triggers to Queue Triggers eliminates the processing delay, providing near-real-time results for batch operations.
-- **[Fault Isolation]**: Utilizing `Promise.allSettled` guarantees that if one image configuration inside a batch throws an error, the rest of the batch successfully completes.
-- **[Simplicity at Scale]**: Leveraging the existing MongoDB instance for job state instead of introducing a dedicated queuing service keeps the infrastructure footprint minimal and cost-effective.
+- **Unblocked User Experience:** Offloading processing to a background queue ensures the frontend remains responsive and avoids gateway timeouts during heavy multi-image computations.
+- **Instantaneous Processing:** Moving from Timer Triggers to Queue Triggers eliminates the processing delay, providing near-real-time results for batch operations.
+- **Fault Isolation:** Utilizing `Promise.allSettled` guarantees that if one image configuration inside a batch throws an error, the rest of the batch successfully completes.
+- **Simplicity at Scale:** Leveraging the existing MongoDB instance for job state instead of introducing a dedicated queuing service keeps the infrastructure footprint minimal and cost-effective.
 
 ### Negative
 
-- **[Increased Polling Overhead]**: Short polling from the client increases the absolute number of network requests made to the API, albeit they are lightweight status checks.
-- **[Database Contention Risk]**: Managing queues via MongoDB can lead to read/write contention if the system scales massively, though this is an acceptable trade-offs for current volume.
+- **Increased Polling Overhead:** Short polling from the client increases the absolute number of network requests made to the API, albeit they are lightweight status checks.
+- **Database Contention Risk:** Managing queues via MongoDB can lead to read/write contention if the system scales massively, though this is an acceptable trade-offs for current volume.
 
 ## Verification
 

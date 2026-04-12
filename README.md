@@ -14,7 +14,16 @@ It demonstrates how a real full-stack / cloud system would:
 The goal is to show how to build a scalable, accessible, and production-ready application using modern cloud architecture.
 
 🌐 [Project Portal](https://cover-craft-ui.azurewebsites.net/)  
-📚 [Full Documentation](./docs/README.md)
+
+---
+
+## Documentation Map
+
+- 📚 [Full Documentation](./docs/README.md)
+- [Architecture](./docs/architecture/README.md) - frontend and backend system design
+- [Operations & CI/CD](./docs/operations.md) - workflows, IaC, and Azure deployment
+- [Architectural Decision Records](./docs/decisions/README.md) - decisions behind major system changes
+- [Incident Reports](./docs/incidents/README.md) - RCA notes for bugs and deployment fixes
 
 ---
 
