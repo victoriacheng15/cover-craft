@@ -45,8 +45,8 @@ variable "tags" {
 
 # 1. Storage Container for Flex Consumption Deployment
 resource "azurerm_storage_container" "deploy" {
-  name                 = "app-package"
-  storage_account_id   = var.storage_account_id
+  name                  = "app-package"
+  storage_account_id    = var.storage_account_id
   container_access_type = "private"
 }
 
@@ -73,10 +73,10 @@ resource "azurerm_function_app_flex_consumption" "api" {
   runtime_name    = "node"
   runtime_version = "22"
 
-  storage_container_type           = "blobContainer"
-  storage_container_endpoint       = "${var.storage_container_endpoint}${azurerm_storage_container.deploy.name}"
-  storage_authentication_type      = "StorageAccountConnectionString"
-  storage_access_key               = var.storage_account_access_key
+  storage_container_type      = "blobContainer"
+  storage_container_endpoint  = "${var.storage_container_endpoint}${azurerm_storage_container.deploy.name}"
+  storage_authentication_type = "StorageAccountConnectionString"
+  storage_access_key          = var.storage_account_access_key
 
   site_config {
     app_service_logs {

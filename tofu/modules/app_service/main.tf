@@ -10,6 +10,11 @@ variable "app_name" {
   type = string
 }
 
+variable "azure_function_key" {
+  type      = string
+  sensitive = true
+}
+
 variable "tags" {
   type    = map(string)
   default = {}
@@ -40,6 +45,7 @@ resource "azurerm_linux_web_app" "frontend" {
 
   app_settings = {
     "AZURE_FUNCTION_URL" = "https://${var.app_name}.azurewebsites.net/api"
+    "AZURE_FUNCTION_KEY" = var.azure_function_key
     "NODE_ENV"           = "production"
   }
 }

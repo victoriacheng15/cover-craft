@@ -75,16 +75,7 @@ module "application_insights" {
   tags                = local.tags
 }
 
-# 3. App Service Module (Plan & Frontend)
-module "app_service" {
-  source              = "./modules/app_service"
-  resource_group_name = data.azurerm_resource_group.main.name
-  location            = var.location
-  app_name            = var.app_name
-  tags                = local.tags
-}
-
-# 4. Function App Module (API)
+# 3. Function App Module (API)
 module "function_app" {
   source                           = "./modules/function_app"
   resource_group_name              = azurerm_resource_group.api.name
@@ -98,4 +89,21 @@ module "function_app" {
   app_insights_connection_string   = module.application_insights.connection_string
   app_insights_instrumentation_key = module.application_insights.instrumentation_key
   tags                             = local.tags
+}
+
+data "azurerm_function_app_host_keys" "api" {
+  name                = var.app_name
+  resource_group_name = azurerm_resource_group.api.name
+
+  depends_on = [module.function_app]
+}
+
+# 4. App Service Module (Plan & Frontend)
+module "app_service" {
+  source              = "./modules/app_service"
+  resource_group_name = data.azurerm_resource_group.main.name
+  location            = var.location
+  app_name            = var.app_name
+  azure_function_key  = data.azurerm_function_app_host_keys.api.default_function_key
+  tags                = local.tags
 }
