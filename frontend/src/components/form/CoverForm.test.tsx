@@ -1,3 +1,4 @@
+import type { ImageParams } from "@cover-craft/shared";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import CoverForm from "./CoverForm";
@@ -13,7 +14,7 @@ vi.mock("@/hooks", async () => {
 
 // Mock PreviewCanvas to avoid canvas issues in tests and make params testable
 vi.mock("./PreviewCanvas", () => ({
-	PreviewCanvas: ({ params }: { params: any }) => (
+	PreviewCanvas: ({ params }: { params: ImageParams }) => (
 		<div data-testid="preview-canvas">
 			<span>{params.title || "Title Preview"}</span>
 			<span>{params.subtitle || "Subtitle Preview"}</span>

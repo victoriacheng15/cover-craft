@@ -9,6 +9,7 @@ describe("proxyJobStatus", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		process.env.AZURE_FUNCTION_URL = "http://mock-api";
+		process.env.AZURE_FUNCTION_KEY = "test-key";
 	});
 
 	it("calls backend getJobStatus with jobId", async () => {
@@ -23,10 +24,19 @@ describe("proxyJobStatus", () => {
 			"http://mock-api/getJobStatus?jobId=job-123",
 			{
 				headers: {
-					"x-functions-key": "",
+					"x-functions-key": "test-key",
 				},
 			},
 		);
 		expect(response).toBe(fakeResponse);
+	});
+
+	it("throws when API URL is missing", async () => {
+		delete process.env.AZURE_FUNCTION_URL;
+
+		await expect(proxyJobStatus("job-123")).rejects.toThrow(
+			"Azure Functions API URL is missing for job status polling.",
+		);
+		expect(fetchMock).not.toHaveBeenCalled();
 	});
 });

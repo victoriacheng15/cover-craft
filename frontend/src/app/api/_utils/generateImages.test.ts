@@ -9,6 +9,7 @@ describe("proxyGenerateImages", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		process.env.AZURE_FUNCTION_URL = "http://mock-api";
+		process.env.AZURE_FUNCTION_KEY = "test-key";
 	});
 
 	it("forwards batch payload to backend API", async () => {
@@ -34,10 +35,19 @@ describe("proxyGenerateImages", () => {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				"x-functions-key": "",
+				"x-functions-key": "test-key",
 			},
 			body: JSON.stringify(body),
 		});
 		expect(response).toBe(fakeResponse);
+	});
+
+	it("throws when API URL is missing", async () => {
+		delete process.env.AZURE_FUNCTION_URL;
+
+		await expect(proxyGenerateImages([])).rejects.toThrow(
+			"Azure Functions API URL is missing for batch generation.",
+		);
+		expect(fetchMock).not.toHaveBeenCalled();
 	});
 });
