@@ -22,6 +22,7 @@
 		"lint:api": "biome check api/",
 		"lint:frontend": "biome check frontend/",
 		"lint:shared": "biome check shared/",
+		"deps:deprecated": "npm ls --all --json --long 2>/dev/null | rg '\"deprecated\"' -n -C 4",
 		"format": "biome format --write frontend/ api/ shared/",
 		"format:api": "biome format --write api/",
 		"format:frontend": "biome format --write frontend/",

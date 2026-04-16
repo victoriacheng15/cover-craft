@@ -1,4 +1,5 @@
 .gitops
+.codex
 
 # Local .terraform directories
 .terraform/
