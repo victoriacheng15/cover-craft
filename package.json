@@ -42,7 +42,7 @@
 		"api": "./api",
 		"azurite": "^3.35.0",
 		"frontend": "./frontend",
-		"typescript": "^5.9.3",
+		"typescript": "^6.0.2",
 		"vite-tsconfig-paths": "^6.1.1",
 		"vitest": "^4.1.3"
 	}
