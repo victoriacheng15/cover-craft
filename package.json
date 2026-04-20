@@ -43,7 +43,6 @@
 		"azurite": "^3.35.0",
 		"frontend": "./frontend",
 		"typescript": "^6.0.3",
-		"vite-tsconfig-paths": "^6.1.1",
 		"vitest": "^4.1.3"
 	}
 }
