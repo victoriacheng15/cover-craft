@@ -1,8 +1,8 @@
 # Cover Craft
 
-Cover Craft is a serverless image generation platform built with Next.js, Azure Functions, Azure Queue Storage, and MongoDB.
+Cover Craft is a serverless cover image generator built with React, Azure Functions, Azure Queue Storage, and MongoDB.
 
-It supports both real-time single image generation and background batch processing for larger workloads.
+It supports fast single-image generation and queued batch processing, with shared validation and accessibility checks built into the generation flow.
 
 [Live Project](https://cover-craft-ui.azurewebsites.net/) | [Full Documentation](./docs/README.md)
 
@@ -12,13 +12,13 @@ It supports both real-time single image generation and background batch processi
 
 | Area | What it demonstrates |
 | :--- | :--- |
-| Background processing | Batch requests return quickly with HTTP 202, then run through Azure Queue Storage and a queue-triggered worker |
-| Reliable worker design | MongoDB state tracking and atomic claim-and-lock prevent duplicate processing during queue retries |
-| Progress tracking | Real-time job status enables frontend polling and incremental result updates |
-| Accessibility | WCAG contrast validation is built into the image generation flow |
-| Shared validation | Frontend and backend use shared validators to ensure consistent data integrity |
-| Cloud delivery | GitHub Actions and Terraform (OpenTofu) support repeatable deployment |
-| Observability | Structured logs, metrics, and Application Insights support debugging and monitoring |
+| Background processing | Batch requests return HTTP 202, then move through Azure Queue Storage to a queue-triggered worker |
+| State flow | MongoDB tracks job status from `pending` to `processing`, `completed`, or `failed` |
+| Failure handling | Atomic worker claiming prevents duplicate rendering when queue messages are redelivered |
+| Progress tracking | The UI polls job status so users can follow batch progress after submission |
+| Accessibility | WCAG contrast validation is part of the image generation workflow |
+| Shared validation | Frontend and backend use shared validators for image parameters and batch requests |
+| Deployment | GitHub Actions and OpenTofu support repeatable Azure deployment |
 
 ---
 
@@ -28,13 +28,13 @@ The platform has two generation paths:
 
 | Path | Use case | Flow |
 | :--- | :--- | :--- |
-| Single image | Fast interactive generation | Request -> Azure Function -> Canvas renderer -> response |
-| Batch images | Larger workloads | Request -> HTTP 202 -> Azure Queue Storage -> worker -> MongoDB job status |
+| Single image | Fast interactive generation | User request -> Azure Function -> Canvas renderer -> image response |
+| Batch images | Larger workloads | User request -> HTTP 202 -> Azure Queue Storage -> worker -> MongoDB job status |
 
 ```mermaid
 graph TD
     User([User])
-    UI[Next.js UI]
+    UI[React UI]
     API[Azure Functions API]
     Single[Single Image Function]
     Batch[Batch Producer Function]
@@ -65,13 +65,11 @@ graph TD
 
 | Layer | Tools |
 | :--- | :--- |
-| Frontend | Next.js, React, Tailwind CSS |
-| Backend | Azure Functions, Node.js, TypeScript |
-| Processing | Azure Queue Storage, Canvas rendering |
-| Data | MongoDB |
-| Infrastructure | OpenTofu, Azure |
-| CI/CD | GitHub Actions |
+| Language | TypeScript, Node.js, React, Tailwind CSS |
+| Infrastructure | Azure Functions, Azure Queue Storage, Azure hosting, OpenTofu |
+| Data stores | MongoDB for job state and logs |
 | Testing | Vitest |
+| CI/CD | GitHub Actions |
 
 ---
 
@@ -79,8 +77,8 @@ graph TD
 
 - [Architecture](./docs/architecture/README.md)
 - [Operations and CI/CD](./docs/operations.md)
-- [Architectural Decision Records](./docs/decisions/README.md)
-- [Incident Reports](./docs/incidents/README.md)
+- [Decisions](./docs/decisions/README.md)
+- [Incidents](./docs/incidents/README.md)
 
 ---
 
