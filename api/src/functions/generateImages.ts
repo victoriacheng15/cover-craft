@@ -17,6 +17,8 @@ import { createLogger } from "../lib/logger";
 import { connectMongoDB, getJobModel } from "../lib/mongoose";
 import { buildMetricPayload, storeMetricsToMongoDB } from "./metrics";
 
+const DEFAULT_MAX_JOB_ATTEMPTS = 3;
+
 export const generateImages: HttpHandler = async (
 	request: HttpRequest,
 	context: InvocationContext,
@@ -103,6 +105,9 @@ export const generateImages: HttpHandler = async (
 			status: JOB_STATUS_PENDING,
 			requests: requests as unknown as Record<string, unknown>[],
 			results: [],
+			attempts: 0,
+			maxAttempts: DEFAULT_MAX_JOB_ATTEMPTS,
+			resultDetails: {},
 		});
 
 		logger.info("Provisioned pending batch job", {

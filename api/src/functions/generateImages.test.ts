@@ -161,6 +161,9 @@ describe("generateImages", () => {
 		expect(mocks.mockJobCreate).toHaveBeenCalledWith(
 			expect.objectContaining({
 				status: JOB_STATUS_PENDING,
+				attempts: 0,
+				maxAttempts: 3,
+				resultDetails: {},
 			}),
 		);
 		expect(mocks.mockStoreMetrics).not.toHaveBeenCalled();

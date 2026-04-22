@@ -68,7 +68,21 @@ export interface JobDocument {
 	requests: Record<string, unknown>[];
 	results: string[];
 	error?: string;
+	attempts: number;
+	maxAttempts: number;
+	processingStartedAt?: Date;
+	lastError?: string;
+	resultDetails: Record<string, JobResult>;
 	createdAt: Date;
+	updatedAt: Date;
+}
+
+export interface JobResult {
+	index: number;
+	status: "success" | "error";
+	dataUrl?: string;
+	error?: string;
+	attempts: number;
 	updatedAt: Date;
 }
 
@@ -89,6 +103,14 @@ export const jobSchema = new mongoose.Schema(
 		requests: { type: [mongoose.Schema.Types.Mixed], required: true },
 		results: { type: [String], default: [] },
 		error: { type: String },
+		attempts: { type: Number, default: 0, required: true },
+		maxAttempts: { type: Number, default: 3, required: true },
+		processingStartedAt: { type: Date },
+		lastError: { type: String },
+		resultDetails: {
+			type: mongoose.Schema.Types.Mixed,
+			default: {},
+		},
 	},
 	{ timestamps: true },
 );
