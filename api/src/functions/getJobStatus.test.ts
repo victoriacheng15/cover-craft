@@ -110,6 +110,52 @@ describe("getJobStatus", () => {
 		expect(mocks.mockJobFindById).toHaveBeenCalledWith(fullId);
 	});
 
+	it("should return public string results from structured job result details", async () => {
+		const fullId = "69a0f2db7b65847194bf1aec";
+		const mockRequest = {
+			query: new Map([["jobId", fullId]]),
+		} as unknown as HttpRequest;
+
+		const mockJob = {
+			_id: fullId,
+			status: JOB_STATUS_PENDING,
+			requests: [{}, {}],
+			results: [],
+			resultDetails: {
+				"1": {
+					index: 1,
+					status: "error",
+					error: "failed",
+					attempts: 3,
+					updatedAt: new Date(),
+				},
+				"0": {
+					index: 0,
+					status: "success",
+					dataUrl: "data:image/png;base64,img1",
+					attempts: 1,
+					updatedAt: new Date(),
+				},
+			},
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+		mocks.mockJobFindById.mockResolvedValue(mockJob);
+
+		const response = (await getJobStatus(
+			mockRequest,
+			mockContext,
+		)) as HttpResponseInit;
+
+		expect(response.status).toBe(200);
+		expect(response.jsonBody).toEqual(
+			expect.objectContaining({
+				progress: 2,
+				results: ["data:image/png;base64,img1", "error: failed"],
+			}),
+		);
+	});
+
 	it("should return 200 with partial jobId (8 chars) if found", async () => {
 		const partialId = "94bf1aec";
 		const mockRequest = {

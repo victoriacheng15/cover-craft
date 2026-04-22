@@ -6,10 +6,37 @@ import {
 } from "@azure/functions";
 import type { Types } from "mongoose";
 import { createLogger } from "../lib/logger";
-import { connectMongoDB, getJobModel, type JobDocument } from "../lib/mongoose";
+import {
+	connectMongoDB,
+	getJobModel,
+	type JobDocument,
+	type JobResult,
+} from "../lib/mongoose";
 
 interface JobWithId extends JobDocument {
 	_id: Types.ObjectId;
+}
+
+function publicResultFromDetail(detail: JobResult): string {
+	if (detail.status === "success" && detail.dataUrl) {
+		return detail.dataUrl;
+	}
+
+	return `error: ${detail.error || "Failed to render"}`;
+}
+
+function getFinalResults(job: JobDocument): string[] {
+	const resultDetails = job.resultDetails ?? {};
+	const detailKeys = Object.keys(resultDetails);
+
+	if (detailKeys.length === 0) {
+		return job.results ?? [];
+	}
+
+	return detailKeys
+		.map((key) => resultDetails[key])
+		.sort((a, b) => a.index - b.index)
+		.map(publicResultFromDetail);
 }
 
 export async function getJobStatus(
@@ -73,14 +100,16 @@ export async function getJobStatus(
 
 		logger.info("Retrieved job status", { jobId, status: job.status });
 
+		const results = getFinalResults(job);
+
 		return {
 			status: 200,
 			jsonBody: {
 				id: job._id.toString(),
 				status: job.status,
-				progress: job.results.length,
+				progress: results.length,
 				total: job.requests.length,
-				results: job.results,
+				results,
 				error: job.error,
 				createdAt: job.createdAt,
 				updatedAt: job.updatedAt,
