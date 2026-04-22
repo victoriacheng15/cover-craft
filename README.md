@@ -1,8 +1,8 @@
 # Cover Craft
 
-Cover Craft is a serverless cover image generator built with React, Azure Functions, Azure Queue Storage, and MongoDB.
+Cover Craft is a serverless cover image generator built with React, Azure Functions, Azure Queue Storage, MongoDB, and OpenTofu (Terraform-compatible).
 
-It supports fast single-image generation and queued batch processing, with shared validation and accessibility checks built into the generation flow.
+It supports fast single-image generation and queued batch processing, with shared validation, accessibility checks, and automated Azure deployment built into the workflow.
 
 [Live Project](https://cover-craft-ui.azurewebsites.net/) | [Full Documentation](./docs/README.md)
 
@@ -14,11 +14,11 @@ It supports fast single-image generation and queued batch processing, with share
 | :--- | :--- |
 | Background processing | Batch requests return HTTP 202, then move through Azure Queue Storage to a queue-triggered worker |
 | State flow | MongoDB tracks job status from `pending` to `processing`, `completed`, or `failed` |
-| Failure handling | Atomic worker claiming prevents duplicate rendering when queue messages are redelivered |
+| Failure handling | Atomic worker claiming, stale-job recovery, and bounded per-image retries prevent duplicate rendering during transient failures |
 | Progress tracking | The UI polls job status so users can follow batch progress after submission |
 | Accessibility | WCAG contrast validation is part of the image generation workflow |
 | Shared validation | Frontend and backend use shared validators for image parameters and batch requests |
-| Deployment | GitHub Actions and OpenTofu support repeatable Azure deployment |
+| Deployment | GitHub Actions and Terraform automation support repeatable Azure deployment |
 
 ---
 
@@ -29,7 +29,7 @@ The platform has two generation paths:
 | Path | Use case | Flow |
 | :--- | :--- | :--- |
 | Single image | Fast interactive generation | User request -> Azure Function -> Canvas renderer -> image response |
-| Batch images | Larger workloads | User request -> HTTP 202 -> Azure Queue Storage -> worker -> MongoDB job status |
+| Batch images | Larger workloads | User request -> HTTP 202 -> Azure Queue Storage -> retry-aware worker -> MongoDB job status |
 
 ```mermaid
 graph TD
@@ -66,7 +66,7 @@ graph TD
 | Layer | Tools |
 | :--- | :--- |
 | Language | TypeScript, Node.js, React, Tailwind CSS |
-| Infrastructure | Azure Functions, Azure Queue Storage, Azure hosting, OpenTofu |
+| Infrastructure | Azure Functions, Azure Queue Storage, Azure hosting, Terraform |
 | Data stores | MongoDB for job state and logs |
 | Testing | Vitest |
 | CI/CD | GitHub Actions |
