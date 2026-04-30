@@ -8,14 +8,9 @@ import MainLayout from "@/components/layout/MainLayout";
 export default function LandingPage() {
 	return (
 		<MainLayout>
-			<div className="flex flex-col gap-16 max-w-3xl mx-auto">
-				{/* Hero Section */}
+			<div className="flex flex-col gap-14 max-w-4xl mx-auto">
 				<HeroSection />
-
-				{/* Origin Story */}
 				<OriginStory />
-
-				{/* Principles */}
 				<Principles />
 			</div>
 		</MainLayout>
