@@ -2,20 +2,21 @@ import { SectionTitle } from "@/components/ui";
 
 export function OriginStory() {
 	const paragraphs = [
-		"I used to generate LinkedIn cover images with a local Python script. It was simple, but I had to wrestle with virtual environments every time I needed a new one. I just wanted a reliable, no-setup way to make clean, readable covers.",
-		"So I rebuilt it as a lightweight web app using Azure Functions and Next.js. With no login and no dependencies, you can just generate and download.",
-		"Only after it was working did I add basic analytics. It was initially just for curiosity, but it soon became a way to learn from real usage: which settings failed, which were popular, and what to refine next.",
-		"That turned Cover Craft from a simple image generator into a quiet lesson in observable, privacy-first software.",
+		"Cover Craft started as a local Python script for making LinkedIn cover images. It solved the immediate problem, but every new run still depended on local setup, virtual environments, and machine-specific behavior.",
+		"The web version keeps the useful part and removes the setup cost: choose the content, adjust the visual treatment, generate a PNG, and download it. No account is required.",
+		"As the project grew, it became a full-stack sandbox for production habits: shared validation, serverless rendering, queue-backed batch jobs, infrastructure as code, and anonymized analytics.",
 	];
 
 	return (
-		<section className="text-gray-600 flex flex-col gap-4">
+		<section className="flex flex-col gap-4">
 			<SectionTitle size="lg">Why I Built This</SectionTitle>
-			{paragraphs.map((text) => (
-				<p key={text.slice(0, 20)} className="text-lg tracking-wide">
-					{text}
-				</p>
-			))}
+			<div className="text-gray-700 flex flex-col gap-4">
+				{paragraphs.map((text) => (
+					<p key={text.slice(0, 24)} className="text-lg leading-relaxed">
+						{text}
+					</p>
+				))}
+			</div>
 		</section>
 	);
 }

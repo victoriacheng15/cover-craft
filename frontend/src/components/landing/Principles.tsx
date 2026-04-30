@@ -3,41 +3,41 @@ import { Card, SectionTitle } from "@/components/ui";
 export function Principles() {
 	const engineeringPrinciples = [
 		{
-			icon: "🎨",
-			title: "Shift-Left Accessibility",
+			label: "A11y",
+			title: "Accessible by Default",
 			description:
-				"Automated WCAG AA contrast validation is baked into the generation pipeline, preventing inaccessible output by design.",
+				"Contrast feedback and shared validation make readability visible while the image is being configured, not after export.",
 		},
 		{
-			icon: "🔒",
-			title: "Privacy by Design",
+			label: "Privacy",
+			title: "No Account Required",
 			description:
-				"A zero-data architecture with no cookies, no tracking, and no persistence, ensuring complete user anonymity.",
+				"No account is required, and analytics are anonymized product and system metrics rather than personal profiles.",
 		},
 		{
-			icon: "🖼️",
-			title: "Stateless Reliability",
+			label: "Render",
+			title: "Serverless Rendering",
 			description:
-				"Server-side rendering via Azure Functions ensures consistent visual fidelity and cross-platform rendering accuracy.",
+				"Azure Functions handles image generation so browser differences do not define the final downloaded PNG.",
 		},
 		{
-			icon: "📊",
-			title: "Privacy-First Observability",
+			label: "Ops",
+			title: "Built for Learning",
 			description:
-				"Structured, anonymized telemetry provides system insights and performance monitoring without compromising user privacy.",
+				"Telemetry, RCAs, and infrastructure code make the project useful as both a product and a mentorship sandbox.",
 		},
 	];
 
 	return (
-		<section>
+		<section className="flex flex-col gap-6">
 			<SectionTitle size="lg" className="mb-6">
-				🧭 Engineering Principles
+				What This Project Shows
 			</SectionTitle>
 			<div className="grid md:grid-cols-2 gap-6">
 				{engineeringPrinciples.map((principle) => (
-					<Card key={principle.title} className="flex flex-col gap-2 p-6">
-						<span className="text-3xl" aria-hidden="true">
-							{principle.icon}
+					<Card key={principle.title} className="flex flex-col gap-3 p-6">
+						<span className="w-fit rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-emerald-900">
+							{principle.label}
 						</span>
 						<SectionTitle as="h3" size="md">
 							{principle.title}
