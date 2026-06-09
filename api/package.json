@@ -15,16 +15,16 @@
 	},
 	"dependencies": {
 		"@azure/functions": "^4.16.0",
-		"@azure/storage-queue": "^12.29.0",
+		"@azure/storage-queue": "^12.30.0",
 		"@cover-craft/shared": "file:../shared",
-		"canvas": "^3.2.2",
+		"canvas": "^3.2.3",
 		"mongoose": "^9.6.3"
 	},
 	"devDependencies": {
 		"@types/node": "^25.9.2",
 		"@vitest/coverage-v8": "^4.1.8",
 		"typescript": "^6.0.3",
-		"vitest": "^4.1.7"
+		"vitest": "^4.1.8"
 	},
 	"main": "dist/index.js"
 }
