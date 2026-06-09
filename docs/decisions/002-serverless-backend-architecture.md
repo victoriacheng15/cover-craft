@@ -11,6 +11,7 @@ The application required a backend capable of handling image generation without 
 ## Decision Outcome
 
 A **Serverless Backend** architecture was selected using Azure Functions (TypeScript).
+
 - **Zero Maintenance:** Azure Functions were chosen to eliminate server management and maintenance overhead.
 - **Event-Driven Execution:** The architecture ensures that functions execute only when triggered by an HTTP request, preventing resource waste during idle periods.
 - **Stateless Design:** Core logic was focused on stateless image generation to ensure high availability and simplicity.
