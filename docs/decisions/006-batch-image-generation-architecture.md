@@ -6,7 +6,7 @@
 
 ## Context and Problem Statement
 
-The application originally processed image generation requests synchronously. While effective for single images, power users generating 2-5 covers simultaneously would experience blocked UI threads, potential HTTP timeouts, and an unacceptable user experience during bulk operations. A scalable mechanism is required to process multiple generation requests concurrently while maintaining UI responsiveness. 
+The application originally processed image generation requests synchronously. While effective for single images, power users generating 2-5 covers simultaneously would experience blocked UI threads, potential HTTP timeouts, and an unacceptable user experience during bulk operations. A scalable mechanism is required to process multiple generation requests concurrently while maintaining UI responsiveness.
 
 ## Decision Outcome
 
