@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import BatchResultsDisplay from "./BatchResultsDisplay";
+import { BatchResultsDisplay } from "./BatchResultsDisplay";
 
 // Mock JSZip
 vi.mock("jszip", () => {

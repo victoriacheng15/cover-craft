@@ -175,7 +175,7 @@ export const landingConfig: LandingConfig = {
  RUN  v4.1.8 /frontend
 
  ✓ src/lib/download.test.ts (4 tests)
- ✓ src/components/ui/KPICard.test.tsx (13 tests)
+ ✓ src/components/ui/Cards.test.tsx (15 tests)
  ✓ src/hooks/useBatchForm.test.ts (9 tests)
  ✓ src/hooks/useForm.test.ts (29 tests)
  ✓ src/components/form/FormField.test.tsx (5 tests)

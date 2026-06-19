@@ -5,7 +5,7 @@ interface TimelineItemProps {
 	event: TimelineEvent;
 }
 
-export default function TimelineItem({ event }: TimelineItemProps) {
+export function TimelineItem({ event }: TimelineItemProps) {
 	return (
 		<li className="relative pl-8 md:pl-12">
 			<div className="absolute -left-[9px] top-6 h-4 w-4 rounded-full bg-emerald-500 border-4 border-white shadow-sm ring-1 ring-emerald-100" />

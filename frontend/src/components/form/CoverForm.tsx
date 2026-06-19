@@ -2,10 +2,10 @@
 
 import { useForm } from "@/hooks";
 import { lato, montserrat, openSans, playfairDisplay, roboto } from "@/lib";
-import CoverFormControls from "./CoverFormControls";
-import CoverPreviewDisplay from "./CoverPreviewDisplay";
+import { CoverFormControls } from "./CoverFormControls";
+import { CoverPreviewDisplay } from "./CoverPreviewDisplay";
 
-export default function CoverForm() {
+export function CoverForm() {
 	const {
 		formData,
 		isGenerating,

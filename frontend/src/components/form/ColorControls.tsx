@@ -1,6 +1,6 @@
 import { Button, ColorPicker } from "@/components/ui";
 import type { FormData } from "@/hooks";
-import FormField from "./FormField";
+import { FormField } from "./FormField";
 
 interface ColorControlsProps {
 	formData: FormData;
@@ -8,7 +8,7 @@ interface ColorControlsProps {
 	handleRandomizeColors: () => void;
 }
 
-export default function ColorControls({
+export function ColorControls({
 	formData,
 	handleInputChange,
 	handleRandomizeColors,
@@ -46,7 +46,7 @@ export default function ColorControls({
 				onClick={handleRandomizeColors}
 				aria-label="Randomize background and text colors"
 				type="button"
-				className="flex-shrink-0"
+				className="shrink-0"
 			>
 				Randomize Colors
 			</Button>

@@ -2,11 +2,7 @@ import { cn } from "@/lib";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
-export default function Input({
-	className,
-	type = "text",
-	...props
-}: InputProps) {
+export function Input({ className, type = "text", ...props }: InputProps) {
 	return (
 		<input
 			type={type}

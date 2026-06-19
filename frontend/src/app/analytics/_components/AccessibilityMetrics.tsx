@@ -27,7 +27,7 @@ export function AccessibilityMetricsSkeleton() {
 			</SectionTitle>
 			<Card className="mb-6">
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-					<div className="h-[250px] w-full bg-gray-100 rounded-lg animate-pulse" />
+					<div className="h-62.5 w-full bg-gray-100 rounded-lg animate-pulse" />
 					<div className="grid grid-cols-1 gap-3 w-full">
 						{["a1", "a2", "a3"].map((id) => (
 							<Skeleton key={`acc-kpi-${id}`} className="h-20 w-full" />
@@ -35,7 +35,7 @@ export function AccessibilityMetricsSkeleton() {
 					</div>
 				</div>
 			</Card>
-			<Card className="h-[350px]" />
+			<Card className="h-87.5" />
 		</section>
 	);
 }

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import SchemaReference from "./SchemaReference";
+import { SchemaReference } from "./SchemaReference";
 
 describe("SchemaReference", () => {
 	it("renders the summary text", () => {

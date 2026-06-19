@@ -8,7 +8,7 @@ interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
 	children: React.ReactNode;
 }
 
-export default function FormField({
+export function FormField({
 	className,
 	label,
 	error,

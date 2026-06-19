@@ -4,7 +4,7 @@ interface ChapterSummaryProps {
 	chapter: Chapter;
 }
 
-export default function ChapterSummary({ chapter }: ChapterSummaryProps) {
+export function ChapterSummary({ chapter }: ChapterSummaryProps) {
 	return (
 		<summary className="cursor-pointer list-none p-6 flex flex-col gap-3 select-none hover:bg-gray-50/50 rounded-xl transition-colors">
 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">

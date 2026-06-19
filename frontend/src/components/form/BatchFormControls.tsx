@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button, SectionTitle } from "@/components/ui";
-import SchemaReference from "./SchemaReference";
+import { SchemaReference } from "./SchemaReference";
 
 interface BatchFormControlsProps {
 	jsonInput: string;
@@ -16,7 +16,7 @@ interface BatchFormControlsProps {
 	onFormat: () => void;
 }
 
-export default function BatchFormControls({
+export function BatchFormControls({
 	jsonInput,
 	setJsonInput,
 	isSubmitting,

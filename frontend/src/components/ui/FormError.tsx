@@ -3,7 +3,7 @@ interface FormErrorProps {
 	errorId?: string;
 }
 
-export default function FormError({ error, errorId }: FormErrorProps) {
+export function FormError({ error, errorId }: FormErrorProps) {
 	if (!error) return null;
 
 	return (

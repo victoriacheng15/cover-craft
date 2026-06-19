@@ -7,7 +7,7 @@ import {
 	HeroSection,
 	ValidationResiliency,
 } from "@/components/landing/ShowcaseSections";
-import MainLayout from "@/components/layout/MainLayout";
+import { MainLayout } from "@/components/layout/layouts";
 
 export default function LandingPage() {
 	return (

@@ -28,7 +28,7 @@ interface CoverFormControlsProps {
 	handleRandomizeColors: () => void;
 }
 
-export default function CoverFormControls({
+export function CoverFormControls({
 	formData,
 	handleInputChange,
 	error,

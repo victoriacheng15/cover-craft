@@ -27,8 +27,8 @@ export function PerformanceMetricsSkeleton() {
 				))}
 			</div>
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
-				<Card className="h-[350px]" />
-				<Card className="h-[350px]" />
+				<Card className="h-87.5" />
+				<Card className="h-87.5" />
 			</div>
 			<Card className="h-64" />
 		</section>
