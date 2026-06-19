@@ -30,14 +30,14 @@ export function FeaturePopularitySkeleton() {
 				Feature Popularity
 			</SectionTitle>
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
-				<Card className="h-[350px]" />
-				<Card className="h-[350px]" />
+				<Card className="h-87.5" />
+				<Card className="h-87.5" />
 			</div>
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
-				<Card className="h-[350px]" />
-				<Card className="h-[350px]" />
+				<Card className="h-87.5" />
+				<Card className="h-87.5" />
 			</div>
-			<Card className="h-[250px] mb-6" />
+			<Card className="h-62.5 mb-6" />
 			<Card className="h-48" />
 		</section>
 	);

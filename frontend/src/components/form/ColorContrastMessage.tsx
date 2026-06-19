@@ -4,7 +4,7 @@ interface ColorContrastMessageProps {
 	contrastCheck: ContrastCheckResult;
 }
 
-export default function ColorContrastMessage({
+export function ColorContrastMessage({
 	contrastCheck,
 }: ColorContrastMessageProps) {
 	function getContrastColorClasses(status: "good" | "warning" | "poor") {

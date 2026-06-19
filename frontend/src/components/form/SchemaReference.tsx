@@ -5,7 +5,7 @@
  * used in bulk image generation. It uses accessible HTML5 <details> and <summary> elements.
  * Optimized for screen readers and high contrast (WCAG AAA) using semantic <dl>, <dt>, and <dd>.
  */
-export default function SchemaReference() {
+export function SchemaReference() {
 	return (
 		<details className="group text-xs bg-gray-50 p-4 rounded-lg border border-gray-100 transition-all">
 			<summary className="cursor-pointer font-bold uppercase tracking-wider text-gray-600 hover:text-gray-900 flex items-center gap-2 list-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 rounded px-1 -mx-1 [&::-webkit-details-marker]:hidden">

@@ -12,7 +12,7 @@ interface CoverPreviewDisplayProps {
 	handleDownload: () => void;
 }
 
-export default function CoverPreviewDisplay({
+export function CoverPreviewDisplay({
 	formData,
 	generatedImageUrl,
 	getPreviewDimensions,
@@ -22,7 +22,7 @@ export default function CoverPreviewDisplay({
 
 	return (
 		<Card
-			className="w-full md:min-w-[300px] flex flex-col items-center"
+			className="w-full md:min-w-75 flex flex-col items-center"
 			aria-label={
 				generatedImageUrl
 					? "Generated cover image"

@@ -1,4 +1,4 @@
-import MainLayout from "@/components/layout/MainLayout";
+import { MainLayout } from "@/components/layout/layouts";
 import { SectionTitle } from "@/components/ui";
 import { ChapterSummary, TimelineItem } from "./_components";
 import { chapters } from "./content";

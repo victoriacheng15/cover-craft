@@ -1,4 +1,43 @@
-export default function Footer() {
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { Nav, SectionTitle } from "@/components/ui";
+import { landingConfig } from "@/lib/landingConfig";
+
+export function Header() {
+	return (
+		<header className="sticky top-0 z-50 bg-emerald-200 text-gray-900 shadow-sm">
+			<div className="w-[90%] max-w-7xl mx-auto py-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
+				<Link href="/" className="hover:opacity-80 transition-opacity">
+					<SectionTitle as="h1" size="xl" className="mb-0">
+						{landingConfig.header.project_name} 🎨
+					</SectionTitle>
+				</Link>
+				<Nav />
+			</div>
+		</header>
+	);
+}
+
+interface MainLayoutProps {
+	children: ReactNode;
+}
+
+export function MainLayout({ children }: MainLayoutProps) {
+	return (
+		<div className="flex flex-col min-h-screen bg-emerald-100 text-gray-900">
+			{/* Header */}
+			<Header />
+
+			{/* Main content */}
+			<main className="flex-1 w-[90%] max-w-7xl mx-auto py-8">{children}</main>
+
+			{/* Footer */}
+			<Footer />
+		</div>
+	);
+}
+
+export function Footer() {
 	return (
 		<footer className="bg-emerald-200 text-gray-900 py-4 mt-auto border-t border-emerald-300">
 			<div className="w-[90%] max-w-7xl mx-auto flex flex-row justify-center items-center gap-6">

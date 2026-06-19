@@ -1,7 +1,7 @@
 import type { ImageParams } from "@cover-craft/shared";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import CoverForm from "./CoverForm";
+import { CoverForm } from "./CoverForm";
 
 // Mock useForm hook
 vi.mock("@/hooks", async () => {

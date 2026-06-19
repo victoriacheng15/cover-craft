@@ -27,8 +27,8 @@ export function UserEngagementSkeleton() {
 				))}
 			</div>
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<Card className="h-[300px]" />
-				<Card className="h-[300px]" />
+				<Card className="h-75" />
+				<Card className="h-75" />
 			</div>
 		</section>
 	);

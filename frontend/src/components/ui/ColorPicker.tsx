@@ -3,11 +3,7 @@ import { cn } from "@/lib";
 interface ColorPickerProps
 	extends React.InputHTMLAttributes<HTMLInputElement> {}
 
-export default function ColorPicker({
-	className,
-	title,
-	...props
-}: ColorPickerProps) {
+export function ColorPicker({ className, title, ...props }: ColorPickerProps) {
 	return (
 		<input
 			type="color"

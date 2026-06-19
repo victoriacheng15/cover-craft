@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function Nav() {
+export function Nav() {
 	const nav = {
 		home: { href: "/", label: "Home" },
 		generate: { href: "/generate", label: "Generate" },

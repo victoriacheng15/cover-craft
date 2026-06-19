@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CoverForm } from "@/components/form";
-import MainLayout from "@/components/layout/MainLayout";
+import { MainLayout } from "@/components/layout/layouts";
 import { Button, SectionTitle } from "@/components/ui";
 
 export default function GeneratePage() {

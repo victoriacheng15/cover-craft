@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { BatchResultsDisplay } from "@/components/display";
+import { BatchResultsDisplay } from "@/components/display/BatchResultsDisplay";
 import { BatchFormControls } from "@/components/form";
-import MainLayout from "@/components/layout/MainLayout";
+import { MainLayout } from "@/components/layout/layouts";
 import { Button, SectionTitle } from "@/components/ui";
 import { useBatchForm } from "@/hooks";
 
@@ -59,7 +59,7 @@ export default function BatchPage() {
 					</header>
 					<ul className="grid grid-cols-1 md:grid-cols-3 gap-8 list-none p-0">
 						<li className="flex flex-row gap-4 items-start">
-							<div className="flex-shrink-0 w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">
+							<div className="shrink-0 w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">
 								1
 							</div>
 							<p className="text-sm text-gray-700 leading-relaxed">
@@ -68,7 +68,7 @@ export default function BatchPage() {
 							</p>
 						</li>
 						<li className="flex flex-row gap-4 items-start">
-							<div className="flex-shrink-0 w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">
+							<div className="shrink-0 w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">
 								2
 							</div>
 							<p className="text-sm text-gray-700 leading-relaxed">
@@ -77,7 +77,7 @@ export default function BatchPage() {
 							</p>
 						</li>
 						<li className="flex flex-row gap-4 items-start">
-							<div className="flex-shrink-0 w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">
+							<div className="shrink-0 w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">
 								3
 							</div>
 							<p className="text-sm text-gray-700 leading-relaxed">

@@ -1,23 +1,9 @@
-import Button from "./Button";
-import Card from "./Card";
-import ColorPicker from "./ColorPicker";
-import FormError from "./FormError";
-import Input from "./Input";
-import KPICard from "./KPICard";
-import Nav from "./Nav";
-import SectionTitle from "./SectionTitle";
-import Select from "./Select";
-import Skeleton from "./Skeleton";
-
-export {
-	Button,
-	Card,
-	ColorPicker,
-	FormError,
-	Input,
-	KPICard,
-	Nav,
-	SectionTitle,
-	Select,
-	Skeleton,
-};
+export { Button } from "./Button";
+export { Card, KPICard } from "./Cards";
+export { ColorPicker } from "./ColorPicker";
+export { FormError } from "./FormError";
+export { Input } from "./Input";
+export { Nav } from "./Nav";
+export { SectionTitle } from "./SectionTitle";
+export { Select } from "./Select";
+export { Skeleton } from "./Skeleton";

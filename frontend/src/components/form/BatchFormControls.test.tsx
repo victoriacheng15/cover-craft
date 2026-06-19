@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import BatchFormControls from "./BatchFormControls";
+import { BatchFormControls } from "./BatchFormControls";
 
 describe("BatchFormControls", () => {
 	const defaultProps = {

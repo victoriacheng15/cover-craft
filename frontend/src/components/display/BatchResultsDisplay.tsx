@@ -11,7 +11,7 @@ interface BatchResultsDisplayProps {
 	jobId: string | null;
 }
 
-export default function BatchResultsDisplay({
+export function BatchResultsDisplay({
 	status,
 	jobId,
 }: BatchResultsDisplayProps) {
@@ -63,7 +63,7 @@ export default function BatchResultsDisplay({
 	return (
 		<section
 			aria-labelledby="results-title"
-			className="flex-1 w-full flex flex-col gap-6 bg-white p-6 rounded-xl shadow-md border border-gray-100 min-h-[500px]"
+			className="flex-1 w-full flex flex-col gap-6 bg-white p-6 rounded-xl shadow-md border border-gray-100 min-h-125"
 		>
 			<header className="flex justify-between items-center bg-emerald-50 p-4 rounded-lg">
 				<div>
@@ -122,7 +122,7 @@ export default function BatchResultsDisplay({
 					return (
 						<li
 							key={itemKey}
-							className="relative aspect-[4/3] bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center"
+							className="relative aspect-4/3 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center"
 						>
 							{isError ? (
 								<article className="p-4 text-center">
@@ -151,7 +151,7 @@ export default function BatchResultsDisplay({
 						<li
 							// biome-ignore lint/suspicious/noArrayIndexKey: skeleton items are temporary and their order is fixed
 							key={`skeleton-${idx}`}
-							className="aspect-[4/3] bg-gray-50 animate-pulse rounded-lg border border-gray-100 flex items-center justify-center text-gray-300 italic text-xs"
+							className="aspect-4/3 bg-gray-50 animate-pulse rounded-lg border border-gray-100 flex items-center justify-center text-gray-300 italic text-xs"
 						>
 							Processing...
 						</li>
