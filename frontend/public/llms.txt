@@ -1,0 +1,16 @@
+# Cover Craft
+
+## Objective
+Generate clean, readable cover images via interactive controls and queued batch processing without manual design-tool setup.
+
+## Technical Stack
+TypeScript, React (Next.js), Azure Functions, Azure Queue Storage, MongoDB, Terraform
+
+## Core Architecture
+- **Pattern:** Full-Stack Serverless Monorepo with BFF (Backend-for-Frontend) Proxying
+- **Entry Point:** frontend/src/app/page.tsx (client views), api/ (Azure Functions handlers), shared/ (validation and common types)
+- **Persistence Strategy:** MongoDB for batch job state persistence, Azure Queue Storage for queue-based task management
+- **Observability:** Structured JSON logger, custom metrics, and telemetry dashboarding
+
+## Resource Links
+- **Code Repository:** https://github.com/victoriacheng15/cover-craft

@@ -1,8 +1,12 @@
 "use client";
 
-import { HeroSection } from "@/components/landing/HeroSection";
-import { OriginStory } from "@/components/landing/OriginStory";
-import { Principles } from "@/components/landing/Principles";
+import {
+	ArchitectureBlueprint,
+	CoreComponents,
+	DesignTradeoffs,
+	HeroSection,
+	ValidationResiliency,
+} from "@/components/landing/ShowcaseSections";
 import MainLayout from "@/components/layout/MainLayout";
 
 export default function LandingPage() {
@@ -10,8 +14,10 @@ export default function LandingPage() {
 		<MainLayout>
 			<div className="flex flex-col gap-14 max-w-4xl mx-auto">
 				<HeroSection />
-				<OriginStory />
-				<Principles />
+				<ArchitectureBlueprint />
+				<CoreComponents />
+				<ValidationResiliency />
+				<DesignTradeoffs />
 			</div>
 		</MainLayout>
 	);
