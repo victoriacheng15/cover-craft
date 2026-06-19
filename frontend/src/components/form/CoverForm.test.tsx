@@ -1,4 +1,3 @@
-import type { ImageParams } from "@cover-craft/shared";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CoverForm } from "./CoverForm";
@@ -12,14 +11,44 @@ vi.mock("@/hooks", async () => {
 	};
 });
 
-// Mock PreviewCanvas to avoid canvas issues in tests and make params testable
-vi.mock("./PreviewCanvas", () => ({
-	PreviewCanvas: ({ params }: { params: ImageParams }) => (
-		<div data-testid="preview-canvas">
-			<span>{params.title || "Title Preview"}</span>
-			<span>{params.subtitle || "Subtitle Preview"}</span>
-			<span data-testid="preview-bg">{params.backgroundColor}</span>
-			<span data-testid="preview-text">{params.textColor}</span>
+// Mock CoverPreviewDisplay to isolate child component complexity and avoid canvas rendering issues in tests
+vi.mock("./CoverPreviewDisplay", () => ({
+	CoverPreviewDisplay: ({
+		formData,
+		generatedImageUrl,
+		handleDownload,
+	}: {
+		formData: {
+			title: string;
+			subtitle?: string | null;
+			backgroundColor: string;
+			textColor: string;
+		};
+		generatedImageUrl: string | null;
+		handleDownload: () => void;
+	}) => (
+		<div data-testid="preview-display">
+			{!generatedImageUrl ? (
+				<div>
+					<h2>Live Preview</h2>
+					<div
+						role="img"
+						aria-label={`Preview: ${formData.title || "Title"} - ${formData.subtitle || "Subtitle"}`}
+					>
+						<span>{formData.title || "Title Preview"}</span>
+						<span>{formData.subtitle || "Subtitle Preview"}</span>
+						<span>{formData.backgroundColor}</span>
+						<span>{formData.textColor}</span>
+					</div>
+				</div>
+			) : (
+				<div>
+					<h2>Generated Image</h2>
+					<button type="button" onClick={handleDownload}>
+						Download
+					</button>
+				</div>
+			)}
 		</div>
 	),
 }));
@@ -411,5 +440,62 @@ describe("CoverForm", () => {
 		fireEvent.click(resetBtn);
 
 		expect(handleResetMock).toHaveBeenCalled();
+	});
+});
+
+import { FormField } from "./CoverFormControls";
+
+describe("FormField", () => {
+	it("renders label and children", () => {
+		render(
+			<FormField label="Username">
+				<input data-testid="test-input" />
+			</FormField>,
+		);
+
+		expect(screen.getByText("Username")).toBeInTheDocument();
+		expect(screen.getByTestId("test-input")).toBeInTheDocument();
+	});
+
+	it("renders required indicator when required is true", () => {
+		render(
+			<FormField label="Email" required>
+				<input />
+			</FormField>,
+		);
+
+		expect(screen.getByText("*")).toBeInTheDocument();
+	});
+
+	it("renders error message when error is provided", () => {
+		render(
+			<FormField label="Password" error="Required field">
+				<input />
+			</FormField>,
+		);
+
+		expect(screen.getByText("Required field")).toBeInTheDocument();
+	});
+
+	it("applies additional class name", () => {
+		render(
+			<FormField label="Bio" className="custom-class">
+				<input />
+			</FormField>,
+		);
+
+		const wrapper = screen.getByText("Bio").parentElement;
+		expect(wrapper).toHaveClass("custom-class");
+	});
+
+	it("associates label with input using htmlFor", () => {
+		render(
+			<FormField label="Username" htmlFor="username">
+				<input id="username" />
+			</FormField>,
+		);
+
+		const label = screen.getByText("Username") as HTMLLabelElement;
+		expect(label.htmlFor).toBe("username");
 	});
 });

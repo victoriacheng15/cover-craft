@@ -9,13 +9,152 @@ import {
 import {
 	Button,
 	Card,
+	ColorPicker,
 	FormError,
 	Input,
 	SectionTitle,
 	Select,
 } from "@/components/ui";
 import type { ContrastCheckResult, FormData } from "@/hooks";
-import { ColorContrastMessage, ColorControls, FormField } from "./index";
+import { cn } from "@/lib";
+
+interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
+	label: string;
+	error?: string;
+	htmlFor?: string;
+	required?: boolean;
+	children: React.ReactNode;
+}
+
+export function FormField({
+	className,
+	label,
+	error,
+	htmlFor,
+	required = false,
+	children,
+	...props
+}: FormFieldProps) {
+	return (
+		<div className={cn("flex flex-col gap-1", className)} {...props}>
+			<label
+				htmlFor={htmlFor}
+				className="block text-sm font-medium text-gray-900"
+			>
+				{label}
+				{required && <span className="text-red-500 ml-1">*</span>}
+			</label>
+			{children}
+			{error && (
+				<p className="text-xs text-red-500" role="alert">
+					{error}
+				</p>
+			)}
+		</div>
+	);
+}
+
+interface ColorContrastMessageProps {
+	contrastCheck: ContrastCheckResult;
+}
+
+export function ColorContrastMessage({
+	contrastCheck,
+}: ColorContrastMessageProps) {
+	function getContrastColorClasses(status: "good" | "warning" | "poor") {
+		const colorMap: Record<
+			"good" | "warning" | "poor",
+			{ dot: string; text: string }
+		> = {
+			good: { dot: "bg-emerald-500", text: "text-emerald-700" },
+			warning: { dot: "bg-yellow-500", text: "text-yellow-700" },
+			poor: { dot: "bg-red-500", text: "text-red-700" },
+		};
+		return colorMap[status];
+	}
+
+	return (
+		<div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+			<div className="flex items-center justify-between">
+				<p className="text-sm font-medium text-emerald-900">Color Contrast</p>
+				<output
+					className="flex items-center gap-2"
+					aria-live="polite"
+					aria-atomic="true"
+				>
+					{contrastCheck.status && (
+						<>
+							<span
+								className={`inline-block w-3 h-3 rounded-full ${getContrastColorClasses(contrastCheck.status).dot}`}
+								aria-hidden="true"
+							></span>
+							<p
+								className={`text-sm font-semibold ${getContrastColorClasses(contrastCheck.status).text}`}
+							>
+								{contrastCheck.message}
+							</p>
+							<span className="sr-only">
+								Contrast status is {contrastCheck.status}
+							</span>
+						</>
+					)}
+				</output>
+			</div>
+		</div>
+	);
+}
+
+interface ColorControlsProps {
+	formData: FormData;
+	handleInputChange: (key: keyof FormData, value: string) => void;
+	handleRandomizeColors: () => void;
+}
+
+export function ColorControls({
+	formData,
+	handleInputChange,
+	handleRandomizeColors,
+}: ColorControlsProps) {
+	return (
+		<div className="flex gap-10 items-end">
+			<div className="flex-1">
+				<FormField label="Background Color" htmlFor="background-color">
+					<ColorPicker
+						id="background-color"
+						value={formData.backgroundColor}
+						onChange={(e) =>
+							handleInputChange("backgroundColor", e.target.value)
+						}
+						title="Choose background color for your cover"
+						aria-label="Background color picker"
+					/>
+				</FormField>
+			</div>
+
+			<div className="flex-1">
+				<FormField label="Text Color" htmlFor="text-color">
+					<ColorPicker
+						id="text-color"
+						value={formData.textColor}
+						onChange={(e) => handleInputChange("textColor", e.target.value)}
+						title="Choose text color for your cover"
+						aria-label="Text color picker"
+					/>
+				</FormField>
+			</div>
+
+			<Button
+				variant="outline"
+				onClick={handleRandomizeColors}
+				aria-label="Randomize background and text colors"
+				type="button"
+				className="shrink-0"
+			>
+				Randomize Colors
+			</Button>
+		</div>
+	);
+}
 
 interface CoverFormControlsProps {
 	formData: FormData;
