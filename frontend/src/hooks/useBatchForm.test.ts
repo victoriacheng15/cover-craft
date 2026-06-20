@@ -3,13 +3,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useBatchForm } from "./useBatchForm";
 
 // Mock the services
-vi.mock("@/services", () => ({
+vi.mock("@/services/api", () => ({
 	generateBatchImages: vi.fn(),
 	getBatchJobStatus: vi.fn(),
 }));
 
-import { generateBatchImages, getBatchJobStatus } from "@/services";
-import type { JobStatusResponse } from "@/services/cover";
+import {
+	generateBatchImages,
+	getBatchJobStatus,
+	type JobStatusResponse,
+} from "@/services/api";
 
 const generateBatchImagesMock = vi.mocked(generateBatchImages);
 const getBatchJobStatusMock = vi.mocked(getBatchJobStatus);

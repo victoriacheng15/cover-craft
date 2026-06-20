@@ -5,7 +5,7 @@ import type {
 	UserEngagement,
 } from "@cover-craft/shared";
 import { useEffect, useState } from "react";
-import { getAnalytics } from "@/services";
+import { getAnalytics } from "@/services/api";
 
 interface AnalyticsData {
 	userEngagement: UserEngagement;

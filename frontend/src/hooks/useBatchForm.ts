@@ -7,7 +7,7 @@ import {
 	getBatchJobStatus,
 	type ImageParams,
 	type JobStatusResponse,
-} from "@/services";
+} from "@/services/api";
 
 const DEFAULT_JSON_EXAMPLE = `[
   {
