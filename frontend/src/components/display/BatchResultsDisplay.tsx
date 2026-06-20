@@ -4,7 +4,7 @@ import JSZip from "jszip";
 import NextImage from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui";
-import type { JobStatusResponse } from "@/services";
+import type { JobStatusResponse } from "@/services/api";
 
 interface BatchResultsDisplayProps {
 	status: JobStatusResponse | null;

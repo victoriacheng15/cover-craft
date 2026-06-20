@@ -7,12 +7,12 @@ import {
 	SIZE_PRESETS,
 } from "@cover-craft/shared";
 import { useState } from "react";
-import { calculatePreviewDimensions, downloadImage } from "@/lib";
+import { calculatePreviewDimensions, downloadImage } from "@/lib/utils";
 import {
 	generateImage,
 	sendDownloadEvent,
 	sendGenerateEvent,
-} from "@/services";
+} from "@/services/api";
 import { useContrastCheck } from "./useContrastCheck";
 
 export interface FormData {

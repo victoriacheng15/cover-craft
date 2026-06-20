@@ -16,7 +16,7 @@ import {
 	Select,
 } from "@/components/ui";
 import type { ContrastCheckResult, FormData } from "@/hooks";
-import { cn } from "@/lib";
+import { cn } from "@/lib/utils";
 
 interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
 	label: string;

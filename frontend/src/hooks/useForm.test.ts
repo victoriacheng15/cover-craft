@@ -3,15 +3,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useForm } from "./useForm";
 
 // Mock the API utilities
-vi.mock("@/services", () => ({
+vi.mock("@/services/api", () => ({
 	generateImage: vi.fn(),
 	sendDownloadEvent: vi.fn(),
 	sendGenerateEvent: vi.fn(),
 }));
 
 // Mock the lib utilities
-vi.mock("@/lib", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@/lib")>();
+vi.mock("@/lib/utils", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@/lib/utils")>();
 	return {
 		...actual,
 		downloadImage: vi.fn(),
@@ -25,12 +25,12 @@ import {
 	SIZE_PRESETS,
 	WCAG_AA_THRESHOLD,
 } from "@cover-craft/shared";
-import { downloadImage } from "@/lib";
+import { downloadImage } from "@/lib/utils";
 import {
 	generateImage,
 	sendDownloadEvent,
 	sendGenerateEvent,
-} from "@/services";
+} from "@/services/api";
 
 const downloadImageMock = vi.mocked(downloadImage);
 const generateImageMock = vi.mocked(generateImage);

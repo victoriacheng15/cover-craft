@@ -1,6 +1,6 @@
 import { MainLayout } from "@/components/layout/layouts";
 import { SectionTitle } from "@/components/ui";
-import { ChapterSummary, TimelineItem } from "./_components";
+import { ChapterSummary, TimelineItem } from "./_components/Timeline";
 import { chapters } from "./content";
 
 export default function EvolutionPage() {

@@ -1,4 +1,4 @@
-import { cn } from "@/lib";
+import { cn } from "@/lib/utils";
 
 type SectionTitleProps = React.HTMLAttributes<HTMLHeadingElement> & {
 	size?: "sm" | "md" | "lg" | "xl";

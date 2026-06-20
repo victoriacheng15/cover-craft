@@ -1,5 +1,27 @@
 import { Card } from "@/components/ui";
-import type { TimelineEvent } from "../content";
+import type { Chapter, TimelineEvent } from "../content";
+
+interface ChapterSummaryProps {
+	chapter: Chapter;
+}
+
+export function ChapterSummary({ chapter }: ChapterSummaryProps) {
+	return (
+		<summary className="cursor-pointer list-none p-6 flex flex-col gap-3 select-none hover:bg-gray-50/50 rounded-xl transition-colors">
+			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+				<h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+					<span className="transform transition-transform duration-200 group-open:rotate-90 text-emerald-500">
+						▶
+					</span>
+					{chapter.title}
+				</h2>
+			</div>
+			<p className="text-gray-600 leading-relaxed pl-6 border-l-2 border-gray-100 ml-2">
+				{chapter.intro}
+			</p>
+		</summary>
+	);
+}
 
 interface TimelineItemProps {
 	event: TimelineEvent;
@@ -8,7 +30,7 @@ interface TimelineItemProps {
 export function TimelineItem({ event }: TimelineItemProps) {
 	return (
 		<li className="relative pl-8 md:pl-12">
-			<div className="absolute -left-[9px] top-6 h-4 w-4 rounded-full bg-emerald-500 border-4 border-white shadow-sm ring-1 ring-emerald-100" />
+			<div className="absolute -left-2.25 top-6 h-4 w-4 rounded-full bg-emerald-500 border-4 border-white shadow-sm ring-1 ring-emerald-100" />
 			<Card className="flex flex-col gap-3 hover:shadow-md transition-shadow">
 				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
 					<h3 className="text-lg font-bold text-gray-900">{event.title}</h3>
