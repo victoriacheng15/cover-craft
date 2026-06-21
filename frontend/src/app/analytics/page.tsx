@@ -1,6 +1,6 @@
 "use client";
 
-import { MainLayout } from "@/components/layout/layouts";
+import { MainLayout } from "@/components/layouts";
 import { SectionTitle } from "@/components/ui";
 import { useAnalytics } from "@/hooks";
 import {

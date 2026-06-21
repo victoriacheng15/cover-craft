@@ -1,13 +1,13 @@
 "use client";
 
+import { MainLayout } from "@/components/layouts";
 import {
 	ArchitectureBlueprint,
 	CoreComponents,
 	DesignTradeoffs,
 	HeroSection,
 	ValidationResiliency,
-} from "@/components/landing/ShowcaseSections";
-import { MainLayout } from "@/components/layout/layouts";
+} from "@/components/ShowcaseSections";
 
 export default function LandingPage() {
 	return (
