@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { BatchResultsDisplay } from "@/components/display/BatchResultsDisplay";
+import { BatchResultsDisplay } from "@/components/BatchResultsDisplay";
 import { BatchFormControls } from "@/components/form";
-import { MainLayout } from "@/components/layout/layouts";
+import { MainLayout } from "@/components/layouts";
 import { Button, SectionTitle } from "@/components/ui";
 import { useBatchForm } from "@/hooks";
 
