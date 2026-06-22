@@ -1,17 +1,11 @@
 export interface CoreComponent {
+	title: string;
 	description: string;
 }
 
-export interface ProofSection {
-	reproducibility: {
-		description: string;
-	};
-	automated_verification: {
-		description: string;
-	};
-	telemetry_pipeline: {
-		description: string;
-	};
+export interface ProofItem {
+	title: string;
+	description: string;
 }
 
 export interface Pivot {
@@ -37,16 +31,12 @@ export interface LandingConfig {
 		persistence_strategy: string;
 		observability: string;
 	};
-	tech: {
-		core_component_1: CoreComponent;
-		core_component_2: CoreComponent;
-		core_component_3: CoreComponent;
+	architecture: {
+		diagram_ascii: string;
 	};
-	proof: ProofSection;
+	tech: CoreComponent[];
+	proof: ProofItem[];
 	reach: {
-		architecture_blueprint: {
-			diagram_ascii: string;
-		};
 		humble_pivots: Pivot[];
 		objective_clarity: {
 			description: string;
@@ -79,37 +69,8 @@ export const landingConfig: LandingConfig = {
 		observability:
 			"Structured JSON logger, custom metrics, and telemetry dashboarding",
 	},
-	tech: {
-		core_component_1: {
-			description:
-				"Canvas rendering engine running inside Azure Functions to dynamically compile text, custom typography, and layout styles into consistent PNG images.",
-		},
-		core_component_2: {
-			description:
-				"Queue-backed batch processor with a retry-aware serverless worker that coordinates bulk generation requests asynchronously via Azure Queue Storage and tracks progress in MongoDB.",
-		},
-		core_component_3: {
-			description:
-				"Accessible client portal with real-time WCAG AA contrast validation, color palette selection, and unified inputs shared programmatically with the validation engine.",
-		},
-	},
-	proof: {
-		reproducibility: {
-			description:
-				"Declarative infrastructure provisioning with OpenTofu (Terraform-compatible) and automated GitHub Actions CI/CD workflows for consistent serverless deployment.",
-		},
-		automated_verification: {
-			description:
-				"Comprehensive Vitest test suite executing client component validation, shared rules, and API handlers under automated test runs.",
-		},
-		telemetry_pipeline: {
-			description:
-				"Structured application monitoring logs and MongoDB query tracking to observe backend execution bottlenecks and queue latencies.",
-		},
-	},
-	reach: {
-		architecture_blueprint: {
-			diagram_ascii: `┌──────────────────────────────────────────────────────────────────┐
+	architecture: {
+		diagram_ascii: `┌──────────────────────────────────────────────────────────────────┐
 │                        Next.js Client UI                         │
 └──────────────────────────────────────────────────────────────────┘
                                  │
@@ -149,7 +110,42 @@ export const landingConfig: LandingConfig = {
                         │             MongoDB              │
                         │           (Job Status)           │
                         └──────────────────────────────────┘`,
+	},
+	tech: [
+		{
+			title: "Canvas Rendering Engine",
+			description:
+				"Canvas rendering engine running inside Azure Functions to dynamically compile text, custom typography, and layout styles into consistent PNG images.",
 		},
+		{
+			title: "Queue-backed Batch Processor",
+			description:
+				"Queue-backed batch processor with a retry-aware serverless worker that coordinates bulk generation requests asynchronously via Azure Queue Storage and tracks progress in MongoDB.",
+		},
+		{
+			title: "Accessible Client Portal",
+			description:
+				"Accessible client portal with real-time WCAG AA contrast validation, color palette selection, and unified inputs shared programmatically with the validation engine.",
+		},
+	],
+	proof: [
+		{
+			title: "Reproducibility",
+			description:
+				"Declarative infrastructure provisioning with OpenTofu (Terraform-compatible) and automated GitHub Actions CI/CD workflows for consistent serverless deployment.",
+		},
+		{
+			title: "Automated Verification",
+			description:
+				"Comprehensive Vitest test suite executing client component validation, shared rules, and API handlers under automated test runs.",
+		},
+		{
+			title: "Telemetry Pipeline",
+			description:
+				"Structured application monitoring logs and MongoDB query tracking to observe backend execution bottlenecks and queue latencies.",
+		},
+	],
+	reach: {
 		humble_pivots: [
 			{
 				title: "Azure Functions Monorepo Packaging & Deployment",

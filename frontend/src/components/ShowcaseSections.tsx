@@ -59,11 +59,11 @@ export function ArchitectureBlueprint() {
 				as="h3"
 				className="text-2xl font-bold tracking-tight"
 			>
-				Architecture Blueprint
+				Architecture
 			</SectionTitle>
 			<div className="relative rounded-xl border border-slate-800 bg-slate-950 p-6 shadow-lg overflow-x-auto">
 				<pre className="font-mono text-xs md:text-sm text-slate-100 leading-relaxed select-all">
-					{landingConfig.reach.architecture_blueprint.diagram_ascii}
+					{landingConfig.architecture.diagram_ascii}
 				</pre>
 			</div>
 		</section>
@@ -81,39 +81,19 @@ export function CoreComponents() {
 				Core Components & Logic
 			</SectionTitle>
 			<ul className="space-y-4 text-gray-700 bg-white p-6 rounded-xl border border-emerald-200 shadow-sm list-none">
-				<li className="flex items-start gap-3">
-					<span className="shrink-0 w-2 h-2 rounded-full bg-emerald-500 mt-2" />
-					<div>
-						<strong className="text-gray-900 block text-base font-bold">
-							Canvas Rendering Engine
-						</strong>
-						<p className="text-sm text-gray-600 leading-relaxed mt-0.5">
-							{landingConfig.tech.core_component_1.description}
-						</p>
-					</div>
-				</li>
-				<li className="flex items-start gap-3">
-					<span className="shrink-0 w-2 h-2 rounded-full bg-emerald-500 mt-2" />
-					<div>
-						<strong className="text-gray-900 block text-base font-bold">
-							Queue-backed Batch Processor
-						</strong>
-						<p className="text-sm text-gray-600 leading-relaxed mt-0.5">
-							{landingConfig.tech.core_component_2.description}
-						</p>
-					</div>
-				</li>
-				<li className="flex items-start gap-3">
-					<span className="shrink-0 w-2 h-2 rounded-full bg-emerald-500 mt-2" />
-					<div>
-						<strong className="text-gray-900 block text-base font-bold">
-							Accessible Client Portal
-						</strong>
-						<p className="text-sm text-gray-600 leading-relaxed mt-0.5">
-							{landingConfig.tech.core_component_3.description}
-						</p>
-					</div>
-				</li>
+				{landingConfig.tech.map((component) => (
+					<li key={component.title} className="flex items-start gap-3">
+						<span className="shrink-0 w-2 h-2 rounded-full bg-emerald-500 mt-2" />
+						<div>
+							<strong className="text-gray-900 block text-base font-bold">
+								{component.title}
+							</strong>
+							<p className="text-sm text-gray-600 leading-relaxed mt-0.5">
+								{component.description}
+							</p>
+						</div>
+					</li>
+				))}
 			</ul>
 		</section>
 	);
@@ -130,39 +110,19 @@ export function ValidationResiliency() {
 				Validation & Resiliency Testing
 			</SectionTitle>
 			<ul className="space-y-4 text-gray-700 bg-white p-6 rounded-xl border border-emerald-200 shadow-sm list-none">
-				<li className="flex items-start gap-3">
-					<span className="shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2" />
-					<div>
-						<strong className="text-gray-900 block text-base font-bold">
-							Reproducibility
-						</strong>
-						<p className="text-sm text-gray-600 leading-relaxed mt-0.5">
-							{landingConfig.proof.reproducibility.description}
-						</p>
-					</div>
-				</li>
-				<li className="flex items-start gap-3">
-					<span className="shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2" />
-					<div>
-						<strong className="text-gray-900 block text-base font-bold">
-							Automated Verification
-						</strong>
-						<p className="text-sm text-gray-600 leading-relaxed mt-0.5">
-							{landingConfig.proof.automated_verification.description}
-						</p>
-					</div>
-				</li>
-				<li className="flex items-start gap-3">
-					<span className="shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2" />
-					<div>
-						<strong className="text-gray-900 block text-base font-bold">
-							Telemetry Pipeline
-						</strong>
-						<p className="text-sm text-gray-600 leading-relaxed mt-0.5">
-							{landingConfig.proof.telemetry_pipeline.description}
-						</p>
-					</div>
-				</li>
+				{landingConfig.proof.map((item) => (
+					<li key={item.title} className="flex items-start gap-3">
+						<span className="shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2" />
+						<div>
+							<strong className="text-gray-900 block text-base font-bold">
+								{item.title}
+							</strong>
+							<p className="text-sm text-gray-600 leading-relaxed mt-0.5">
+								{item.description}
+							</p>
+						</div>
+					</li>
+				))}
 			</ul>
 		</section>
 	);
@@ -179,7 +139,7 @@ export function DesignTradeoffs() {
 				Design Trade-offs & Verification Logs
 			</SectionTitle>
 			<div className="flex flex-col gap-8">
-				{/* #### Humble Pivots */}
+				{/* Humble Pivots */}
 				<div className="flex flex-col gap-4">
 					<SectionTitle size="md" as="h4" className="text-xl font-bold">
 						Humble Pivots
@@ -205,7 +165,7 @@ export function DesignTradeoffs() {
 					</div>
 				</div>
 
-				{/* #### Objective Clarity */}
+				{/* Objective Clarity */}
 				<div className="flex flex-col gap-4">
 					<SectionTitle size="md" as="h4" className="text-xl font-bold">
 						Objective Clarity
@@ -217,7 +177,7 @@ export function DesignTradeoffs() {
 					</div>
 				</div>
 
-				{/* #### Verifiable Outputs */}
+				{/* Verifiable Outputs */}
 				<div className="flex flex-col gap-4">
 					<SectionTitle size="md" as="h4" className="text-xl font-bold">
 						Verifiable Outputs
