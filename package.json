@@ -46,7 +46,7 @@
 		"@biomejs/biome": "2.5.0",
 		"@cover-craft/shared": "./shared",
 		"@testing-library/dom": "^10.4.1",
-		"@vitest/coverage-v8": "^4.1.8",
+		"@vitest/coverage-v8": "^4.1.9",
 		"api": "./api",
 		"azurite": "^3.35.0",
 		"frontend": "./frontend",
