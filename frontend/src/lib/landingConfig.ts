@@ -33,6 +33,7 @@ export interface LandingConfig {
 	};
 	architecture: {
 		diagram_ascii: string;
+		pipeline_diagram_ascii: string;
 	};
 	tech: CoreComponent[];
 	proof: ProofItem[];
@@ -110,6 +111,40 @@ export const landingConfig: LandingConfig = {
                         │             MongoDB              │
                         │           (Job Status)           │
                         └──────────────────────────────────┘`,
+		pipeline_diagram_ascii: `┌──────────────────────────────────────────────────────────────────┐
+│                     Git Push / Merge to main                     │
+└──────────────────────────────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                  GitHub Actions Runner (CI/CD)                   │
+└──────────────────────────────────────────────────────────────────┘
+                                 │
+                                 │ 1. Azure Login (Service Principal)
+                                 │ 2. Sets up OpenTofu (v1.6.0)
+      ┌────────────────────┐     │ 3. Runs 'tofu init & apply'
+      │ Azure Blob Storage │ <-> │
+      │     (tfstate)      │     │
+      └────────────────────┘     ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                 OpenTofu Infrastructure Apply                    │
+│    (Provision storage, App Insights, Function App, App Service)  │
+└──────────────────────────────────────────────────────────────────┘
+               │                                   │
+               │ Build & Package                   │ Build & Package
+               ▼                                   ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│   Create api-deploy.zip      │    │ Create frontend-deploy.zip   │
+│   (Bundles shared package)   │    │ (Next.js Standalone build)   │
+└──────────────────────────────┘    └──────────────────────────────┘
+               │                                   │
+               │ Zip Deploy                        │ Zip Deploy
+               │ (config-zip)                      │ (config-zip)
+               ▼                                   ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│        Azure Function        │    │     Azure App Service UI     │
+│       ("cover-craft")        │    │      ("cover-craft-ui")      │
+└──────────────────────────────┘    └──────────────────────────────┘`,
 	},
 	tech: [
 		{
@@ -132,7 +167,7 @@ export const landingConfig: LandingConfig = {
 		{
 			title: "Reproducibility",
 			description:
-				"Declarative infrastructure provisioning with OpenTofu (Terraform-compatible) and automated GitHub Actions CI/CD workflows for consistent serverless deployment.",
+				"Declarative infrastructure provisioning with OpenTofu (Terraform-compatible), remote state tracking in Azure Blob Storage, and automated GitHub Actions CI/CD workflows for consistent serverless deployment.",
 		},
 		{
 			title: "Automated Verification",
