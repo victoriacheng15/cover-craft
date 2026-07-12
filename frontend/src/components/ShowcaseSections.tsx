@@ -53,18 +53,37 @@ export function HeroSection() {
 
 export function ArchitectureBlueprint() {
 	return (
-		<section className="flex flex-col gap-4">
+		<section className="flex flex-col gap-6">
 			<SectionTitle
 				size="lg"
 				as="h3"
 				className="text-2xl font-bold tracking-tight"
 			>
-				Architecture
+				Architecture & Infrastructure
 			</SectionTitle>
-			<div className="relative rounded-xl border border-slate-800 bg-slate-950 p-6 shadow-lg overflow-x-auto">
-				<pre className="font-mono text-xs md:text-sm text-slate-100 leading-relaxed select-all">
-					{landingConfig.architecture.diagram_ascii}
-				</pre>
+
+			<div className="flex flex-col gap-8">
+				<div className="flex flex-col gap-3">
+					<h4 className="text-lg font-bold text-gray-900 px-1">
+						Infrastructure & Deployment Pipeline
+					</h4>
+					<div className="relative rounded-xl border border-slate-800 bg-slate-950 p-6 shadow-lg overflow-x-auto">
+						<pre className="font-mono text-xs md:text-sm text-slate-100 leading-relaxed select-all">
+							{landingConfig.architecture.pipeline_diagram_ascii}
+						</pre>
+					</div>
+				</div>
+
+				<div className="flex flex-col gap-3">
+					<h4 className="text-lg font-bold text-gray-900 px-1">
+						Application Request Flow
+					</h4>
+					<div className="relative rounded-xl border border-slate-800 bg-slate-950 p-6 shadow-lg overflow-x-auto">
+						<pre className="font-mono text-xs md:text-sm text-slate-100 leading-relaxed select-all">
+							{landingConfig.architecture.diagram_ascii}
+						</pre>
+					</div>
+				</div>
 			</div>
 		</section>
 	);
