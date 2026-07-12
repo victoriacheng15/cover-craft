@@ -16,27 +16,24 @@ The frontend is a **Next.js (App Router)** application that provides a real-time
 
 The frontend orchestrates two distinct workflows: direct rendering for previews and polling-based retrieval for batch jobs.
 
-```mermaid
-graph LR
-    Client[Browser] --> Proxy[Next.js API Routes]
-    
-    subgraph ProxyLayer["Proxy Layer (BFF)"]
-        Proxy
-    end
-    
-    subgraph Backend["Azure Functions"]
-        Sync[generateImage]
-        Async[generateImages]
-        Status[jobStatus]
-    end
-
-    Proxy --> Sync
-    Proxy --> Async
-    Proxy --> Status
-    
-    Client -->|1. Submit Batch| Async
-    Client -->|2. Poll Status| Status
-    Client -->|3. Preview| Sync
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│                         Client Browser                           │
+└──────────────────────────────────────────────────────────────────┘
+         │                      │                      │
+         │ 1. Preview           │ 2. Submit Batch      │ 3. Status
+         ▼                      ▼                      ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                   Next.js Proxy Layer (BFF)                      │
+│            (Secures API keys and prevents CORS issues)           │
+└──────────────────────────────────────────────────────────────────┘
+         │                      │                      │
+         │ /generateImage       │ /generateImages      │ /jobStatus
+         ▼                      ▼                      ▼
+┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│  Azure Function  │   │  Azure Function  │   │  Azure Function  │
+│  (SingleRender)  │   │ (QueueProducer)  │   │  (GetJobStatus)  │
+└──────────────────┘   └──────────────────┘   └──────────────────┘
 ```
 
 ## Architectural Patterns

@@ -17,44 +17,44 @@ The backend is a serverless API built on Azure Functions (v4, Node.js 22), respo
 
 The platform implements two distinct execution patterns optimized for different workloads:
 
-```mermaid
-graph TD
-    Client[Client Browser]
-    subgraph Azure["Azure Function App"]
-        Gateway[API Gateway / Router]
-        
-        subgraph SyncPath["Synchronous Path (Single)"]
-            Single["POST /generateImage<br/>(Immediate Render)"]
-        end
-        
-        subgraph AsyncPath["Asynchronous Path (Bulk)"]
-            Bulk["POST /generateImages<br/>(Queue Job)"]
-            Status["GET /jobStatus/{id}<br/>(Poll Progress)"]
-            Worker["Timer Trigger: processJobs<br/>(Background Worker)"]
-        end
-        
-        Render[Canvas Rendering Engine]
-        Queue[Azure Queue Storage]
-    end
-
-    subgraph Data["Data Layer"]
-        Mongo[(MongoDB)]
-    end
-
-    Client --> Gateway
-    Gateway --> Single
-    Gateway --> Bulk
-    Gateway --> Status
-    
-    Single --> Render
-    Single --> Mongo
-    
-    Bulk --> Queue
-    Bulk --> Mongo
-    
-    Queue --> Worker
-    Worker --> Render
-    Worker --> Mongo
+```text
+                    ┌────────────────────────┐
+                    │     Client Browser     │
+                    └────────────────────────┘
+                                 │
+                                 ▼
+                    ┌────────────────────────┐
+                    │  API Gateway / Router  │
+                    └────────────────────────┘
+         ┌───────────────────────┼───────────────────────┐
+         │ /generateImage        │ /generateImages       │ /jobStatus
+         ▼                       ▼                       ▼
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│   Single Image   │    │  Bulk Generator  │    │    Job Status    │
+│ (Immediate Sync) │    │ (Asynchronous)   │    │ (Polling Check)  │
+└──────────────────┘    └──────────────────┘    └──────────────────┘
+         │                       │                       │
+         │ Uses                  │ Enqueues              │ Reads
+         ▼                       ▼                       │ Status
+┌──────────────────┐    ┌──────────────────┐             │
+│ Canvas Rendering │    │   Azure Queue    │             │
+│  Engine (PNG)    │    │     Storage      │             │
+└──────────────────┘    └──────────────────┘             │
+         ▲                       │                       │
+         │                       │ Triggers              │
+         │                       ▼                       │
+         │              ┌──────────────────┐             │
+         │              │ Background Job   │             │
+         │              │ Worker (Process) │             │
+         │              └──────────────────┘             │
+         │                       │                       │
+         └───────────────────────┼───────────────────────┘
+                                 │ Updates / Reads
+                                 ▼
+                        ┌──────────────────┐
+                        │     MongoDB      │
+                        │   (Job State)    │
+                        └──────────────────┘
 ```
 
 ## Functions

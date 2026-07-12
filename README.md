@@ -18,41 +18,100 @@ It supports fast single-image generation and queued batch processing, with share
 
 ---
 
-## Architecture
+## Architecture & Infrastructure
 
-The platform has two generation paths:
+### Infrastructure & Deployment Pipeline
+
+The platform's cloud infrastructure is declared using OpenTofu (Terraform-compatible) and deployed via GitHub Actions, with remote state tracked in Azure Blob Storage:
+
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│                     Git Push / Merge to main                     │
+└──────────────────────────────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                  GitHub Actions Runner (CI/CD)                   │
+└──────────────────────────────────────────────────────────────────┘
+                                 │
+                                 │ 1. Azure Login (Service Principal)
+                                 │ 2. Sets up OpenTofu (v1.6.0)
+      ┌────────────────────┐     │ 3. Runs 'tofu init & apply'
+      │ Azure Blob Storage │ <-> │
+      │     (tfstate)      │     │
+      └────────────────────┘     ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                 OpenTofu Infrastructure Apply                    │
+│    (Provision storage, App Insights, Function App, App Service)  │
+└──────────────────────────────────────────────────────────────────┘
+               │                                   │
+               │ Build & Package                   │ Build & Package
+               ▼                                   ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│   Create api-deploy.zip      │    │ Create frontend-deploy.zip   │
+│   (Bundles shared package)   │    │ (Next.js Standalone build)   │
+└──────────────────────────────┘    └──────────────────────────────┘
+               │                                   │
+               │ Zip Deploy                        │ Zip Deploy
+               │ (config-zip)                      │ (config-zip)
+               ▼                                   ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│        Azure Function        │    │     Azure App Service UI     │
+│       ("cover-craft")        │    │      ("cover-craft-ui")      │
+└──────────────────────────────┘    └──────────────────────────────┘
+```
+
+### Application Request Flow
+
+The platform has two runtime generation paths:
 
 | Path | Use case | Flow |
 | :--- | :--- | :--- |
 | Single image | Fast interactive generation | User request -> Azure Function -> Canvas renderer -> image response |
 | Batch images | Larger workloads | User request -> HTTP 202 -> Azure Queue Storage -> retry-aware worker -> MongoDB job status |
 
-```mermaid
-graph TD
-    User([User])
-    UI[React UI]
-    API[Azure Functions API]
-    Single[Single Image Function]
-    Batch[Batch Producer Function]
-    Status[Job Status Function]
-    Queue[Azure Queue Storage]
-    Worker[Queue Worker Function]
-    Render[Canvas Renderer]
-    DB[(MongoDB Job State)]
-
-    User --> UI
-    UI --> API
-    API --> Single
-    Single --> Render
-    Render --> UI
-    API --> Batch
-    API --> Status
-    Batch --> Queue
-    Batch --> DB
-    Status --> DB
-    Queue --> Worker
-    Worker --> Render
-    Worker --> DB
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│                        Next.js Client UI                         │
+└──────────────────────────────────────────────────────────────────┘
+                                 │
+                                 │ POST /api/generateImage (Single)
+                                 │ POST /api/generateImages (Batch)
+                                 │ GET /api/jobStatus (Poll Status)
+                                 ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                        Next.js BFF Server                        │
+└──────────────────────────────────────────────────────────────────┘
+         │                       │                       │
+         │ /generateImage        │ /generateImages       │ /getJobStatus
+         ▼                       ▼                       ▼
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│  Azure Function  │    │  Azure Function  │    │  Azure Function  │
+│  (SingleRender)  │    │ (QueueProducer)  │    │  (GetJobStatus)  │
+└──────────────────┘    └──────────────────┘    └──────────────────┘
+         │                       │                       │
+         │ Uses                  │ Enqueues              │ Reads
+         ▼                       ▼                       │ Status
+         │                       │                       │
+┌──────────────────┐    ┌──────────────────┐             │
+│  Canvas Library  │    │   Azure Queue    │             │
+└──────────────────┘    │     Storage      │             │
+         ▲              └──────────────────┘             │
+         │                       │                       │
+         │ Uses                  │ Triggers              │
+         │                       ▼                       │
+         │              ┌──────────────────┐             │
+         │              │  Azure Function  │             │
+         │              │  (QueueWorker)   │             │
+         │              └──────────────────┘             │
+         │                       │                       │
+         └───────────────────────┤                       │
+                                 │ Updates               │
+                                 ▼                       ▼
+                        ┌──────────────────────────────────┐
+                        │             MongoDB              │
+                        │           (Job Status)           │
+                        └──────────────────────────────────┘
 ```
 
 ---
