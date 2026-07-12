@@ -12,7 +12,7 @@ Welcome to the **Cover Craft** technical documentation. This directory contains 
 ## ⚙️ Operations & DevOps
 
 - [**Operations & CI/CD**](./operations.md)
-  - GitHub Actions workflows, deployment strategies (Vercel/Azure), and secrets management.
+  - GitHub Actions workflows, deployment strategies (Azure Web App/Functions), and secrets management.
 
 ## 🧠 Knowledge Base
 

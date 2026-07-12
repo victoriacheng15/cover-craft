@@ -11,15 +11,46 @@ This directory documents the main system architecture for Cover Craft across the
 
 Cover Craft is split into a Next.js frontend and an Azure Functions backend. Shared validation rules and types live in `@cover-craft/shared`, while Azure cloud resources are managed through OpenTofu.
 
-```mermaid
-graph LR
-    Browser[Browser] --> Frontend[Next.js Frontend]
-    Frontend --> BFF[Next.js API Routes]
-    BFF --> API[Azure Functions API]
-    API --> Render[Canvas Rendering Engine]
-    API --> Queue[Azure Queue Storage]
-    API --> Mongo[(MongoDB)]
-    Queue --> Worker[Batch Worker]
-    Worker --> Render
-    Worker --> Mongo
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│                        Next.js Client UI                         │
+└──────────────────────────────────────────────────────────────────┘
+                                 │
+                                 │ POST /api/generateImage (Single)
+                                 │ POST /api/generateImages (Batch)
+                                 │ GET /api/jobStatus (Poll Status)
+                                 ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                        Next.js BFF Server                        │
+└──────────────────────────────────────────────────────────────────┘
+         │                       │                       │
+         │ /generateImage        │ /generateImages       │ /getJobStatus
+         ▼                       ▼                       ▼
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│  Azure Function  │    │  Azure Function  │    │  Azure Function  │
+│  (SingleRender)  │    │ (QueueProducer)  │    │  (GetJobStatus)  │
+└──────────────────┘    └──────────────────┘    └──────────────────┘
+         │                       │                       │
+         │ Uses                  │ Enqueues              │ Reads
+         ▼                       ▼                       │ Status
+         │                       │                       │
+┌──────────────────┐    ┌──────────────────┐             │
+│  Canvas Library  │    │   Azure Queue    │             │
+└──────────────────┘    │     Storage      │             │
+         ▲              └──────────────────┘             │
+         │                       │                       │
+         │ Uses                  │ Triggers              │
+         │                       ▼                       │
+         │              ┌──────────────────┐             │
+         │              │  Azure Function  │             │
+         │              │  (QueueWorker)   │             │
+         │              └──────────────────┘             │
+         │                       │                       │
+         └───────────────────────┤                       │
+                                 │ Updates               │
+                                 ▼                       ▼
+                        ┌──────────────────────────────────┐
+                        │             MongoDB              │
+                        │           (Job Status)           │
+                        └──────────────────────────────────┘
 ```

@@ -9,8 +9,7 @@ We use path-based triggering to ensure pipelines only run when relevant files ar
 | Workflow | File | Trigger | Purpose |
 | :--- | :--- | :--- | :--- |
 | **Infrastructure & Code Deployment** | `infra-deploy.yml` | Push to `main` when `tofu/`, app workspaces, or root package files change; manual dispatch | Applies OpenTofu, then zip-deploys the Azure Functions API and Next.js frontend to Azure. |
-| **CI - Lint & Test** | `ci.yml` | PR or push to `main` when `api/`, `frontend/`, or `shared/` changes; manual dispatch | Runs project linting, then selectively runs API and frontend tests based on changed paths. |
-| **Markdown Linter** | `markdownlint.yml` | PR to `main` when Markdown changes; manual dispatch | Validates Markdown formatting using a custom action. |
+| **CI - Lint & Test** | `ci.yml` | PR or push to `main` when code or documentation changes; manual dispatch | Runs Biome code checks, Markdown linting, and selectively executes backend and frontend test suites based on modified paths. |
 
 ## Deployment Configuration
 
@@ -21,6 +20,7 @@ Managed via OpenTofu (IaC) and orchestrated in Canada Central.
 | Setting | Value | Description |
 | :--- | :--- | :--- |
 | **Infrastructure Engine** | `OpenTofu` | Codified resource management via `.tf` files. |
+| **Tofu State Backend** | `Azure Blob Storage (tfstate)` | Remote state management to prevent configuration drift. |
 | **API Plan** | `Flex Consumption (FC1)` | High-performance serverless Node.js 22 runtime. |
 | **Frontend Plan** | `App Service (F1)` | Zero-cost Linux hosting for the Next.js standalone UI. |
 | **Primary Region** | `Canada Central` | Targeted regional deployment for performance and compliance. |
@@ -47,31 +47,69 @@ Managed via OpenTofu (IaC) and orchestrated in Canada Central.
 
 ### 1. Continuous Integration (PR Validation)
 
-```mermaid
-graph LR
-    Start([PR or Push]) --> Changes[Path Filter]
-    Start --> Lint[Lint]
-    Changes --> TestAPI[Test API when api/shared changed]
-    Changes --> TestFE[Test Frontend when frontend/shared changed]
-    Lint --> TestAPI
-    Lint --> TestFE
-    TestAPI --> End([Ready to Merge])
-    TestFE --> End
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│                    GitHub PR or Push to main                     │
+└──────────────────────────────────────────────────────────────────┘
+                 │                                  │
+                 ▼ (Path Filter)                    ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│   Verify api/ or shared/     │    │   Run Project-Wide Linting   │
+│   code changes exist         │    │   (Biome & Markdownlint)     │
+└──────────────────────────────┘    └──────────────────────────────┘
+                 │                                  │
+                 ├──────────────────────────────────┤
+                 ▼                                  ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│       Run API Tests          │    │     Run Frontend Tests       │
+│       (Vitest suite)         │    │       (Vitest suite)         │
+└──────────────────────────────┘    └──────────────────────────────┘
+                 │                                  │
+                 └────────────────┬─────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                   PR Verified / Ready to Merge                   │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ### 2. Continuous Deployment
 
 The entire platform is orchestrated as a single, cohesive unit on Azure.
 
-```mermaid
-graph TD
-    Main([Merge to Main]) --> Tofu[OpenTofu: Apply Infra]
-    Tofu --> BuildAPI[Build Shared + API]
-    Tofu --> BuildUI[Build Shared + Frontend]
-    BuildAPI --> PackageAPI[Create api-deploy.zip]
-    BuildUI --> PackageUI[Create frontend-deploy.zip]
-    PackageAPI --> DeployAPI[Zip Deploy: Azure Functions]
-    PackageUI --> DeployUI[Zip Deploy: Azure Web App]
-    DeployAPI --> Live((Live App))
-    DeployUI --> Live
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│                     Git Push / Merge to main                     │
+└──────────────────────────────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                  GitHub Actions Runner (CI/CD)                   │
+└──────────────────────────────────────────────────────────────────┘
+                                 │
+                                 │ 1. Azure Login (Service Principal)
+                                 │ 2. Sets up OpenTofu (v1.6.0)
+      ┌────────────────────┐     │ 3. Runs 'tofu init & apply'
+      │ Azure Blob Storage │ <-> │
+      │     (tfstate)      │     │
+      └────────────────────┘     ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                 OpenTofu Infrastructure Apply                    │
+│    (Provision storage, App Insights, Function App, App Service)  │
+└──────────────────────────────────────────────────────────────────┘
+               │                                   │
+               │ Build & Package                   │ Build & Package
+               ▼                                   ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│   Create api-deploy.zip      │    │ Create frontend-deploy.zip   │
+│   (Bundles shared package)   │    │ (Next.js Standalone build)   │
+└──────────────────────────────┘    └──────────────────────────────┘
+               │                                   │
+               │ Zip Deploy                        │ Zip Deploy
+               │ (config-zip)                      │ (config-zip)
+               ▼                                   ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│        Azure Function        │    │     Azure App Service UI     │
+│       ("cover-craft")        │    │      ("cover-craft-ui")      │
+└──────────────────────────────┘    └──────────────────────────────┘
 ```
