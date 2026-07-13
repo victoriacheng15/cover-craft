@@ -51,6 +51,6 @@
 		"azurite": "^3.35.0",
 		"frontend": "./frontend",
 		"typescript": "^6.0.3",
-		"vitest": "^4.1.8"
+		"vitest": "^4.1.10"
 	}
 }
