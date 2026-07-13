@@ -1,0 +1,11 @@
+node_modules/
+**/node_modules/
+.next/
+**/dist/
+__azurite_db__/
+.git/
+.github/
+.vscode/
+*.log
+.env*
+local.settings.json

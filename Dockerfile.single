@@ -1,0 +1,109 @@
+# ==============================================================================
+# Podman & Execution Guide (Single-Stage Build)
+# ==============================================================================
+# Build command:
+#   podman build -t cover-craft-single:latest -f Dockerfile.single .
+#
+# Run command:
+#   podman run -d \
+#     -p 3000:3000 \
+#     -p 7071:7071 \
+#     -p 10000:10000 \
+#     -p 10001:10001 \
+#     -p 10002:10002 \
+#     --name cover-craft-single-container \
+#     localhost/cover-craft-single:latest
+#
+# Note:
+#   This image is unoptimized and will be significantly larger in size compared
+#   to the multi-stage build due to the inclusion of build toolchains.
+# ==============================================================================
+
+# ==============================================================================
+# Single-Stage Monolithic Dockerfile (No Multi-Stage Optimization)
+# ==============================================================================
+FROM node:24-slim
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Install build-essential, native compilation headers, runtime libraries, and utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libjpeg62-turbo \
+    libgif7 \
+    librsvg2-2 \
+    procps \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PM2 and Azure Functions Core Tools globally
+RUN npm install -g pm2 azure-functions-core-tools@4 --unsafe-perm
+
+# Copy the entire workspace source tree
+COPY . .
+
+# Run installation and build scripts directly in the final container context
+RUN npm ci
+RUN npm run build:shared
+RUN npm run build --workspace=frontend
+RUN npm run build --workspace=api
+
+# Configure Next.js standalone assets in-place
+RUN mkdir -p /app/frontend-standalone/frontend && \
+    cp -r /app/frontend/public /app/frontend-standalone/frontend/public && \
+    cp -r /app/frontend/.next/standalone/. /app/frontend-standalone/ && \
+    cp -r /app/frontend/.next/static /app/frontend-standalone/frontend/.next/static
+
+# Setup non-root execution user and create home directory for PM2
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs --create-home appuser && \
+    chown -R appuser:nodejs /app
+
+# Write PM2 configuration
+RUN echo '{\
+  "apps": [\
+    {\
+      "name": "frontend",\
+      "script": "frontend/server.js",\
+      "cwd": "/app/frontend-standalone",\
+      "env": {\
+        "PORT": "3000",\
+        "HOSTNAME": "0.0.0.0"\
+      }\
+    },\
+    {\
+      "name": "api",\
+      "script": "func",\
+      "args": "start",\
+      "cwd": "/app/api",\
+      "exec_mode": "fork",\
+      "interpreter": "none",\
+      "env": {\
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true"\
+      }\
+    },\
+    {\
+      "name": "azurite",\
+      "script": "/app/node_modules/.bin/azurite",\
+      "args": "--silent --location /app/__azurite_db__",\
+      "cwd": "/app",\
+      "exec_mode": "fork",\
+      "interpreter": "none"\
+    }\
+  ]\
+}' > /app/processes.json
+
+ENV NODE_ENV=production
+USER appuser
+EXPOSE 3000 7071 10000 10001 10002
+
+CMD ["pm2-runtime", "/app/processes.json"]
