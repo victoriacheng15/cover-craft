@@ -50,7 +50,7 @@
 		"api": "./api",
 		"azurite": "^3.35.0",
 		"frontend": "./frontend",
-		"typescript": "^6.0.3",
+		"typescript": "^7.0.2",
 		"vitest": "^4.1.10"
 	}
 }
