@@ -17,7 +17,7 @@ permissions:
   id-token: write
 
 env:
-  NODE_VERSION: '24'
+  NODE_VERSION: '22'
   FRONTEND_APP_NAME: 'cover-craft-ui'
   API_APP_NAME: 'cover-craft'
   RESOURCE_GROUP: 'projects-rg'

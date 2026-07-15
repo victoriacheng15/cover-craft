@@ -19,8 +19,7 @@
 		"next": "16.2.10",
 		"react": "19.2.7",
 		"react-dom": "19.2.7",
-		"recharts": "^3.9.2",
-		"typescript": "^7.0.2"
+		"recharts": "^3.9.2"
 	},
 	"devDependencies": {
 		"@tailwindcss/postcss": "^4.3.2",
@@ -30,6 +29,7 @@
 		"babel-plugin-react-compiler": "1.0.0",
 		"jsdom": "^29.1.1",
 		"tailwindcss": "^4.3.0",
+		"typescript": "7.0.2",
 		"vitest": "^4.1.10"
 	}
 }
