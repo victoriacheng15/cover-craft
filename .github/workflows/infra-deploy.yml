@@ -133,7 +133,7 @@ jobs:
           cache: 'npm'
 
       - name: Install all dependencies
-        run: npm ci --install-links
+        run: npm ci
         env:
           NODE_ENV: development
 
@@ -142,6 +142,8 @@ jobs:
 
       - name: Build Frontend (Standalone)
         run: npm run build --workspace=frontend
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
 
       - name: Package Frontend
         run: |
