@@ -73,6 +73,8 @@ jobs:
 
       - name: Install all dependencies
         run: npm ci
+        env:
+          NODE_ENV: development
 
       - name: Build shared package
         run: npm run build:shared
@@ -132,6 +134,8 @@ jobs:
 
       - name: Install all dependencies
         run: npm ci
+        env:
+          NODE_ENV: development
 
       - name: Build Shared
         run: npm run build:shared
