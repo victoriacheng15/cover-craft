@@ -53,8 +53,12 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
-      - name: Run lint
-        run: npm run lint
+      - name: Build shared package
+        run: npm run build:shared
+      - name: Run lint and typecheck
+        run: |
+          npm run lint
+          npm run typecheck
 
   test-api:
     runs-on: ubuntu-latest
