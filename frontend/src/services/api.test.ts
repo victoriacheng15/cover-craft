@@ -1,3 +1,4 @@
+import type { MetricPayload } from "@cover-craft/shared";
 import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -265,7 +266,7 @@ describe("API Service Wrapper", () => {
 			fetchMock.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ jobId: "batch-123" }),
-			});
+			} as unknown as Response);
 
 			const result = await generateBatchImages(params);
 
@@ -283,7 +284,7 @@ describe("API Service Wrapper", () => {
 			fetchMock.mockResolvedValueOnce({
 				ok: false,
 				json: async () => ({ error: "Max batch size exceeded" }),
-			});
+			} as unknown as Response);
 
 			await expect(generateBatchImages([])).rejects.toThrow(
 				"Max batch size exceeded",
@@ -304,7 +305,7 @@ describe("API Service Wrapper", () => {
 			fetchMock.mockResolvedValueOnce({
 				ok: true,
 				json: async () => mockResponse,
-			});
+			} as unknown as Response);
 
 			const result = await getBatchJobStatus("job-123");
 
@@ -315,7 +316,7 @@ describe("API Service Wrapper", () => {
 		it("throws error when status fetch fails", async () => {
 			fetchMock.mockResolvedValueOnce({
 				ok: false,
-			});
+			} as unknown as Response);
 
 			await expect(getBatchJobStatus("invalid-id")).rejects.toThrow(
 				"Failed to fetch job status",
@@ -397,7 +398,7 @@ describe("API Service Wrapper", () => {
 			fetchMock.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ success: true }),
-			});
+			} as unknown as Response);
 
 			const payload = {
 				width: 1200,
@@ -432,9 +433,11 @@ describe("API Service Wrapper", () => {
 			fetchMock.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ success: true }),
-			});
+			} as unknown as Response);
 
-			await sendDownloadEvent({ format: "png" });
+			await sendDownloadEvent({
+				format: "png",
+			} as unknown as Partial<MetricPayload>);
 
 			expect(fetchMock).toHaveBeenCalledWith("/api/metrics", {
 				method: "POST",

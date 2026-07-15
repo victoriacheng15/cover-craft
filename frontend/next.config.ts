@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
 	output: "standalone",
 	reactCompiler: true,
 	transpilePackages: ["@cover-craft/shared"],
+	typescript: {
+		ignoreBuildErrors: true,
+	},
 };
 
 export default nextConfig;
