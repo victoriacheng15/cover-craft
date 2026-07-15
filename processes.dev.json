@@ -1,0 +1,36 @@
+{
+  "apps": [
+    {
+      "name": "shared-watch",
+      "script": "npx",
+      "args": "tsc -p shared/tsconfig.json -w",
+      "cwd": "/app"
+    },
+    {
+      "name": "api-watch",
+      "script": "npx",
+      "args": "tsc -p api/tsconfig.json -w",
+      "cwd": "/app"
+    },
+    {
+      "name": "api",
+      "script": "func",
+      "args": "start",
+      "cwd": "/app/api",
+      "interpreter": "none"
+    },
+    {
+      "name": "frontend",
+      "script": "npm",
+      "args": "run dev --workspace=frontend",
+      "cwd": "/app"
+    },
+    {
+      "name": "azurite",
+      "script": "/app/node_modules/.bin/azurite",
+      "args": "--silent --location /app/__azurite_db__",
+      "cwd": "/app",
+      "interpreter": "none"
+    }
+  ]
+}

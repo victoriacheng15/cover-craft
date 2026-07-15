@@ -1,0 +1,80 @@
+# ==============================================================================
+# Development Dockerfile (Support Hot-Reloading via volume mounts)
+# ==============================================================================
+# Build command:
+#   podman build -t cover-craft-dev:latest -f Dockerfile.dev .
+#
+# Run command (with volume mount and port mappings):
+#   podman run -d \
+#     -p 3000:3000 \
+#     -p 7071:7071 \
+#     -p 10000:10000 \
+#     -p 10001:10001 \
+#     -p 10002:10002 \
+#     -v .:/app:Z \
+#     --name cover-craft-dev-container \
+#     cover-craft-dev:latest
+# ==============================================================================
+
+FROM node:lts-bookworm-slim
+WORKDIR /app
+
+# Install native dependencies for node-canvas, process management, and utils
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libjpeg62-turbo \
+    libgif7 \
+    librsvg2-2 \
+    procps \
+    ca-certificates \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PM2 and Azure Functions Core Tools globally
+RUN npm install -g pm2 azure-functions-core-tools@4
+
+# Copy package descriptors first to build a cache
+COPY package.json package-lock.json ./
+COPY shared/package.json ./shared/
+COPY api/package.json ./api/
+COPY frontend/package.json ./frontend/
+
+# Clean install all dependencies (including devDependencies)
+RUN npm ci
+
+# Copy the rest of the workspace files
+COPY . .
+
+# Expose ports for frontend, api, and azurite
+EXPOSE 3000 7071 10000 10001 10002
+
+# Write startup entrypoint script to handle dynamic node_modules and compilation
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Install dependencies if they are missing from the mounted volume\n\
+if [ ! -d "node_modules" ]; then\n\
+  echo "Missing node_modules in volume. Installing..."\n\
+  npm install\n\
+fi\n\
+\n\
+# Build the shared library initially\n\
+npm run build:shared\n\
+\n\
+# Copy fonts asset for API\n\
+npm run copy:assets --workspace=api\n\
+\n\
+# Start PM2 dev processes\n\
+exec pm2-runtime /app/processes.dev.json' > /usr/local/bin/entrypoint.sh && \
+    chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
