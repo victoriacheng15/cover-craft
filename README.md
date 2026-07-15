@@ -151,7 +151,7 @@ Run the API locally:
 npm run start:api
 ```
 
-Alternatively, the entire stack can run inside a single local development container. This configuration orchestrates Next.js, the Azure Functions API, and Azurite with hot-reloading enabled. The root package descriptor provides simple scripts to build and start the environment.
+Alternatively, the entire stack can run inside a single local development container. This configuration utilizes Podman to orchestrate Next.js, the Azure Functions API, and Azurite with hot-reloading enabled. If using Docker, replace the `podman` command prefix with `docker` directly. The root package descriptor provides simple scripts to build and start the environment.
 
 ```bash
 # Build the development container
