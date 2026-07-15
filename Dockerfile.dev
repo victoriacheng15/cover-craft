@@ -5,7 +5,7 @@
 #   podman build -t cover-craft-dev:latest -f Dockerfile.dev .
 #
 # Run command (with volume mount and port mappings):
-#   podman run -d \
+#   podman run -d --rm \
 #     -p 3000:3000 \
 #     -p 7071:7071 \
 #     -p 10000:10000 \
