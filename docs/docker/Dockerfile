@@ -2,7 +2,7 @@
 # Podman & Execution Guide
 # ==============================================================================
 # Build command:
-#   podman build -t cover-craft-all-in-one:latest .
+#   podman build -t cover-craft-all-in-one:latest -f docs/docker/Dockerfile .
 #
 # Run command:
 #   podman run -d \
@@ -52,9 +52,9 @@ COPY frontend/package.json ./frontend/
 # Clean install frontend dependencies
 RUN npm ci -w frontend --include-workspace-root --ignore-scripts
 
-COPY . .
-# Copy built shared package AFTER copying source files to avoid overwriting
+# Copy source and built shared package
 COPY --from=shared-builder /app/shared/dist ./shared/dist
+COPY . .
 
 # Compile Next.js frontend
 RUN npm run build --workspace=frontend

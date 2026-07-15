@@ -2,7 +2,7 @@
 # Podman & Execution Guide (Single-Stage Build)
 # ==============================================================================
 # Build command:
-#   podman build -t cover-craft-single:latest -f Dockerfile.single .
+#   podman build -t cover-craft-single:latest -f docs/docker/Dockerfile.single .
 #
 # Run command:
 #   podman run -d \

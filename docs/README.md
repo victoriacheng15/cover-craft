@@ -13,6 +13,8 @@ Welcome to the **Cover Craft** technical documentation. This directory contains 
 
 - [**Operations & CI/CD**](./operations.md)
   - GitHub Actions workflows, deployment strategies (Azure Web App/Functions), and secrets management.
+- [**Docker Build Experiment**](./docker/README.md)
+  - An empirical comparison of multi-stage and single-stage container build speeds and file sizes.
 
 ## 🧠 Knowledge Base
 
@@ -20,5 +22,3 @@ Welcome to the **Cover Craft** technical documentation. This directory contains 
   - A chronological log of significant architectural decisions and their impact.
 - [**Incident Reports (RCA)**](./incidents/README.md)
   - Root cause analysis templates and incident-worthy fixes from production, deployment, API, and analytics work.
-- [**Engineering Journal**](./learning_note.md)
-  - A record of technical challenges, architectural trade-offs, and key learnings from the project development.
