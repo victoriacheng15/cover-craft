@@ -133,7 +133,7 @@ jobs:
           cache: 'npm'
 
       - name: Install all dependencies
-        run: npm ci
+        run: npm ci --install-links
         env:
           NODE_ENV: development
 
