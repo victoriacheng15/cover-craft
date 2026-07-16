@@ -7,6 +7,7 @@ on:
       - 'api/**'
       - 'frontend/**'
       - 'shared/**'
+      - 'apiv2/**'
       - '**/*.md'
   push:
     branches: [main]
@@ -14,17 +15,20 @@ on:
       - 'api/**'
       - 'frontend/**'
       - 'shared/**'
+      - 'apiv2/**'
       - '**/*.md'
   workflow_dispatch:
 
 env:
   NODE_VERSION: 22
+  GO_VERSION: '1.26'
 
 jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
       api: ${{ steps.filter.outputs.api }}
+      apiv2: ${{ steps.filter.outputs.apiv2 }}
       frontend: ${{ steps.filter.outputs.frontend }}
       shared: ${{ steps.filter.outputs.shared }}
       markdown: ${{ steps.filter.outputs.markdown }}
@@ -36,6 +40,8 @@ jobs:
           filters: |
             api:
               - 'api/**'
+            apiv2:
+              - 'apiv2/**'
             frontend:
               - 'frontend/**'
             shared:
@@ -60,6 +66,35 @@ jobs:
           npm run lint
           npm run typecheck
 
+  lint-apiv2:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.apiv2 == 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: apiv2/go.sum
+      - name: Run Go Lint (Vet)
+        run: |
+          cd apiv2
+          make lint
+
+  markdownlint:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.markdown == 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Run markdownlint
+        run: npx markdownlint-cli "**/*.md" --ignore "**/node_modules/**"
+
   test-api:
     runs-on: ubuntu-latest
     needs: [changes, lint]
@@ -75,6 +110,22 @@ jobs:
       - name: Run tests
         run: npm run test:api
 
+  test-apiv2:
+    runs-on: ubuntu-latest
+    needs: [changes, lint-apiv2]
+    if: ${{ needs.changes.outputs.apiv2 == 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: apiv2/go.sum
+      - name: Run Go Tests
+        run: |
+          cd apiv2
+          make test
+
   test-frontend:
     runs-on: ubuntu-latest
     needs: [changes, lint]
@@ -89,16 +140,3 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm run test:frontend
-
-  markdownlint:
-    runs-on: ubuntu-latest
-    needs: changes
-    if: ${{ needs.changes.outputs.markdown == 'true' }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - name: Run markdownlint
-        run: npx markdownlint-cli "**/*.md" --ignore "**/node_modules/**"

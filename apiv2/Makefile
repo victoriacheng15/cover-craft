@@ -1,0 +1,32 @@
+.PHONY: update fmt lint test cov build help clean
+
+update: ## Update dependencies and tidy go.mod
+	go get -u ./...
+	go mod tidy
+
+fmt: ## Format Go source files
+	go fmt ./cmd/... ./internal/...
+
+lint: ## Run static analysis checks (go vet)
+	go vet ./cmd/... ./internal/...
+
+test: ## Run unit tests
+	go test ./internal/...
+
+cov: ## Run tests and print terminal coverage summary
+	go test -coverprofile=coverage.out ./internal/...
+	go tool cover -func=coverage.out
+	rm -f coverage.out
+
+build: ## Compile the application binary
+	mkdir -p bin
+	go build -o bin/apiv2-handler cmd/handler/main.go
+
+clean: ## Remove build and coverage artifacts
+	rm -rf bin/ coverage.out
+
+help: ## Show this help message
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Available targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-10s %s\n", $$1, $$2}'
