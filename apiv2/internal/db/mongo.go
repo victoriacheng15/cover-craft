@@ -14,18 +14,18 @@ type SizePreset struct {
 }
 
 type Metric struct {
-	Event           string      `bson:"event" json:"event"`
-	Timestamp       time.Time   `bson:"timestamp" json:"timestamp"`
-	Status          string      `bson:"status" json:"status"`
-	ErrorMessage    string      `bson:"errorMessage,omitempty" json:"errorMessage,omitempty"`
-	Size            *SizePreset `bson:"size,omitempty" json:"size,omitempty"`
-	Font            string      `bson:"font,omitempty" json:"font,omitempty"`
-	TitleLength     *int        `bson:"titleLength,omitempty" json:"titleLength,omitempty"`
-	SubtitleLength  *int        `bson:"subtitleLength,omitempty" json:"subtitleLength,omitempty"`
-	ContrastRatio   *float64    `bson:"contrastRatio,omitempty" json:"contrastRatio,omitempty"`
-	WcagLevel       string      `bson:"wcagLevel,omitempty" json:"wcagLevel,omitempty"`
-	Duration        *int        `bson:"duration,omitempty" json:"duration,omitempty"`
-	ClientDuration  *int        `bson:"clientDuration,omitempty" json:"clientDuration,omitempty"`
+	Event          string      `bson:"event" json:"event"`
+	Timestamp      time.Time   `bson:"timestamp" json:"timestamp"`
+	Status         string      `bson:"status" json:"status"`
+	ErrorMessage   string      `bson:"errorMessage,omitempty" json:"errorMessage,omitempty"`
+	Size           *SizePreset `bson:"size,omitempty" json:"size,omitempty"`
+	Font           string      `bson:"font,omitempty" json:"font,omitempty"`
+	TitleLength    *int        `bson:"titleLength,omitempty" json:"titleLength,omitempty"`
+	SubtitleLength *int        `bson:"subtitleLength,omitempty" json:"subtitleLength,omitempty"`
+	ContrastRatio  *float64    `bson:"contrastRatio,omitempty" json:"contrastRatio,omitempty"`
+	WcagLevel      string      `bson:"wcagLevel,omitempty" json:"wcagLevel,omitempty"`
+	Duration       *int        `bson:"duration,omitempty" json:"duration,omitempty"`
+	ClientDuration *int        `bson:"clientDuration,omitempty" json:"clientDuration,omitempty"`
 }
 
 var MongoClient *mongo.Client
