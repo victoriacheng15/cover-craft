@@ -1,0 +1,45 @@
+{
+  "apps": [
+    {
+      "name": "shared-watch",
+      "script": "npx",
+      "args": "tsc -p shared/tsconfig.json -w",
+      "cwd": "/app"
+    },
+    {
+      "name": "apiv2-build",
+      "script": "make",
+      "args": "build",
+      "cwd": "/app/apiv2",
+      "watch": ["cmd", "internal"],
+      "watch_options": {
+        "followSymlinks": false
+      },
+      "autorestart": false
+    },
+    {
+      "name": "apiv2",
+      "script": "func",
+      "args": "start --host localhost",
+      "cwd": "/app/apiv2",
+      "interpreter": "none",
+      "watch": ["bin/apiv2-handler"],
+      "watch_options": {
+        "followSymlinks": false
+      }
+    },
+    {
+      "name": "frontend",
+      "script": "npm",
+      "args": "run dev --workspace=frontend",
+      "cwd": "/app"
+    },
+    {
+      "name": "azurite",
+      "script": "/app/node_modules/.bin/azurite",
+      "args": "--silent --location /app/__azurite_db__",
+      "cwd": "/app",
+      "interpreter": "none"
+    }
+  ]
+}

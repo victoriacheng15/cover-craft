@@ -1,0 +1,91 @@
+# ==============================================================================
+# Development Dockerfile V2 (Node.js + Go 1.26)
+# ==============================================================================
+# Build command:
+#   podman build -t cover-craft-dev-v2:latest -f Dockerfile.v2 .
+#
+# Run command (with volume mount and port mappings):
+#   podman run -d --rm \
+#     -p 3000:3000 \
+#     -p 7071:7071 \
+#     -p 10000:10000 \
+#     -p 10001:10001 \
+#     -p 10002:10002 \
+#     -v .:/app:Z \
+#     --name cover-craft-dev-container-v2 \
+#     cover-craft-dev-v2:latest
+# ==============================================================================
+
+# Stage 1: Get Go 1.26 compiler from official image
+FROM golang:1.26-alpine AS go-source
+
+# Stage 2: Final dev container with Node.js + Go
+FROM node:lts-bookworm-slim
+WORKDIR /app
+
+# Install native dependencies for node-canvas, process management, and utils
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libjpeg62-turbo \
+    libgif7 \
+    librsvg2-2 \
+    procps \
+    ca-certificates \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Go compiler directly from the Go source stage
+COPY --from=go-source /usr/local/go/ /usr/local/go/
+ENV PATH=$PATH:/usr/local/go/bin
+
+# Install PM2 and Azure Functions Core Tools globally
+RUN npm install -g pm2 azure-functions-core-tools@4
+
+# Copy package descriptors first to build a cache
+COPY package.json package-lock.json ./
+COPY shared/package.json ./shared/
+COPY api/package.json ./api/
+COPY frontend/package.json ./frontend/
+COPY apiv2/go.mod apiv2/go.sum* ./apiv2/
+
+# Clean install all Node dependencies (including devDependencies)
+RUN npm ci
+
+# Copy the rest of the workspace files
+COPY . .
+
+# Expose ports for frontend, api, and azurite
+EXPOSE 3000 7071 10000 10001 10002
+
+# Write startup entrypoint script to handle dynamic node_modules and compilation
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Install dependencies if they are missing from the mounted volume\n\
+if [ ! -d "node_modules" ]; then\n\
+  echo "Missing node_modules in volume. Installing..."\n\
+  npm install\n\
+fi\n\
+\n\
+# Build the shared library initially\n\
+npm run build:shared\n\
+\n\
+# Compile the Go Azure Functions binary initially\n\
+cd /app/apiv2\n\
+make build\n\
+cd /app\n\
+\n\
+# Start PM2 dev processes for v2\n\
+exec pm2-runtime /app/processes.dev.v2.json' > /usr/local/bin/entrypoint.sh && \
+    chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
