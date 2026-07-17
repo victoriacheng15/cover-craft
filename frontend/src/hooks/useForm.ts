@@ -1,4 +1,5 @@
 import {
+	type AllowedFont,
 	DEFAULT_FILENAME,
 	FONT_OPTIONS,
 	getContrastRatio,
@@ -22,7 +23,7 @@ export interface FormData {
 	subtitle?: string;
 	backgroundColor: string;
 	textColor: string;
-	font: string;
+	font: AllowedFont;
 }
 
 const initialFormData: FormData = {

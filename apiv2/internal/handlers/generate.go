@@ -45,9 +45,12 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 		Height:          extracted.Height,
 		BackgroundColor: extracted.BackgroundColor,
 		TextColor:       extracted.TextColor,
-		Font:            extracted.Font,
+		Font:            services.ImageParamsFont(extracted.Font),
 		Title:           extracted.Title,
-		Subtitle:        extracted.Subtitle,
+		Filename:        filename,
+	}
+	if extracted.Subtitle != "" {
+		params.Subtitle = &extracted.Subtitle
 	}
 
 	// Calculate contrast ratio for metrics
@@ -66,9 +69,9 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 			Status:         "validation_error",
 			ErrorMessage:   fmt.Sprintf("Validation failed: %d errors", len(validationErrors)),
 			Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
-			Font:           params.Font,
+			Font:           string(params.Font),
 			TitleLength:    intPtr(len(params.Title)),
-			SubtitleLength: intPtr(len(params.Subtitle)),
+			SubtitleLength: intPtr(len(extracted.Subtitle)),
 			ContrastRatio:  floatPtr(contrastRatio),
 			WcagLevel:      wcagLevel,
 		})
@@ -97,9 +100,9 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 			Status:         "error",
 			ErrorMessage:   err.Error(),
 			Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
-			Font:           params.Font,
+			Font:           string(params.Font),
 			TitleLength:    intPtr(len(params.Title)),
-			SubtitleLength: intPtr(len(params.Subtitle)),
+			SubtitleLength: intPtr(len(extracted.Subtitle)),
 			ContrastRatio:  floatPtr(contrastRatio),
 			WcagLevel:      wcagLevel,
 			Duration:       intPtr(duration),
@@ -121,9 +124,9 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 		Timestamp:      time.Now().UTC(),
 		Status:         "success",
 		Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
-		Font:           params.Font,
+		Font:           string(params.Font),
 		TitleLength:    intPtr(len(params.Title)),
-		SubtitleLength: intPtr(len(params.Subtitle)),
+		SubtitleLength: intPtr(len(extracted.Subtitle)),
 		ContrastRatio:  floatPtr(contrastRatio),
 		WcagLevel:      wcagLevel,
 		Duration:       intPtr(duration),

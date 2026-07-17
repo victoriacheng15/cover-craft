@@ -143,7 +143,7 @@ func TestGenerateImageHandler(t *testing.T) {
 
 			if tt.wantDetailField != "" {
 				var resp struct {
-					Error   string                    `json:"error"`
+					Error   string                     `json:"error"`
 					Details []services.ValidationError `json:"details"`
 				}
 				if err := json.NewDecoder(rr.Body).Decode(&resp); err != nil {

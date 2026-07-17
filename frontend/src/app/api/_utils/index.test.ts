@@ -2,6 +2,7 @@ import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	handleApiError,
+	type ImageParams,
 	proxyAnalytics,
 	proxyGenerateImage,
 	proxyGenerateImages,
@@ -89,12 +90,12 @@ describe("apiUtils", () => {
 
 	describe("proxyGenerateImage", () => {
 		it("forwards body to proxy generateImage endpoint", async () => {
-			const body = {
+			const body: ImageParams = {
 				width: 1200,
 				height: 627,
 				backgroundColor: "#ffffff",
 				textColor: "#000000",
-				font: "Inter",
+				font: "Montserrat",
 				title: "Proxy Title",
 				filename: "proxy-test",
 			};
@@ -121,7 +122,7 @@ describe("apiUtils", () => {
 
 	describe("proxyGenerateImages", () => {
 		it("forwards batch payload to backend API", async () => {
-			const body = [
+			const body: ImageParams[] = [
 				{
 					width: 1200,
 					height: 627,

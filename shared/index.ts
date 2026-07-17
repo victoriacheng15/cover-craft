@@ -1,3 +1,5 @@
+import type { components } from "./types.gen";
+
 // ===================================================================================
 // Image and Formatting Constants
 // ===================================================================================
@@ -52,30 +54,7 @@ export type EventType =
 	| typeof DOWNLOAD_CLICK_EVENT
 	| typeof IMAGE_GENERATED_EVENT;
 
-export interface MetricPayload {
-	// Core event data
-	event: EventType | string;
-	timestamp: string;
-	status: MetricStatus;
-	errorMessage?: string;
-
-	// Cover generation data
-	size?: {
-		width: number;
-		height: number;
-	};
-	font?: string;
-	titleLength?: number;
-	subtitleLength?: number;
-
-	// Form/Validation data
-	contrastRatio?: number;
-	wcagLevel?: WcagLevel;
-
-	// Performance/Timing data
-	duration?: number; // Backend generation duration (ms)
-	clientDuration?: number; // Client-side duration (ms)
-}
+export type MetricPayload = components["schemas"]["MetricPayload"];
 
 // ===================================================================================
 // Analytics Metrics Schema Definitions
@@ -239,21 +218,8 @@ export const DEFAULT_FILENAME = "cover";
 
 export type AllowedFont = (typeof FONT_OPTIONS)[number];
 
-export interface ImageParams {
-	width: number;
-	height: number;
-	backgroundColor: string;
-	textColor: string;
-	font: string;
-	title: string;
-	subtitle?: string;
-	filename: string;
-}
-
-export interface ValidationError {
-	field: string;
-	message: string;
-}
+export type ImageParams = components["schemas"]["ImageParams"];
+export type ValidationError = components["schemas"]["ValidationError"];
 
 // ===================================================================================
 // Validation Functions (Color & Contrast)

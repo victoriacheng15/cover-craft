@@ -27,12 +27,6 @@ var (
 	}
 )
 
-// ValidationError represents a parameter validation error
-type ValidationError struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
-}
-
 // RGB representation for contrast math
 type RGB struct {
 	R, G, B float64
@@ -143,7 +137,7 @@ func ValidateImageParams(params ImageParams) []ValidationError {
 	}
 
 	// Font validation
-	if !AllowedFonts[params.Font] {
+	if !AllowedFonts[string(params.Font)] {
 		var fontNames []string
 		for f := range AllowedFonts {
 			fontNames = append(fontNames, f)
@@ -167,7 +161,7 @@ func ValidateImageParams(params ImageParams) []ValidationError {
 		})
 	}
 
-	if len(params.Subtitle) > MaxSubtitleLength {
+	if params.Subtitle != nil && len(*params.Subtitle) > MaxSubtitleLength {
 		errors = append(errors, ValidationError{
 			Field:   "subtitle",
 			Message: fmt.Sprintf("Subtitle must be %d characters or less", MaxSubtitleLength),
