@@ -1,0 +1,339 @@
+openapi: 3.0.3
+info:
+  title: Cover Craft API
+  description: API contract for the Cover Craft image generation and analytics platform.
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:7071/api
+    description: Local Azure Functions v2 Handler (Go)
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the status and local/ISO timestamps.
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /metrics:
+    post:
+      summary: Collect telemetry and usage metrics
+      description: Stores performance and WCAG compliance data to MongoDB.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetricPayload'
+      responses:
+        '200':
+          description: Metric captured successfully
+        '400':
+          description: Invalid metrics payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /analytics:
+    get:
+      summary: Fetch analytics trends
+      description: Aggregates historical metrics for Feature Popularity, User Engagement, Accessibility Compliance, and Performance.
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsResult'
+
+  /generateImage:
+    post:
+      summary: Generate a single cover image
+      description: Renders a custom PNG cover using the canvas engine.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageParams'
+      responses:
+        '200':
+          description: Rendered PNG cover image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Validation failed (e.g. low contrast, invalid size, too long text)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '500':
+          description: Internal rendering or database error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /generateImages:
+    post:
+      summary: Submit a bulk cover image generation batch
+      description: Enqueues a batch of image parameters to be processed asynchronously by the background worker.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ImageParams'
+      responses:
+        '202':
+          description: Batch job accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The unique Job ID for status polling.
+                required:
+                  - id
+        '400':
+          description: Batch validation failed (e.g. empty batch or exceeds limit of 5)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /jobStatus:
+    get:
+      summary: Poll status of a bulk generation batch
+      description: Returns progress counter, enqueued time, and completed image URLs for a batch Job ID.
+      parameters:
+        - name: jobId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current status of the job
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatusResponse'
+        '400':
+          description: Missing jobId query parameter
+        '444':
+          description: Job ID not found
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          type: object
+          properties:
+            localTime:
+              type: string
+            isoTime:
+              type: string
+          required:
+            - localTime
+            - isoTime
+      required:
+        - status
+        - timestamp
+        - data
+
+    ImageParams:
+      type: object
+      properties:
+        width:
+          type: integer
+          minimum: 1
+          maximum: 1200
+          example: 1200
+        height:
+          type: integer
+          minimum: 1
+          maximum: 1200
+          example: 627
+        backgroundColor:
+          type: string
+          pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+          example: '#374151'
+        textColor:
+          type: string
+          pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+          example: '#F9FAFB'
+        font:
+          type: string
+          enum: [Montserrat, Roboto, Lato, Playfair Display, Open Sans]
+          example: Montserrat
+        title:
+          type: string
+          maxLength: 40
+          example: Welcome
+        subtitle:
+          type: string
+          maxLength: 70
+          example: Cover Craft
+        filename:
+          type: string
+          example: cover
+      required:
+        - width
+        - height
+        - backgroundColor
+        - textColor
+        - font
+        - title
+        - filename
+
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: width
+        message:
+          type: string
+          example: Width must be between 1 and 1200
+      required:
+        - field
+        - message
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Validation failed
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      required:
+        - error
+        - details
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Internal server error
+      required:
+        - error
+
+    MetricPayload:
+      type: object
+      properties:
+        event:
+          type: string
+          example: image_generated
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [success, error, validation_error]
+        errorMessage:
+          type: string
+        size:
+          type: object
+          properties:
+            width:
+              type: integer
+            height:
+              type: integer
+          required:
+            - width
+            - height
+        font:
+          type: string
+        titleLength:
+          type: integer
+        subtitleLength:
+          type: integer
+        contrastRatio:
+          type: number
+        wcagLevel:
+          type: string
+          enum: [AAA, AA, FAIL]
+        duration:
+          type: integer
+        clientDuration:
+          type: integer
+      required:
+        - event
+        - timestamp
+        - status
+
+    JobStatusResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        progress:
+          type: integer
+        total:
+          type: integer
+        results:
+          type: array
+          items:
+            type: string
+        error:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - status
+        - progress
+        - total
+        - results
+        - createdAt
+        - updatedAt
+
+    AnalyticsResult:
+      type: object
+      description: Dashboard analytics details (feature popularity, accessibility, engagement)
+      properties:
+        userEngagement:
+          type: object
+        featurePopularity:
+          type: object
+        accessibilityCompliance:
+          type: object
+        performanceMetrics:
+          type: object
+      required:
+        - userEngagement
+        - featurePopularity
+        - accessibilityCompliance
+        - performanceMetrics

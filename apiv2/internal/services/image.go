@@ -23,17 +23,6 @@ const (
 	LineSpacingMultiplier = 1.2
 )
 
-// ImageParams holds the rendering configuration for a cover image
-type ImageParams struct {
-	Width           int    `json:"width"`
-	Height          int    `json:"height"`
-	BackgroundColor string `json:"backgroundColor"`
-	TextColor       string `json:"textColor"`
-	Font            string `json:"font"`
-	Title           string `json:"title"`
-	Subtitle        string `json:"subtitle"`
-}
-
 // GeneratePNG renders the canvas and returns raw PNG bytes
 func GeneratePNG(params ImageParams) ([]byte, error) {
 	dc := gg.NewContext(params.Width, params.Height)
@@ -59,7 +48,7 @@ func GeneratePNG(params ImageParams) ([]byte, error) {
 	lineSpacing := headingFontSize * LineSpacingMultiplier
 
 	// Clean font name (e.g. "Open Sans" -> "OpenSans")
-	fontNameCleaned := strings.ReplaceAll(params.Font, " ", "")
+	fontNameCleaned := strings.ReplaceAll(string(params.Font), " ", "")
 
 	// Load Bold Font for Heading
 	boldFontFile := fmt.Sprintf("%s-Bold.ttf", fontNameCleaned)
@@ -73,8 +62,9 @@ func GeneratePNG(params ImageParams) ([]byte, error) {
 
 	dc.SetHexColor(params.TextColor)
 
+	hasSubtitle := params.Subtitle != nil && *params.Subtitle != ""
 	headingY := centerY
-	if params.Subtitle != "" {
+	if hasSubtitle {
 		headingY = centerY - lineSpacing/2
 	}
 
@@ -84,7 +74,7 @@ func GeneratePNG(params ImageParams) ([]byte, error) {
 	}
 
 	// Load Regular Font and Draw Subheading
-	if params.Subtitle != "" {
+	if hasSubtitle {
 		regularFontFile := fmt.Sprintf("%s-Regular.ttf", fontNameCleaned)
 		regularFontPath, err := findFontPath(regularFontFile)
 		if err != nil {
@@ -97,7 +87,7 @@ func GeneratePNG(params ImageParams) ([]byte, error) {
 		dc.SetHexColor(params.TextColor)
 		subheadingY := centerY + lineSpacing/2
 
-		if err := drawTextWithCompression(dc, params.Subtitle, centerX, subheadingY, maxTextWidth); err != nil {
+		if err := drawTextWithCompression(dc, *params.Subtitle, centerX, subheadingY, maxTextWidth); err != nil {
 			return nil, err
 		}
 	}

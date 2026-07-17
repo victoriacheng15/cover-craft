@@ -7,6 +7,7 @@ import {
 	type InvocationContext,
 } from "@azure/functions";
 import {
+	type AllowedFont,
 	generateFilename,
 	getContrastRatio,
 	getWCAGLevelFromRatio,
@@ -63,7 +64,7 @@ export async function generateImage(
 			height: extractedParams.height as number,
 			backgroundColor: extractedParams.backgroundColor as string,
 			textColor: extractedParams.textColor as string,
-			font: extractedParams.font as string,
+			font: extractedParams.font as AllowedFont,
 			title: extractedParams.title as string,
 			subtitle: extractedParams.subtitle,
 			filename: generateFilename(extractedParams.filename),

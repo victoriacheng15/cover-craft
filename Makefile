@@ -1,4 +1,4 @@
-.PHONY: docker-build docker-run docker-stop docker-logs docker-shell docker-clean help
+.PHONY: docker-build docker-run docker-stop docker-logs docker-shell docker-clean contract-sync help
 
 docker-build: ## Build the V2 dev container image using Podman
 	podman build -t cover-craft-dev-v2:latest -f Dockerfile.v2 .
@@ -25,6 +25,9 @@ docker-shell: ## Open an interactive bash shell inside the running V2 container
 
 docker-clean: ## Remove the V2 dev container image
 	podman rmi cover-craft-dev-v2:latest
+
+contract-sync: ## Synchronize API contracts and regenerate Go/TS types
+	./scripts/sync-contracts.sh
 
 help: ## Show this help message
 	@echo "Usage: make [target]"

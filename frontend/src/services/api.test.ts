@@ -9,6 +9,7 @@ import {
 	getAnalytics,
 	getBatchJobStatus,
 	health,
+	type ImageParams,
 	sendDownloadEvent,
 	sendGenerateEvent,
 	sendMetrics,
@@ -117,7 +118,7 @@ describe("API Service Wrapper", () => {
 	describe("generateImage", () => {
 		it("sends correct request with image parameters", async () => {
 			const mockBlob = new Blob(["test"], { type: "image/png" });
-			const params = {
+			const params: ImageParams = {
 				width: 1200,
 				height: 627,
 				backgroundColor: "#374151",
@@ -153,7 +154,7 @@ describe("API Service Wrapper", () => {
 		});
 
 		it("throws error with custom error message from response", async () => {
-			const params = {
+			const params: ImageParams = {
 				width: 1200,
 				height: 627,
 				backgroundColor: "#374151",
@@ -174,7 +175,7 @@ describe("API Service Wrapper", () => {
 		});
 
 		it("throws generic error when no error message in response", async () => {
-			const params = {
+			const params: ImageParams = {
 				width: 1200,
 				height: 627,
 				backgroundColor: "#374151",
@@ -197,7 +198,7 @@ describe("API Service Wrapper", () => {
 		});
 
 		it("includes detailed fields when the backend returns metadata", async () => {
-			const params = {
+			const params: ImageParams = {
 				width: 1200,
 				height: 627,
 				backgroundColor: "#374151",
@@ -224,7 +225,7 @@ describe("API Service Wrapper", () => {
 		});
 
 		it("falls back to generic error when response JSON parsing fails", async () => {
-			const params = {
+			const params: ImageParams = {
 				width: 1200,
 				height: 627,
 				backgroundColor: "#374151",
@@ -251,7 +252,7 @@ describe("API Service Wrapper", () => {
 
 	describe("generateBatchImages", () => {
 		it("submits batch request and returns jobId", async () => {
-			const params = [
+			const params: ImageParams[] = [
 				{
 					width: 1200,
 					height: 627,

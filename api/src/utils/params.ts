@@ -1,5 +1,5 @@
 import type { HttpRequest } from "@azure/functions";
-import type { ImageParams } from "@cover-craft/shared";
+import type { AllowedFont, ImageParams } from "@cover-craft/shared";
 import type { createLogger } from "../lib/logger";
 
 export async function extractParams(
@@ -52,7 +52,7 @@ export async function extractParams(
 
 	params.backgroundColor = queryBgColor || bodyParams.backgroundColor;
 	params.textColor = queryTextColor || bodyParams.textColor;
-	params.font = queryFont || bodyParams.font;
+	params.font = (queryFont || bodyParams.font) as AllowedFont;
 	params.title = queryTitle || bodyParams.title;
 	params.subtitle = querySubtitle || bodyParams.subtitle;
 	params.filename = queryFilename || bodyParams.filename;
