@@ -1,4 +1,4 @@
-.PHONY: update fmt lint test cov build help clean
+.PHONY: update fmt lint test cov build run help clean
 
 update: ## Update dependencies and tidy go.mod
 	go get -u ./...
@@ -21,6 +21,11 @@ cov: ## Run tests and print terminal coverage summary
 build: ## Compile the application binary
 	mkdir -p bin
 	go build -o bin/apiv2-handler cmd/handler/main.go
+
+run: build ## Compile binary, start Azurite in background, and start Functions host
+	mkdir -p ../__azurite_db__
+	npx azurite --silent --location ../__azurite_db__ &
+	func start
 
 clean: ## Remove build and coverage artifacts
 	rm -rf bin/ coverage.out
