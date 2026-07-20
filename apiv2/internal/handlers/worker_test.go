@@ -121,7 +121,7 @@ func TestProcessJobsHandler(t *testing.T) {
 func TestProcessJobsIntegration(t *testing.T) {
 	mongoURI := os.Getenv("MONGODB_URI")
 	if mongoURI == "" {
-		mongoURI = "mongodb+srv://sandbox:gLDosDYiiopRglLT@cluster0.ch0djlt.mongodb.net/cover-craft?retryWrites=true&w=majority"
+		t.Skip("skipping integration test: MONGODB_URI not set")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -220,7 +220,7 @@ func TestProcessJobsIntegration(t *testing.T) {
 func TestProcessJobsGlobalError(t *testing.T) {
 	mongoURI := os.Getenv("MONGODB_URI")
 	if mongoURI == "" {
-		mongoURI = "mongodb+srv://sandbox:gLDosDYiiopRglLT@cluster0.ch0djlt.mongodb.net/cover-craft?retryWrites=true&w=majority"
+		t.Skip("skipping integration test: MONGODB_URI not set")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -301,7 +301,7 @@ func TestProcessJobsGlobalError(t *testing.T) {
 func TestProcessJobsMaxAttemptsReached(t *testing.T) {
 	mongoURI := os.Getenv("MONGODB_URI")
 	if mongoURI == "" {
-		mongoURI = "mongodb+srv://sandbox:gLDosDYiiopRglLT@cluster0.ch0djlt.mongodb.net/cover-craft?retryWrites=true&w=majority"
+		t.Skip("skipping integration test: MONGODB_URI not set")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
