@@ -63,6 +63,7 @@ func main() {
 	mux.HandleFunc("/api/generateImage", handlers.GenerateImageHandler)
 	mux.HandleFunc("/api/generateImages", handlers.GenerateImagesHandler)
 	mux.HandleFunc("/api/getJobStatus", handlers.GetJobStatusHandler)
+	mux.HandleFunc("/processJobs", handlers.ProcessJobsHandler)
 
 	// 5. Start Server
 	listenAddr := fmt.Sprintf(":%s", port)
