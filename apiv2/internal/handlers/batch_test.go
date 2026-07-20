@@ -7,9 +7,12 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -96,7 +99,6 @@ func TestGenerateImagesHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Ensure clean mocks
 			db.MongoClient = nil
 			queue.QueueClientService = nil
 
@@ -191,7 +193,6 @@ func TestGetJobStatusHandler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.setupMock {
-				// Establish dummy client config
 				ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 				defer cancel()
 				client, _ := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
@@ -213,5 +214,75 @@ func TestGetJobStatusHandler(t *testing.T) {
 				t.Errorf("GetJobStatusHandler() returned wrong status: got %v, want %v. Body: %s", status, tt.wantStatus, rr.Body.String())
 			}
 		})
+	}
+}
+
+func TestGetJobStatusIntegration(t *testing.T) {
+	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
+		t.Skip("skipping GetJobStatus integration test: MONGODB_URI not set")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		t.Skip("skipping GetJobStatus integration test: failed to connect to MongoDB:", err)
+	}
+	defer client.Disconnect(ctx)
+
+	db.MongoClient = client
+	defer func() { db.MongoClient = nil }()
+
+	collection := client.Database("cover-craft").Collection("jobs")
+
+	jobId := primitive.NewObjectID()
+	now := time.Now().UTC()
+	job := db.Job{
+		ID:     jobId,
+		Status: "completed",
+		Requests: []interface{}{
+			services.ImageParams{
+				Width: 400, Height: 300, BackgroundColor: "#ffffff", TextColor: "#000000", Font: "Montserrat", Title: "Title 1",
+			},
+		},
+		Results:       []string{"data:image/png;base64,abc"},
+		Attempts:      1,
+		MaxAttempts:   3,
+		ResultDetails: make(map[string]db.JobResult),
+		CreatedAt:     now,
+		UpdatedAt:     now,
+	}
+
+	_, err = collection.InsertOne(ctx, job)
+	if err != nil {
+		t.Fatalf("failed to insert test job: %v", err)
+	}
+	defer func() {
+		ctxDel, cancelDel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancelDel()
+		_, _ = collection.DeleteOne(ctxDel, bson.M{"_id": jobId})
+	}()
+
+	// 1. Query by full 24-character Job ID
+	req, _ := http.NewRequest(http.MethodGet, "/api/getJobStatus?jobId="+jobId.Hex(), nil)
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(GetJobStatusHandler)
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status 200, got %d. Body: %s", rr.Code, rr.Body.String())
+	}
+
+	// 2. Query by last 8 characters of Job ID
+	last8 := jobId.Hex()[16:]
+	req, _ = http.NewRequest(http.MethodGet, "/api/getJobStatus?jobId="+last8, nil)
+	rr = httptest.NewRecorder()
+	handler = http.HandlerFunc(GetJobStatusHandler)
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status 200 for 8-char lookup, got %d. Body: %s", rr.Code, rr.Body.String())
 	}
 }
