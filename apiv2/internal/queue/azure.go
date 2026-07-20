@@ -64,3 +64,16 @@ func (q *QueueService) EnqueueJob(ctx context.Context, jobId string) error {
 	}
 	return nil
 }
+
+// EnqueueJobWithDelay publishes a Job ID message (Base64-encoded) with a visibility delay timeout
+func (q *QueueService) EnqueueJobWithDelay(ctx context.Context, jobId string, delaySeconds int32) error {
+	encodedMsg := base64.StdEncoding.EncodeToString([]byte(jobId))
+	opts := &azqueue.EnqueueMessageOptions{
+		VisibilityTimeout: &delaySeconds,
+	}
+	_, err := q.client.EnqueueMessage(ctx, encodedMsg, opts)
+	if err != nil {
+		return fmt.Errorf("failed to enqueue message with delay: %w", err)
+	}
+	return nil
+}
