@@ -131,8 +131,8 @@ type ValidationErrorResponse struct {
 // PostGenerateImagesJSONBody defines parameters for PostGenerateImages.
 type PostGenerateImagesJSONBody = []ImageParams
 
-// GetJobStatusParams defines parameters for GetJobStatus.
-type GetJobStatusParams struct {
+// GetGetJobStatusParams defines parameters for GetGetJobStatus.
+type GetGetJobStatusParams struct {
 	JobId string `form:"jobId" json:"jobId"`
 }
 

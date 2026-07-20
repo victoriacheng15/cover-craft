@@ -114,7 +114,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
 
-  /jobStatus:
+  /getJobStatus:
     get:
       summary: Poll status of a bulk generation batch
       description: Returns progress counter, enqueued time, and completed image URLs for a batch Job ID.

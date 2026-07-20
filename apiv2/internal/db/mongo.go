@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -11,6 +12,30 @@ import (
 type SizePreset struct {
 	Width  int `bson:"width,omitempty" json:"width,omitempty"`
 	Height int `bson:"height,omitempty" json:"height,omitempty"`
+}
+
+type JobResult struct {
+	Index     int       `bson:"index" json:"index"`
+	Status    string    `bson:"status" json:"status"`
+	DataURL   string    `bson:"dataUrl,omitempty" json:"dataUrl,omitempty"`
+	Error     string    `bson:"error,omitempty" json:"error,omitempty"`
+	Attempts  int       `bson:"attempts" json:"attempts"`
+	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt"`
+}
+
+type Job struct {
+	ID                  primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
+	Status              string               `bson:"status" json:"status"`
+	Requests            []interface{}        `bson:"requests" json:"requests"`
+	Results             []string             `bson:"results" json:"results"`
+	Error               string               `bson:"error,omitempty" json:"error,omitempty"`
+	Attempts            int                  `bson:"attempts" json:"attempts"`
+	MaxAttempts         int                  `bson:"maxAttempts" json:"maxAttempts"`
+	ProcessingStartedAt *time.Time           `bson:"processingStartedAt,omitempty" json:"processingStartedAt,omitempty"`
+	LastError           string               `bson:"lastError,omitempty" json:"lastError,omitempty"`
+	ResultDetails       map[string]JobResult `bson:"resultDetails" json:"resultDetails"`
+	CreatedAt           time.Time            `bson:"createdAt" json:"createdAt"`
+	UpdatedAt           time.Time            `bson:"updatedAt" json:"updatedAt"`
 }
 
 type Metric struct {

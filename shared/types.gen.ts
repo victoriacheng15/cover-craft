@@ -248,7 +248,7 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
-	"/jobStatus": {
+	"/getJobStatus": {
 		parameters: {
 			query?: never;
 			header?: never;
