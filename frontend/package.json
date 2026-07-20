@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"@cover-craft/shared": "*",
-		"@types/node": "26.1.0",
+		"@types/node": "26.1.1",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"jszip": "^3.10.1",
