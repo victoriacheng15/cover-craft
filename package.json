@@ -47,7 +47,7 @@
 		"typecheck": "tsc --noEmit -p frontend/tsconfig.json && tsc --noEmit -p api/tsconfig.json"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.3",
+		"@biomejs/biome": "2.5.4",
 		"@cover-craft/shared": "./shared",
 		"@testing-library/dom": "^10.4.1",
 		"@vitest/coverage-v8": "^4.1.9",
