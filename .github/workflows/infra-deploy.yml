@@ -144,7 +144,7 @@ jobs:
       - name: Package Go API for deployment
         working-directory: apiv2
         run: |
-          zip -r ../go-deploy.zip bin host.json processJobs assets
+          zip -r ../go-deploy.zip bin host.json handler processJobs assets
 
       - name: Azure Login
         uses: azure/login@v3
