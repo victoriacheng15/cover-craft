@@ -43,7 +43,7 @@ func TestQueueService(t *testing.T) {
 
 func TestInitQueue(t *testing.T) {
 	connStr := "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;"
-	
+
 	err := InitQueue(connStr, "test-global-init")
 	if err != nil {
 		t.Fatalf("failed to init queue: %v", err)

@@ -20,7 +20,7 @@ cov: ## Run tests and print terminal coverage summary
 
 build: ## Compile the application binary
 	mkdir -p bin
-	go build -o bin/apiv2-handler cmd/handler/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/apiv2-handler cmd/handler/main.go
 
 run: build ## Compile binary, start Azurite in background, and start Functions host
 	mkdir -p ../__azurite_db__
