@@ -1,0 +1,17 @@
+# Exclude git configuration
+.git
+.gitignore
+
+# Exclude Go source code
+*.go
+go.mod
+go.sum
+
+# Exclude unit tests and coverage files
+*_test.go
+coverage.out
+.golangci.yml
+
+# Exclude local build/testing settings
+local.settings.json
+deploy.zip

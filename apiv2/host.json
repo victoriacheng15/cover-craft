@@ -14,7 +14,7 @@
   },
   "customHandler": {
     "description": {
-      "defaultExecutablePath": "./bin/apiv2-handler",
+      "defaultExecutablePath": "bin/apiv2-handler",
       "workingDirectory": "",
       "arguments": []
     },

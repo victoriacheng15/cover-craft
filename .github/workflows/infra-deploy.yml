@@ -6,6 +6,7 @@ on:
     paths:
       - 'tofu/**'
       - 'api/**'
+      - 'apiv2/**'
       - 'shared/**'
       - 'frontend/**'
       - 'package.json'
@@ -17,11 +18,13 @@ permissions:
   id-token: write
 
 env:
-  NODE_VERSION: '22'
-  FRONTEND_APP_NAME: 'cover-craft-ui'
-  API_APP_NAME: 'cover-craft'
   RESOURCE_GROUP: 'projects-rg'
   API_RESOURCE_GROUP: 'projects-rg-api'
+  NODE_VERSION: '22'
+  GO_VERSION: '1.26'
+  FRONTEND_APP_NAME: 'cover-craft-ui'
+  API_APP_NAME: 'cover-craft'
+  GO_API_APP_NAME: 'cover-craft-go-api'
 
 jobs:
   infra-apply:
@@ -118,6 +121,42 @@ jobs:
             --name ${{ env.API_APP_NAME }} \
             --resource-group ${{ env.API_RESOURCE_GROUP }} \
             --src api-deploy.zip
+
+  deploy-go-api:
+    needs: infra-apply
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: apiv2/go.sum
+
+      - name: Build Go binary
+        working-directory: apiv2
+        run: |
+          mkdir -p bin
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/apiv2-handler cmd/handler/main.go
+
+      - name: Package Go API for deployment
+        working-directory: apiv2
+        run: |
+          zip -r ../go-deploy.zip bin host.json processJobs assets
+
+      - name: Azure Login
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Go API to Azure Functions
+        run: |
+          az functionapp deployment source config-zip \
+            --name ${{ env.GO_API_APP_NAME }} \
+            --resource-group ${{ env.API_RESOURCE_GROUP }} \
+            --src go-deploy.zip
 
   deploy-frontend:
     needs: infra-apply

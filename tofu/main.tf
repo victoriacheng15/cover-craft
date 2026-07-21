@@ -107,3 +107,58 @@ module "app_service" {
   azure_function_key  = data.azurerm_function_app_host_keys.api.default_function_key
   tags                = local.tags
 }
+
+# Temporary Go Backend Infrastructure (Consumption Plan Y1 + Linux Custom Runtime App)
+resource "azurerm_service_plan" "go_plan" {
+  name                = "asp-${var.app_name}-go"
+  resource_group_name = azurerm_resource_group.api.name
+  location            = var.location
+  os_type             = "Linux"
+  sku_name            = "Y1"
+  tags                = local.tags
+}
+
+resource "azurerm_linux_function_app" "go_api" {
+  name                = "${var.app_name}-go-api"
+  resource_group_name = azurerm_resource_group.api.name
+  location            = var.location
+
+  service_plan_id            = azurerm_service_plan.go_plan.id
+  storage_account_name       = module.storage.name
+  storage_account_access_key = module.storage.primary_access_key
+
+  site_config {
+    application_stack {
+      use_custom_runtime = true
+    }
+  }
+
+  app_settings = {
+    "FUNCTIONS_WORKER_RUNTIME"              = "custom"
+    "MONGODB_URI"                           = var.mongodb_uri
+    "APPINSIGHTS_INSTRUMENTATIONKEY"        = module.application_insights.instrumentation_key
+    "APPLICATIONINSIGHTS_CONNECTION_STRING" = module.application_insights.connection_string
+  }
+
+  tags = local.tags
+}
+
+data "azurerm_function_app_host_keys" "go_api" {
+  name                = azurerm_linux_function_app.go_api.name
+  resource_group_name = azurerm_resource_group.api.name
+
+  depends_on = [azurerm_linux_function_app.go_api]
+}
+
+# Go API Output Endpoints for Testing
+output "go_api_url" {
+  value       = "https://${azurerm_linux_function_app.go_api.default_hostname}"
+  description = "The default hostname of the Go Custom Handler Function App"
+}
+
+output "go_api_default_key" {
+  value       = data.azurerm_function_app_host_keys.go_api.default_function_key
+  sensitive   = true
+  description = "The default host key of the Go Custom Handler Function App"
+}
+
