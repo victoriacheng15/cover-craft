@@ -152,11 +152,10 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Go API to Azure Functions
-        run: |
-          az functionapp deployment source config-zip \
-            --name ${{ env.GO_API_APP_NAME }} \
-            --resource-group ${{ env.API_RESOURCE_GROUP }} \
-            --src go-deploy.zip
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.GO_API_APP_NAME }}
+          package: go-deploy.zip
 
   deploy-frontend:
     needs: infra-apply
