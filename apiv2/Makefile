@@ -1,4 +1,4 @@
-.PHONY: update fmt lint test cov build run help clean
+.PHONY: update fmt lint test test-bdd test-all cov cov-bdd build run help clean
 
 update: ## Update dependencies and tidy go.mod
 	go get -u ./...
@@ -13,10 +13,20 @@ lint: ## Run static analysis checks (go vet)
 test: ## Run unit tests
 	go test ./internal/...
 
+test-bdd: ## Run BDD end-to-end features
+	go test ./e2e/...
+
+test-all: test test-bdd ## Run all unit and BDD tests
+
 cov: ## Run tests and print terminal coverage summary
 	go test -coverprofile=coverage.out ./internal/...
 	go tool cover -func=coverage.out
 	rm -f coverage.out
+
+cov-bdd: ## Run BDD features and print coverage summary
+	go test -count=1 -coverprofile=coverage_bdd.out -coverpkg=./internal/... ./e2e/...
+	go tool cover -func=coverage_bdd.out
+	rm -f coverage_bdd.out
 
 build: ## Compile the application binary
 	mkdir -p bin
