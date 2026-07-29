@@ -11,8 +11,8 @@ echo "========================================================================"
 
 # 1. Generate TypeScript Types
 echo "[1/3] Generating TypeScript Types..."
-npx -y openapi-typescript openapi.yaml --output shared/types.gen.ts
-echo "✓ Generated shared/types.gen.ts"
+npx -y openapi-typescript openapi.yaml --output frontend/src/shared/types.gen.ts
+echo "✓ Generated frontend/src/shared/types.gen.ts"
 
 # 2. Generate Go Types
 echo "[2/3] Generating Go Structs..."
@@ -21,7 +21,7 @@ echo "✓ Generated apiv2/internal/services/types.gen.go"
 
 # 3. Formatting & Type Audits
 echo "[3/3] Running Type Parity Audits & Linting..."
-npm run format:shared || true
+npx biome format --write frontend/src/shared/types.gen.ts || true
 
 # Run test compile in Go
 (cd apiv2 && go test ./internal/services/... ./internal/handlers/...)
