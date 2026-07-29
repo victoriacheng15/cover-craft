@@ -179,7 +179,10 @@ jobs:
         run: npm run build:shared
 
       - name: Build Frontend (Standalone)
-        run: npm run build --workspace=frontend
+        run: |
+          mkdir -p frontend/node_modules
+          ln -sf ../../node_modules/typescript frontend/node_modules/typescript
+          npm run build --workspace=frontend
         env:
           NEXT_TELEMETRY_DISABLED: 1
 

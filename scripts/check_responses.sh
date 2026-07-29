@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-LOCAL_URL="http://localhost:3000/api/generateCoverImage"
-LIVE_URL="https://cover-craft-seven.vercel.app/api/generateCoverImage"
+LOCAL_URL="http://localhost:3000/api/generateImage"
+LIVE_URL="https://cover-craft-ui.azurewebsites.net/api/generateImage"
 
 echo "Select the environment to send the requests to:"
 echo "1) Local ($LOCAL_URL)"
@@ -38,7 +38,14 @@ send() {
     -d "$body"
   CONTENT_TYPE=$(grep -i '^Content-Type:' "$HEADER_FILE" | awk '{print $2}' | tr -d '\r')
   if [[ "$CONTENT_TYPE" == application/json* ]]; then
-    cat "$RESPONSE_FILE" | jq
+    if command -v jq >/dev/null 2>&1; then
+      cat "$RESPONSE_FILE" | jq
+    elif command -v python3 >/dev/null 2>&1; then
+      python3 -m json.tool "$RESPONSE_FILE"
+    else
+      cat "$RESPONSE_FILE"
+      echo ""
+    fi
   else
     OUTFILE="output-$(date +%s).bin"
     mv "$RESPONSE_FILE" "$OUTFILE"
