@@ -21,7 +21,7 @@
 		"paths": {
 			"@/*": ["./src/*"],
 			"@/_utils": ["./src/app/api/_utils"],
-			"@cover-craft/shared": ["../shared/index.ts"]
+			"@cover-craft/shared": ["./src/shared/index.ts"]
 		}
 	},
 	"include": [

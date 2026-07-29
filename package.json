@@ -47,14 +47,14 @@
 		"typecheck": "tsc --noEmit -p frontend/tsconfig.json && tsc --noEmit -p api/tsconfig.json"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.5",
+		"@biomejs/biome": "2.5.6",
 		"@cover-craft/shared": "./shared",
 		"@testing-library/dom": "^10.4.1",
-		"@vitest/coverage-v8": "^4.1.9",
+		"@vitest/coverage-v8": "^4.1.10",
 		"api": "./api",
-		"azurite": "^3.35.0",
+		"azurite": "^3.36.0",
 		"frontend": "./frontend",
-		"typescript": "^7.0.2",
+		"typescript": "^6.0.3",
 		"vitest": "^4.1.10"
 	}
 }
