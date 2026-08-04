@@ -91,3 +91,70 @@ resource "azurerm_function_app_flex_consumption" "api" {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = var.app_insights_connection_string
   }
 }
+
+# Go API Plan (Consumption Y1)
+resource "azurerm_service_plan" "go_plan" {
+  name                = "asp-${var.app_name}-go"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  os_type             = "Linux"
+  sku_name            = "Y1"
+  tags                = var.tags
+}
+
+# Go Function App (Custom Runtime)
+resource "azurerm_linux_function_app" "go_api" {
+  name                = "${var.app_name}-go-api"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+
+  service_plan_id            = azurerm_service_plan.go_plan.id
+  storage_account_name       = var.storage_account_name
+  storage_account_access_key = var.storage_account_access_key
+
+  site_config {
+    application_stack {
+      use_custom_runtime = true
+    }
+  }
+
+  app_settings = {
+    "FUNCTIONS_WORKER_RUNTIME"              = "custom"
+    "MONGODB_URI"                           = var.mongodb_uri
+    "APPINSIGHTS_INSTRUMENTATIONKEY"        = var.app_insights_instrumentation_key
+    "APPLICATIONINSIGHTS_CONNECTION_STRING" = var.app_insights_connection_string
+  }
+
+  tags = var.tags
+}
+
+# Host Keys for Legacy API
+data "azurerm_function_app_host_keys" "api" {
+  name                = azurerm_function_app_flex_consumption.api.name
+  resource_group_name = var.resource_group_name
+
+  depends_on = [azurerm_function_app_flex_consumption.api]
+}
+
+# Host Keys for Go API
+data "azurerm_function_app_host_keys" "go_api" {
+  name                = azurerm_linux_function_app.go_api.name
+  resource_group_name = var.resource_group_name
+
+  depends_on = [azurerm_linux_function_app.go_api]
+}
+
+# Outputs
+output "default_function_key" {
+  value     = data.azurerm_function_app_host_keys.api.default_function_key
+  sensitive = true
+}
+
+output "go_api_url" {
+  value = "https://${azurerm_linux_function_app.go_api.default_hostname}"
+}
+
+output "go_api_default_key" {
+  value     = data.azurerm_function_app_host_keys.go_api.default_function_key
+  sensitive = true
+}
