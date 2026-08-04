@@ -1,13 +1,11 @@
-DEV_IMAGE := cover-craft-dev-v2:latest
-DEV_CONTAINER := cover-craft-dev-v2
-
-.PHONY: dev-build dev-run dev-stop dev-logs dev-shell dev-clean contract-sync \
-	update-go fmt-go lint-go test-go test-bdd test-all-go cov-go cov-bdd build-go run-go clean-go \
-	build-ui run-ui test-ui lint-ui format-ui lint-md format-md help
-
 # ==============================================================================
 # Local Dev Env
 # ==============================================================================
+
+DEV_IMAGE := cover-craft-dev-v2:latest
+DEV_CONTAINER := cover-craft-dev-v2
+
+.PHONY: dev-build dev-run dev-stop dev-logs dev-shell dev-clean contract-sync
 
 dev-build: ## Build the V2 dev container image using Podman
 	podman build -t $(DEV_IMAGE) -f Dockerfile.v2 .
@@ -42,6 +40,8 @@ contract-sync: ## Synchronize API contracts and regenerate Go/TS types
 # Markdown
 # ==============================================================================
 
+.PHONY: lint-md format-md
+
 lint-md: ## Run markdown linter checks
 	npx markdownlint-cli "**/*.md" --ignore "**/node_modules/**"
 
@@ -51,6 +51,8 @@ format-md: ## Automatically fix markdown formatting issues
 # ==============================================================================
 # Go API (apiv2)
 # ==============================================================================
+
+.PHONY: update-go fmt-go lint-go test-go test-bdd test-all-go cov-go build-go run-go clean-go
 
 update-go: ## Update Go dependencies and tidy go.mod
 	cd apiv2 && go get -u ./... && go mod tidy && cd ..
@@ -73,9 +75,6 @@ test-all-go: ## Run all Go unit and BDD tests
 cov-go: ## Run Go unit tests and print terminal coverage summary
 	cd apiv2 && go test -coverprofile=coverage.out ./internal/... && go tool cover -func=coverage.out && rm -f coverage.out && cd ..
 
-cov-bdd: ## Run Go BDD features and print coverage summary
-	cd apiv2 && go test -count=1 -coverprofile=coverage_bdd.out -coverpkg=./internal/... ./e2e/... && go tool cover -func=coverage_bdd.out && rm -f coverage_bdd.out && cd ..
-
 build-go: ## Compile the Go application binary
 	cd apiv2 && mkdir -p bin && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/apiv2-handler cmd/handler/main.go && cd ..
 
@@ -91,19 +90,28 @@ clean-go: ## Remove Go build and coverage artifacts
 # Frontend
 # ==============================================================================
 
+.PHONY: build-ui run-ui test-ui lint-ui format-ui
+
 build-ui: ## Build the Next.js production bundle
+	cd frontend && npm run build && cd ..
 
 run-ui: ## Start the Next.js development server
+	cd frontend && npm run dev && cd ..
 
 test-ui: ## Run frontend Vitest tests
+	cd frontend && npm run test && cd ..
 
 lint-ui: ## Run linter checks for frontend code using Biome
+	cd frontend && npm run lint && cd ..
 
 format-ui: ## Format frontend source files using Biome
+	cd frontend && npm run format && cd ..
 
 # ==============================================================================
 # Help
 # ==============================================================================
+
+.PHONY: help
 
 help: ## Show this help message
 	@echo "Usage: make [target]"
