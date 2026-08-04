@@ -113,3 +113,13 @@ output "go_api_default_key" {
   description = "The default host key of the Go Custom Handler Function App"
 }
 
+moved {
+  from = azurerm_service_plan.go_plan
+  to   = module.function_app.azurerm_service_plan.go_plan
+}
+
+moved {
+  from = azurerm_linux_function_app.go_api
+  to   = module.function_app.azurerm_linux_function_app.go_api
+}
+
