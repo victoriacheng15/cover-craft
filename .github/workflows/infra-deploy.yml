@@ -5,12 +5,8 @@ on:
     branches: [main]
     paths:
       - 'tofu/**'
-      - 'api/**'
       - 'apiv2/**'
-      - 'shared/**'
       - 'frontend/**'
-      - 'package.json'
-      - 'package-lock.json'
   workflow_dispatch:
 
 permissions:
@@ -124,10 +120,9 @@ jobs:
 
       - name: Package Frontend
         run: |
-          # The standalone output includes everything needed to run
-          # We also need to include 'public' and 'static' for Next.js to serve them
-          cp -r frontend/public frontend/.next/standalone/frontend/
-          cp -r frontend/.next/static frontend/.next/standalone/frontend/.next/
+          # Copy public and static assets directly into the standalone directory structure
+          cp -r frontend/public frontend/.next/standalone/
+          cp -r frontend/.next/static frontend/.next/standalone/.next/
           
           # Zip the standalone folder
           cd frontend/.next/standalone
@@ -139,14 +134,8 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Frontend to Azure Web App
-        run: |
-          az webapp deployment source config-zip \
-            --name ${{ env.FRONTEND_APP_NAME }} \
-            --resource-group ${{ env.RESOURCE_GROUP }} \
-            --src frontend-deploy.zip
-          
-          # Set the startup command for Next.js standalone
-          az webapp config set \
-            --name ${{ env.FRONTEND_APP_NAME }} \
-            --resource-group ${{ env.RESOURCE_GROUP }} \
-            --startup-file "node frontend/server.js"
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.FRONTEND_APP_NAME }}
+          package: frontend-deploy.zip
+          startup-command: "node frontend/server.js"
