@@ -23,20 +23,10 @@ FROM golang:1.26-alpine AS go-source
 FROM node:lts-bookworm-slim
 WORKDIR /app
 
-# Install native dependencies for node-canvas, process management, and utils
+# Install native dependencies for process management and utilities
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libcairo2-dev \
-    libpango1.0-dev \
-    libjpeg-dev \
-    libgif-dev \
-    librsvg2-dev \
-    libcairo2 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libjpeg62-turbo \
-    libgif7 \
-    librsvg2-2 \
+    libicu-dev \
     procps \
     ca-certificates \
     curl \
@@ -47,18 +37,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=go-source /usr/local/go/ /usr/local/go/
 ENV PATH=$PATH:/usr/local/go/bin
 
-# Install PM2 and Azure Functions Core Tools globally
-RUN npm install -g pm2 azure-functions-core-tools@4
+# Install PM2, Azure Functions Core Tools, and Azurite globally
+RUN npm install -g pm2 azure-functions-core-tools@4 azurite
 
 # Copy package descriptors first to build a cache
-COPY package.json package-lock.json ./
-COPY shared/package.json ./shared/
-COPY api/package.json ./api/
-COPY frontend/package.json ./frontend/
+COPY frontend/package.json frontend/package-lock.json ./frontend/
 COPY apiv2/go.mod apiv2/go.sum* ./apiv2/
 
-# Clean install all Node dependencies (including devDependencies)
-RUN npm ci
+# Clean install all Node dependencies inside the frontend workspace
+RUN cd frontend && npm ci
 
 # Copy the rest of the workspace files
 COPY . .
@@ -71,13 +58,10 @@ RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
 # Install dependencies if they are missing from the mounted volume\n\
-if [ ! -d "node_modules" ]; then\n\
-  echo "Missing node_modules in volume. Installing..."\n\
-  npm install\n\
+if [ ! -d "frontend/node_modules" ]; then\n\
+  echo "Missing node_modules in frontend volume. Installing..."\n\
+  cd /app/frontend && npm install\n\
 fi\n\
-\n\
-# Build the shared library initially\n\
-npm run build:shared\n\
 \n\
 # Compile the Go Azure Functions binary initially\n\
 cd /app/apiv2\n\

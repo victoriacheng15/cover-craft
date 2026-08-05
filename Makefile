@@ -7,10 +7,11 @@ DEV_CONTAINER := cover-craft-dev-v2
 
 .PHONY: dev-build dev-run dev-stop dev-logs dev-shell dev-clean contract-sync
 
-dev-build: ## Build the V2 dev container image using Podman
+dev-build: dev-stop ## Build the V2 dev container image using Podman
 	podman build -t $(DEV_IMAGE) -f Dockerfile.v2 .
 
 dev-run: ## Run the V2 dev container with volume mounts and port mappings
+	podman rm -f $(DEV_CONTAINER) || true
 	podman run -d --rm \
 		-p 3000:3000 \
 		-p 7071:7071 \
@@ -22,7 +23,7 @@ dev-run: ## Run the V2 dev container with volume mounts and port mappings
 		$(DEV_IMAGE)
 
 dev-stop: ## Stop the running V2 dev container
-	podman stop $(DEV_CONTAINER)
+	podman stop $(DEV_CONTAINER) || true
 
 dev-logs: ## Tail the logs of the running V2 container
 	podman logs -f $(DEV_CONTAINER)
@@ -30,7 +31,7 @@ dev-logs: ## Tail the logs of the running V2 container
 dev-shell: ## Open an interactive bash shell inside the running V2 container
 	podman exec -it $(DEV_CONTAINER) /bin/bash
 
-dev-clean: ## Remove the V2 dev container image
+dev-clean: dev-stop ## Remove the V2 dev container image
 	podman rmi $(DEV_IMAGE)
 
 contract-sync: ## Synchronize API contracts and regenerate Go/TS types
@@ -69,8 +70,7 @@ test-go: ## Run Go unit tests
 test-bdd: ## Run Go BDD end-to-end features
 	cd apiv2 && go test ./e2e/... && cd ..
 
-test-all-go: ## Run all Go unit and BDD tests
-	cd apiv2 && go test ./internal/... && go test ./e2e/... && cd ..
+test-all-go: test-go test-bdd ## Run all Go unit and BDD tests
 
 cov-go: ## Run Go unit tests and print terminal coverage summary
 	cd apiv2 && go test -coverprofile=coverage.out ./internal/... && go tool cover -func=coverage.out && rm -f coverage.out && cd ..

@@ -5,7 +5,6 @@ import {
 } from "@cover-craft/shared";
 import {
 	CartesianGrid,
-	Cell,
 	Legend,
 	Line,
 	LineChart,
@@ -61,21 +60,17 @@ export function FeaturePopularity({
 					<ResponsiveContainer width="100%" height={300}>
 						<PieChart>
 							<Pie
-								data={featurePopularity.topFonts}
+								data={featurePopularity.topFonts.map((entry, idx) => ({
+									...entry,
+									fill: COLORS[idx % COLORS.length],
+								}))}
 								dataKey="count"
 								nameKey="font"
 								cx="50%"
 								cy="50%"
 								outerRadius={100}
 								label
-							>
-								{featurePopularity.topFonts.map((entry, idx) => (
-									<Cell
-										key={`cell-font-${entry.font}`}
-										fill={COLORS[idx % COLORS.length]}
-									/>
-								))}
-							</Pie>
+							/>
 							<Tooltip />
 							<Legend />
 						</PieChart>
@@ -90,21 +85,17 @@ export function FeaturePopularity({
 					<ResponsiveContainer width="100%" height={300}>
 						<PieChart>
 							<Pie
-								data={featurePopularity.topSizes}
+								data={featurePopularity.topSizes.map((entry, idx) => ({
+									...entry,
+									fill: COLORS[idx % COLORS.length],
+								}))}
 								dataKey="count"
 								nameKey="size"
 								cx="50%"
 								cy="50%"
 								outerRadius={100}
 								label
-							>
-								{featurePopularity.topSizes.map((entry, idx) => (
-									<Cell
-										key={`cell-size-${entry.size}`}
-										fill={COLORS[idx % COLORS.length]}
-									/>
-								))}
-							</Pie>
+							/>
 							<Tooltip />
 							<Legend />
 						</PieChart>
@@ -134,21 +125,17 @@ export function FeaturePopularity({
 										name: `Long (${TITLE_LENGTH_THRESHOLDS.MEDIUM_MAX + 1}+)`,
 										value: featurePopularity.titleLengthDistribution.long,
 									},
-								]}
+								].map((item, idx) => ({
+									...item,
+									fill: COLORS[idx % COLORS.length],
+								}))}
 								dataKey="value"
 								nameKey="name"
 								cx="50%"
 								cy="50%"
 								outerRadius={100}
 								label
-							>
-								{[0, 1, 2].map((idx) => (
-									<Cell
-										key={`cell-title-${idx}`}
-										fill={COLORS[idx % COLORS.length]}
-									/>
-								))}
-							</Pie>
+							/>
 							<Tooltip />
 							<Legend />
 						</PieChart>
@@ -180,21 +167,17 @@ export function FeaturePopularity({
 										name: `Long (${SUBTITLE_LENGTH_THRESHOLDS.MEDIUM_MAX + 1}+)`,
 										value: featurePopularity.subtitleUsageDistribution.long,
 									},
-								]}
+								].map((item, idx) => ({
+									...item,
+									fill: COLORS[idx % COLORS.length],
+								}))}
 								dataKey="value"
 								nameKey="name"
 								cx="50%"
 								cy="50%"
 								outerRadius={100}
 								label
-							>
-								{[0, 1, 2, 3].map((idx) => (
-									<Cell
-										key={`cell-subtitle-${idx}`}
-										fill={COLORS[idx % COLORS.length]}
-									/>
-								))}
-							</Pie>
+							/>
 							<Tooltip />
 							<Legend />
 						</PieChart>
