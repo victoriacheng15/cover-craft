@@ -1,4 +1,4 @@
-name: CI - Lint & Test
+name: Continuous Integration
 
 on:
   pull_request:

@@ -1,12 +1,6 @@
 {
   "apps": [
     {
-      "name": "shared-watch",
-      "script": "npx",
-      "args": "tsc -p shared/tsconfig.json -w",
-      "cwd": "/app"
-    },
-    {
       "name": "apiv2-build",
       "script": "make",
       "args": "build",
@@ -20,7 +14,7 @@
     {
       "name": "apiv2",
       "script": "func",
-      "args": "start --host localhost",
+      "args": "start",
       "cwd": "/app/apiv2",
       "interpreter": "none",
       "watch": ["bin/apiv2-handler"],
@@ -31,12 +25,12 @@
     {
       "name": "frontend",
       "script": "npm",
-      "args": "run dev --workspace=frontend",
-      "cwd": "/app"
+      "args": "run dev",
+      "cwd": "/app/frontend"
     },
     {
       "name": "azurite",
-      "script": "/app/node_modules/.bin/azurite",
+      "script": "azurite",
       "args": "--silent --location /app/__azurite_db__",
       "cwd": "/app",
       "interpreter": "none"
