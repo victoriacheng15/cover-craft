@@ -138,4 +138,4 @@ jobs:
         with:
           app-name: ${{ env.FRONTEND_APP_NAME }}
           package: frontend-deploy.zip
-          startup-command: "node frontend/server.js"
+          startup-command: "node server.js"
