@@ -61,67 +61,6 @@ jobs:
           ARM_TENANT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
           ARM_SUBSCRIPTION_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
 
-  deploy-api:
-    needs: infra-apply
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install all dependencies
-        run: npm ci
-        env:
-          NODE_ENV: development
-
-      - name: Build shared package
-        run: npm run build:shared
-
-      - name: Build API
-        run: npm run build --workspace=api
-
-      - name: Package API for deployment
-        working-directory: api
-        run: |
-          # 1. Clear existing modules
-          rm -rf node_modules
-
-          # 2. Force isolation by temporarily hiding root workspace files.
-          # This prevents npm from detecting the monorepo and hoisting dependencies.
-          if [ -f ../package.json ]; then mv ../package.json ../package.json.bak; fi
-          if [ -f ../package-lock.json ]; then mv ../package-lock.json ../package-lock.json.bak; fi
-
-          # 3. Install production dependencies (local to api folder)
-          npm install --omit=dev --no-audit --no-fund --install-links
-
-          # 4. Restore root workspace files
-          if [ -f ../package.json.bak ]; then mv ../package.json.bak ../package.json; fi
-          if [ -f ../package-lock.json.bak ]; then mv ../package-lock.json.bak ../package-lock.json; fi
-
-          # 5. Fail-safe: ensure shared/dist is physically present
-          mkdir -p node_modules/@cover-craft/shared/dist
-          cp -r ../shared/dist/* node_modules/@cover-craft/shared/dist/
-          
-          # 6. Create zip
-          zip -r ../api-deploy.zip dist node_modules host.json package.json
-
-      - name: Azure Login
-        uses: azure/login@v3
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy API to Azure Functions
-        run: |
-          az functionapp deployment source config-zip \
-            --name ${{ env.API_APP_NAME }} \
-            --resource-group ${{ env.API_RESOURCE_GROUP }} \
-            --src api-deploy.zip
-
   deploy-go-api:
     needs: infra-apply
     runs-on: ubuntu-latest
@@ -169,20 +108,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install all dependencies
+        working-directory: frontend
         run: npm ci
         env:
           NODE_ENV: development
 
-      - name: Build Shared
-        run: npm run build:shared
-
       - name: Build Frontend (Standalone)
-        run: |
-          mkdir -p frontend/node_modules
-          ln -sf ../../node_modules/typescript frontend/node_modules/typescript
-          npm run build --workspace=frontend
+        working-directory: frontend
+        run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1
 
