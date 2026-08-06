@@ -60,11 +60,11 @@ export const landingConfig: LandingConfig = {
 		objective:
 			"Generate clean, readable cover images via interactive controls and queued batch processing without manual design-tool setup.",
 		stack:
-			"React, Next.js (App Router), TypeScript, Azure Functions, Azure Queue Storage, MongoDB, OpenTofu, Biome, Vitest",
+			"React, Next.js (App Router), TypeScript, Azure Functions (Go Custom Handler), Azure Queue Storage, MongoDB, Terraform, Biome, Vitest",
 		pattern:
 			"Full-Stack Serverless Monorepo with BFF (Backend-for-Frontend) Proxying",
 		entry_point:
-			"frontend/src/app/page.tsx (client views), api/ (Azure Functions handlers), shared/ (validation and common types)",
+			"frontend/src/app/page.tsx (client views), apiv2/ (Go Azure Functions handlers)",
 		persistence_strategy:
 			"MongoDB for batch job state persistence, Azure Queue Storage for queue-based task management",
 		observability:
@@ -86,21 +86,21 @@ export const landingConfig: LandingConfig = {
          │ /generateImage        │ /generateImages       │ /getJobStatus
          ▼                       ▼                       ▼
 ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│  Azure Function  │    │  Azure Function  │    │  Azure Function  │
+│   Go Function    │    │   Go Function    │    │   Go Function    │
 │  (SingleRender)  │    │ (QueueProducer)  │    │  (GetJobStatus)  │
 └──────────────────┘    └──────────────────┘    └──────────────────┘
          │                       │                       │
          │ Uses                  │ Enqueues              │ Reads
          ▼                       ▼                       │ Status
 ┌──────────────────┐    ┌──────────────────┐             │
-│  Canvas Library  │    │   Azure Queue    │             │
+│  Go 2D Graphics  │    │   Azure Queue    │             │
 └──────────────────┘    │     Storage      │             │
          ▲              └──────────────────┘             │
          │                       │                       │
          │ Uses                  │ Triggers              │
          │                       ▼                       │
          │              ┌──────────────────┐             │
-         │              │  Azure Function  │             │
+         │              │   Go Function    │             │
          │              │  (QueueWorker)   │             │
          │              └──────────────────┘             │
          │                       │                       │
@@ -121,36 +121,37 @@ export const landingConfig: LandingConfig = {
 └──────────────────────────────────────────────────────────────────┘
                                  │
                                  │ 1. Azure Login (Service Principal)
-                                 │ 2. Sets up OpenTofu (v1.6.0)
-      ┌────────────────────┐     │ 3. Runs 'tofu init & apply'
+                                 │ 2. Sets up Terraform (v1.6.0)
+                                 │ 3. Runs 'terraform init & apply'
+                                 │ 4. Deploys apps via Actions
+      ┌────────────────────┐     │
       │ Azure Blob Storage │ <-> │
       │     (tfstate)      │     │
       └────────────────────┘     ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│                 OpenTofu Infrastructure Apply                    │
+│                 Terraform Infrastructure Apply                   │
 │    (Provision storage, App Insights, Function App, App Service)  │
 └──────────────────────────────────────────────────────────────────┘
                │                                   │
                │ Build & Package                   │ Build & Package
                ▼                                   ▼
 ┌──────────────────────────────┐    ┌──────────────────────────────┐
-│   Create api-deploy.zip      │    │ Create frontend-deploy.zip   │
-│   (Bundles shared package)   │    │ (Next.js Standalone build)   │
+│       apiv2-deploy.zip       │    │     frontend-deploy.zip      │
+│         (Go Binary)          │    │ (Next.js Standalone build)   │
 └──────────────────────────────┘    └──────────────────────────────┘
                │                                   │
                │ Zip Deploy                        │ Zip Deploy
-               │ (config-zip)                      │ (config-zip)
+               │ (functions-action)                │ (webapps-deploy)
                ▼                                   ▼
 ┌──────────────────────────────┐    ┌──────────────────────────────┐
-│        Azure Function        │    │     Azure App Service UI     │
-│       ("cover-craft")        │    │      ("cover-craft-ui")      │
+│       Go Function App        │    │     Azure App Service UI     │
 └──────────────────────────────┘    └──────────────────────────────┘`,
 	},
 	tech: [
 		{
-			title: "Canvas Rendering Engine",
+			title: "Go 2D Graphics Library",
 			description:
-				"Canvas rendering engine running inside Azure Functions to dynamically compile text, custom typography, and layout styles into consistent PNG images.",
+				"Go 2D graphics library running inside a Go Custom Handler Function App to draw typography, colors, and layout styles into consistent PNG images without C++ runtime dependencies.",
 		},
 		{
 			title: "Queue-backed Batch Processor",
@@ -200,10 +201,10 @@ export const landingConfig: LandingConfig = {
 		verifiable_outputs: [
 			{
 				title: "Client UI Testing Runs",
-				terminal_output: `> frontend@1.0.0 test
+				terminal_output: `> frontend@0.1.0 test
 > vitest run
 
- RUN  v4.1.8 /frontend
+ RUN  v4.1.10 /frontend
 
  ✓ src/lib/download.test.ts (4 tests)
  ✓ src/components/ui/Cards.test.tsx (15 tests)
@@ -212,32 +213,37 @@ export const landingConfig: LandingConfig = {
  ✓ src/components/form/FormField.test.tsx (5 tests)
  ✓ src/components/ui/SectionTitle.test.tsx (12 tests)
  ✓ src/components/display/BatchResultsDisplay.test.tsx (6 tests)
- ✓ src/components/form/CoverForm.test.tsx (18 tests)
  ...
 
- Test Files  31 passed (31)
-      Tests  192 passed (192)
-   Duration  2.11s`,
+ Test Files  14 passed (14)
+      Tests  98 passed (98)
+   Duration  1.82s`,
 			},
 			{
-				title: "Serverless Backend API Testing Runs",
-				terminal_output: `> api@1.0.0 test
-> vitest run
-
- RUN  v4.1.8 /api
-
- ✓ src/functions/analytics.test.ts (4 tests)
- ✓ src/functions/metrics.test.ts (7 tests)
- ✓ src/functions/getJobStatus.test.ts (7 tests)
- ✓ src/functions/healthCheck.test.ts (5 tests)
- ✓ src/functions/generateImages.test.ts (4 tests)
- ✓ src/lib/mongoose.test.ts (5 tests)
- ✓ src/functions/generateImage.test.ts (37 tests)
- ✓ src/functions/processJobs.test.ts (4 tests)
-
- Test Files  8 passed (8)
-      Tests  73 passed (73)
-   Duration  1.40s`,
+				title: "Go API Statement Coverage",
+				terminal_output: `cd apiv2 && go test -coverprofile=coverage.out ./internal/... && go tool cover -func=coverage.out
+ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/db	coverage: 70.0% of statements
+ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/handlers	coverage: 83.4% of statements
+ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/queue	coverage: 32.1% of statements
+ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/services	coverage: 89.7% of statements
+total:											(statements)			82.6%`,
+			},
+			{
+				title: "Terraform Managed Infrastructure (State List)",
+				terminal_output: `data.azurerm_resource_group.main
+azurerm_resource_group.api
+module.app_service.azurerm_linux_web_app.frontend
+module.app_service.azurerm_service_plan.plan
+module.application_insights.azurerm_application_insights.app_insights
+module.application_insights.azurerm_log_analytics_workspace.workspace
+module.function_app.data.azurerm_function_app_host_keys.api
+module.function_app.data.azurerm_function_app_host_keys.go_api
+module.function_app.azurerm_function_app_flex_consumption.api
+module.function_app.azurerm_linux_function_app.go_api
+module.function_app.azurerm_service_plan.flex_plan
+module.function_app.azurerm_service_plan.go_plan
+module.function_app.azurerm_storage_container.deploy
+module.storage.azurerm_storage_account.storage`,
 			},
 		],
 	},

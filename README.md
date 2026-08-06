@@ -1,6 +1,6 @@
 # Cover Craft
 
-Cover Craft is a serverless cover image generator built with React, Azure Functions, Azure Queue Storage, MongoDB, and OpenTofu (Terraform-compatible).
+Cover Craft is a serverless cover image generator built with React, Next.js, Go, Azure Functions, Azure Queue Storage, MongoDB, and Terraform.
 
 It supports fast single-image generation and queued batch processing, with shared validation, accessibility checks, and automated Azure deployment built into the workflow.
 
@@ -22,7 +22,7 @@ It supports fast single-image generation and queued batch processing, with share
 
 ### Infrastructure & Deployment Pipeline
 
-The platform's cloud infrastructure is declared using OpenTofu (Terraform-compatible) and deployed via GitHub Actions, with remote state tracked in Azure Blob Storage:
+The platform's cloud infrastructure is declared using Terraform and deployed via GitHub Actions, with remote state tracked in Azure Blob Storage:
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
@@ -35,29 +35,30 @@ The platform's cloud infrastructure is declared using OpenTofu (Terraform-compat
 └──────────────────────────────────────────────────────────────────┘
                                  │
                                  │ 1. Azure Login (Service Principal)
-                                 │ 2. Sets up OpenTofu (v1.6.0)
-      ┌────────────────────┐     │ 3. Runs 'tofu init & apply'
+                                 │ 2. Sets up Terraform (v1.6.0)
+                                 │ 3. Runs 'terraform init & apply'
+                                 │ 4. Deploys apps via Actions
+      ┌────────────────────┐     │
       │ Azure Blob Storage │ <-> │
       │     (tfstate)      │     │
       └────────────────────┘     ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│                 OpenTofu Infrastructure Apply                    │
+│                 Terraform Infrastructure Apply                   │
 │    (Provision storage, App Insights, Function App, App Service)  │
 └──────────────────────────────────────────────────────────────────┘
                │                                   │
                │ Build & Package                   │ Build & Package
                ▼                                   ▼
 ┌──────────────────────────────┐    ┌──────────────────────────────┐
-│   Create api-deploy.zip      │    │ Create frontend-deploy.zip   │
-│   (Bundles shared package)   │    │ (Next.js Standalone build)   │
+│       apiv2-deploy.zip       │    │ Create frontend-deploy.zip   │
+│         (Go Binary)          │    │ (Next.js Standalone build)   │
 └──────────────────────────────┘    └──────────────────────────────┘
                │                                   │
                │ Zip Deploy                        │ Zip Deploy
-               │ (config-zip)                      │ (config-zip)
+               │ (functions-action)                │ (webapps-deploy)
                ▼                                   ▼
 ┌──────────────────────────────┐    ┌──────────────────────────────┐
-│        Azure Function        │    │     Azure App Service UI     │
-│       ("cover-craft")        │    │      ("cover-craft-ui")      │
+│       Go Function App        │    │     Azure App Service UI     │
 └──────────────────────────────┘    └──────────────────────────────┘
 ```
 
@@ -67,8 +68,8 @@ The platform has two runtime generation paths:
 
 | Path | Use case | Flow |
 | :--- | :--- | :--- |
-| Single image | Fast interactive generation | User request -> Azure Function -> Canvas renderer -> image response |
-| Batch images | Larger workloads | User request -> HTTP 202 -> Azure Queue Storage -> retry-aware worker -> MongoDB job status |
+| Single image | Fast interactive generation | User request -> Go Function -> Go 2D graphics library -> image response |
+| Batch images | Larger workloads | User request -> HTTP 202 -> Azure Queue Storage -> Go Function worker -> MongoDB job status |
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
@@ -86,22 +87,21 @@ The platform has two runtime generation paths:
          │ /generateImage        │ /generateImages       │ /getJobStatus
          ▼                       ▼                       ▼
 ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│  Azure Function  │    │  Azure Function  │    │  Azure Function  │
+│   Go Function    │    │   Go Function    │    │   Go Function    │
 │  (SingleRender)  │    │ (QueueProducer)  │    │  (GetJobStatus)  │
 └──────────────────┘    └──────────────────┘    └──────────────────┘
          │                       │                       │
          │ Uses                  │ Enqueues              │ Reads
          ▼                       ▼                       │ Status
-         │                       │                       │
 ┌──────────────────┐    ┌──────────────────┐             │
-│  Canvas Library  │    │   Azure Queue    │             │
+│  Go 2D Graphics  │    │   Azure Queue    │             │
 └──────────────────┘    │     Storage      │             │
          ▲              └──────────────────┘             │
          │                       │                       │
          │ Uses                  │ Triggers              │
          │                       ▼                       │
          │              ┌──────────────────┐             │
-         │              │  Azure Function  │             │
+         │              │   Go Function    │             │
          │              │  (QueueWorker)   │             │
          │              └──────────────────┘             │
          │                       │                       │
@@ -120,10 +120,10 @@ The platform has two runtime generation paths:
 
 | Layer | Tools |
 | :--- | :--- |
-| Language | TypeScript, Node.js, React, Tailwind CSS |
-| Infrastructure | Azure Functions, Azure Queue Storage, Azure hosting, Terraform |
-| Data stores | MongoDB for job state and logs |
-| Testing | Vitest |
+| Language | Go, TypeScript, React, Tailwind CSS |
+| Infrastructure | Azure Functions, Azure Queue Storage, Azure App Service, Terraform |
+| Data stores | MongoDB for job state and metrics |
+| Testing | Vitest, Go testing (Unit & BDD) |
 | CI/CD | GitHub Actions |
 
 ---
@@ -139,34 +139,57 @@ The platform has two runtime generation paths:
 
 ## Local Setup
 
-```bash
-npm install
-npm run build:shared
-npm run dev:frontend
-```
+### 1. Run Frontend Locally
 
-Run the API locally:
+Install dependencies:
 
 ```bash
-npm run start:api
+make install-ui
 ```
 
-Alternatively, the entire stack can run inside a single local development container. This configuration utilizes Podman to orchestrate Next.js, the Azure Functions API, and Azurite with hot-reloading enabled. If using Docker, replace the `podman` command prefix with `docker` directly. The root package descriptor provides simple scripts to build and start the environment.
+Then start the Next.js development server from the repository root:
+
+```bash
+make run-ui
+```
+
+### 2. Run API Locally
+
+In a separate terminal window at the repository root, start Azurite storage emulator and launch the Go Functions host:
+
+```bash
+make run-go
+```
+
+### 3. Run inside Dev Container
+
+Alternatively, the entire stack can run inside a local development container. This configuration utilizes Podman/Docker to orchestrate Next.js, the Go Azure Functions API, and Azurite with hot-reloading enabled.
 
 ```bash
 # Build the development container
-npm run docker:build:dev
+make dev-build
 
 # Start the container with hot-reloading
-npm run docker:run:dev
+make dev-run
 
-# Remove the built development image
-npm run docker:clean:dev
+# Tail the logs
+make dev-logs
+
+# Stop the container
+make dev-stop
 ```
 
-Run checks:
+### 4. Run Checks & Tests
+
+Execute checks from the root directory:
 
 ```bash
-npm run lint
-npm run test
+# Run Go unit and BDD tests
+make test-all-go
+
+# Run Go coverage analysis
+make cov-go
+
+# Run frontend tests
+make test-ui
 ```

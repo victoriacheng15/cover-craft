@@ -194,4 +194,26 @@ export const chapters: Chapter[] = [
 			},
 		],
 	},
+	{
+		title: "Backend Re-Platforming & Monorepo Flattening",
+		intro:
+			"Re-platformed the serverless backend to Go and flattened the npm workspace monorepo. This removed the native C++ node-canvas library, optimized the pipeline with a Go 2D graphics library, and isolated the Next.js frontend as a standalone project.",
+		timeline: [
+			{
+				date: "2026-08-04",
+				title: "ADR 008: Migrate Azure Functions from Node.js to Go",
+				description:
+					"Documented the migration from the Node.js API to a Go Custom Handler and the flat monorepo restructuring. The decision eliminated monorepo workspace hoisting issues and the native C++ compilation footprint.",
+				adrPath: "008-migrate-azure-functions-from-node-js-to-go",
+			},
+			{
+				date: "2026-08-05",
+				title: "Go API & Monorepo Flattening Implementation",
+				description:
+					"Implemented the Go Custom Handler serverless backend using the Go 2D graphics library. Flattened workspaces to make the frontend a standalone project, decoupling builds and optimizing CI/CD run times.",
+				lessonLearned:
+					"Node.js GitHub Actions jobs took an excessive amount of time to run due to heavy dependency footprints and native C++ builds. Migrating the backend to a statically compiled Go binary reduced the pipeline execution time by approximately 1 minute.",
+			},
+		],
+	},
 ];
