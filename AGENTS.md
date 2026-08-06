@@ -1,68 +1,88 @@
-# Agent Guide for Cover Craft
+# AGENTS.md
 
-This document provides context and instructions for AI agents working on the **Cover Craft** project, a full-stack image generation platform and mentorship sandbox.
+This file provides guidance to AI coding agents when working with code in this repository.
 
-## 1. Project Overview
+## Project Overview
 
-**Cover Craft** is a full-stack cover image generator built as an NPM Workspace monorepo. It demonstrates modern web development patterns, cloud deployment strategies, and software development best practices.
+Cover Craft is a serverless cover image generator. It consists of two main components:
 
-- **Role & Persona**: Act as a **Staff Software Engineer & Mentor** (15+ years experience).
-- **Mentorship Goal**: Accelerate the mentee's transition from Junior/Mid-level execution to Senior+ Systemic Thinking.
-- **Core Tech**: Next.js (App Router), TypeScript, Azure Functions, MongoDB, Tailwind CSS v4.
-- **Styling**: Tailwind CSS v4 (Modern, Accessibility-First).
-- **Architecture**: Full-stack Monorepo with three primary workspaces (`frontend/`, `api/`, `shared/`).
+1. **Next.js Frontend**: A standalone React application (located in `frontend/`) providing interactive controls and a Backend-for-Frontend (BFF) proxy.
+2. **Go Azure Functions Backend**: A serverless API (located in `apiv2/`) running as a Go Custom Handler to render 2D graphics and process queue-backed generation jobs.
 
-## 2. Build and Test Commands
+## Development Commands
 
-The project uses **NPM Workspaces** for centralized orchestration. Always prefer running these commands from the project root to ensure the toolchain and workspace links are correctly handled.
-
-| Command | Description |
-| :--- | :--- |
-| `npm run dev:frontend` | Starts the Next.js development server with live-reloading of shared package changes. |
-| `npm run start:api` | Orchestrates a `shared` package build followed by starting the local Azure Functions host. |
-| `npm run build:frontend` | Compiles the `shared` library and then builds the production Next.js application. |
-| `npm run lint` | Performs project-wide linting and logic checks using **Biome** across all workspaces. |
-| `npm run format` | Automatically formats all code in the monorepo according to the design system rules. |
-| `npm run test` | Executes the complete Vitest suite across both Frontend and API workspaces. |
-| `npm run test:api` | Runs unit and integration tests specifically for the serverless backend. |
-| `npm run test:frontend` | Runs component and hook tests for the Next.js client. |
-
-**Important:** To run the full stack locally with shared logic, you should build the shared package first:
+### Environment Setup
 
 ```bash
-npm run build:shared && npm run dev:frontend
-# or for API
-npm run start:api
+make install-ui
 ```
 
-## 3. Code Style Guidelines
+### Local Run
 
-### TypeScript & Shared Logic
+```bash
+# Start frontend locally (port 3000)
+make run-ui
 
-- **Single Source of Truth**: All validation rules, constants (lengths, regex), and shared types must reside in `@cover-craft/shared`.
-- **Module Format**: The shared library uses **CommonJS** to maintain compatibility with the Azure Functions runtime.
-- **Strict Typing**: Avoid `any`. Use interfaces for data contracts and specific types for event statuses.
+# Start Go API, Azurite emulator, and local Functions host (port 7071)
+make run-go
+```
 
-### Frontend (Next.js & React)
+### Local Dev Container
 
-- **Architecture**: Use the App Router and BFF (Backend-for-Frontend) pattern.
-- **Accessibility**: Enforce WCAG AA compliance. Use the `useContrastCheck` hook for real-time visual feedback.
-- **Structure**: Maintain clean, semantic HTML5 structure (header, main, footer, details/summary).
+```bash
+make dev-build    # Build development container image
+make dev-run      # Start development container in background
+make dev-stop     # Stop running container
+make dev-logs     # Tail container logs
+```
 
-### API (Azure Functions)
+### Quality Checks
 
-- **Functional Programming**: Keep functions stateless, idempotent, and focused on a single responsibility.
-- **Observability**: Use the structured JSON logger. Every operation should emit relevant telemetry for monitoring.
-- **Error Handling**: Implement standardized error responses with unified formatting.
+```bash
+make lint-ui      # Audit frontend using Biome
+make format-ui    # Format frontend using Biome
+```
 
-## 4. Testing Instructions
+### Code Generation
 
-- **Unit Tests**: Run `npm run test` to execute the standard Vitest suite across the monorepo.
-- **Source Resolution**: Tests resolve the `@cover-craft/shared` package directly from source via path aliases, eliminating the need for pre-builds in test environments.
-- **Coverage**: Maintain high coverage for validation logic and core image generation paths.
+```bash
+make contract-sync  # Re-generate Go structs and TypeScript interfaces from openapi.yaml
+```
 
-## 5. Security & Automation
+### Testing
 
-- **CI/CD**: GitHub Actions handle linting, testing, and deployment.
-- **Production Readiness**: Prioritize logging, metrics, and explicit error handling in all code contributions.
-- **Secrets Management**: Never commit sensitive configuration. Use `.env` for the frontend and `local.settings.json` for the API.
+```bash
+make test-all-go  # Run Go unit and BDD tests
+make test-ui      # Run frontend component and hook tests
+make cov-go       # Run Go coverage analysis (requires MONGODB_URI)
+```
+
+## Architecture
+
+### API Contracts
+
+- The API is contract-first with `openapi.yaml` as the single source of truth.
+- Types in `frontend/src/types/api.ts` and structs in `apiv2/internal/types/` are generated automatically. Do not edit them manually.
+
+### Graphics Rendering
+
+- Image generation uses the pure-Go 2D graphics library `github.com/fogleman/gg`.
+- Do not introduce C++ native dependencies (like Cairo or node-canvas) which break the serverless deployment and dev containers.
+
+### Key Directories
+
+- `frontend/`: Standalone Next.js App Router application.
+- `apiv2/`: Standalone Go serverless Custom Handler application.
+- `tofu/`: OpenTofu (Terraform-compatible) infrastructure configuration.
+- `docs/`: System design docs, architectural decisions (ADRs), and incidents.
+
+## Development Workflow
+
+1. **Before Making Changes**: Ensure dependencies are installed and test runs pass.
+2. **When API Changes occur**: Update `openapi.yaml` first, then run `make contract-sync` to propagate types.
+
+## Common Pitfalls
+
+1. **Loopback Bindings**: Do not bind services inside containers to `127.0.0.1` or `localhost` as they block port forwarding. Use wildcard `0.0.0.0` instead.
+2. **Pie Chart Cells**: Do not use deprecated Recharts `<Cell>` components. Map sector colors directly using the dataset `fill` property.
+3. **Secrets Management**: Keep credentials out of the codebase. Use `frontend/.env` and `apiv2/local.settings.json` locally.

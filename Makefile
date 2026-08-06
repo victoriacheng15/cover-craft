@@ -25,7 +25,7 @@ dev-run: ## Run the V2 dev container with volume mounts and port mappings
 dev-stop: ## Stop the running V2 dev container
 	podman stop $(DEV_CONTAINER) || true
 
-dev-logs: ## Tail the logs of the running V2 container
+dev-logs: dev-build dev-run ## Tail the logs of the running V2 container
 	podman logs -f $(DEV_CONTAINER)
 
 dev-shell: ## Open an interactive bash shell inside the running V2 container
@@ -90,7 +90,10 @@ clean-go: ## Remove Go build and coverage artifacts
 # Frontend
 # ==============================================================================
 
-.PHONY: build-ui run-ui test-ui lint-ui format-ui
+.PHONY: install-ui build-ui run-ui test-ui lint-ui format-ui
+
+install-ui: ## Install frontend dependencies
+	cd frontend && npm install && cd ..
 
 build-ui: ## Build the Next.js production bundle
 	cd frontend && npm run build && cd ..
