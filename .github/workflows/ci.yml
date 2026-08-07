@@ -72,8 +72,7 @@ jobs:
           cache-dependency-path: apiv2/go.sum
       - name: Run Go Lint (Vet)
         run: |
-          cd apiv2
-          make lint
+          make lint-go
 
   markdownlint:
     runs-on: ubuntu-latest
@@ -100,8 +99,29 @@ jobs:
           cache-dependency-path: apiv2/go.sum
       - name: Run Go Tests
         run: |
-          cd apiv2
-          make test
+          make test-go
+
+  test-bdd-apiv2:
+    runs-on: ubuntu-latest
+    needs: [changes, lint-apiv2]
+    if: ${{ needs.changes.outputs.apiv2 == 'true' }}
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+    env:
+      MONGODB_URI: mongodb://localhost:27017
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: apiv2/go.sum
+      - name: Run Go BDD Tests
+        run: |
+          make test-bdd
 
   test-frontend:
     runs-on: ubuntu-latest

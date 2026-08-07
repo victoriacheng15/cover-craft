@@ -68,7 +68,7 @@ test-go: ## Run Go unit tests
 	cd apiv2 && go test ./internal/... && cd ..
 
 test-bdd: ## Run Go BDD end-to-end features
-	cd apiv2 && go test ./e2e/... && cd ..
+	cd apiv2 && go test -v ./e2e/... && cd ..
 
 test-all-go: test-go test-bdd ## Run all Go unit and BDD tests
 
