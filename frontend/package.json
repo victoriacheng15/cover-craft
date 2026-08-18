@@ -13,7 +13,7 @@
 		"format": "biome format --write ."
 	},
 	"dependencies": {
-		"@types/node": "26.1.2",
+		"@types/node": "26.2.0",
 		"@types/react": "^19.2.18",
 		"@types/react-dom": "^19",
 		"jszip": "^3.10.1",
