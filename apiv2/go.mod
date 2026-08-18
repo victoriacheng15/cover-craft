@@ -3,7 +3,7 @@ module github.com/victoriacheng15/cover-craft/apiv2
 go 1.26
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.22.0
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.23.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azqueue v1.0.1
 	github.com/cucumber/godog v0.16.0
 	github.com/fogleman/gg v1.3.0
