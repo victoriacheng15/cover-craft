@@ -24,6 +24,7 @@ export interface FormData {
 	backgroundColor: string;
 	textColor: string;
 	font: AllowedFont;
+	hasBorder?: boolean;
 }
 
 const initialFormData: FormData = {
@@ -34,6 +35,7 @@ const initialFormData: FormData = {
 	backgroundColor: "#374151",
 	textColor: "#F9FAFB",
 	font: FONT_OPTIONS[0],
+	hasBorder: false,
 };
 
 export function useForm() {
@@ -52,7 +54,7 @@ export function useForm() {
 		formData.textColor,
 	);
 
-	const handleInputChange = (key: keyof FormData, value: string) => {
+	const handleInputChange = (key: keyof FormData, value: string | boolean) => {
 		setFormData((prev) => ({ ...prev, [key]: value }));
 	};
 
@@ -93,6 +95,7 @@ export function useForm() {
 				title: formData.title,
 				subtitle: formData.subtitle,
 				filename: formData.filename || DEFAULT_FILENAME,
+				...(formData.hasBorder ? { hasBorder: true } : {}),
 			});
 			// Send minimal payload (intent + client performance)
 			sendGenerateEvent({

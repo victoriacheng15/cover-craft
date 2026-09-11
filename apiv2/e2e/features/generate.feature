@@ -14,6 +14,18 @@ Feature: Image Generation API
     Then the response status code should be 200
     And the response content type should be "image/png"
 
+  Scenario: Generate image with inset border enabled
+    When I send a "GET" request to "/api/generateImage" with parameters:
+      | width           | 800       |
+      | height          | 600       |
+      | backgroundColor | #4f46e5   |
+      | textColor       | #ffffff   |
+      | font            | Montserrat|
+      | title           | BDD Border|
+      | hasBorder       | true      |
+    Then the response status code should be 200
+    And the response content type should be "image/png"
+
   Scenario: Validation error with invalid parameters
     When I send a "GET" request to "/api/generateImage" with parameters:
       | width           | -100      |

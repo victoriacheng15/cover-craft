@@ -195,6 +195,10 @@ components:
           type: string
           maxLength: 70
           example: Cover Craft
+        hasBorder:
+          type: boolean
+          description: Whether to render an inset border around the cover (defaults to false)
+          example: false
         filename:
           type: string
           example: cover

@@ -176,6 +176,16 @@ describe("CoverForm", () => {
 		expect(handleInputChange).toHaveBeenCalledWith("title", "Test Title");
 	});
 
+	it("calls handleInputChange when inset border checkbox is toggled", () => {
+		const handleInputChange = vi.fn();
+		renderCoverForm({ handleInputChange });
+
+		const borderCheckbox = screen.getByLabelText(/Add Inset Border/i);
+		expect(borderCheckbox).toBeInTheDocument();
+		fireEvent.click(borderCheckbox);
+		expect(handleInputChange).toHaveBeenCalledWith("hasBorder", true);
+	});
+
 	it("displays default preview text when no input provided", () => {
 		renderCoverForm();
 

@@ -24,6 +24,28 @@ Feature: Batch Image Generation API
     And the response body should contain "message" with value "Batch job accepted for processing."
     And the response body should contain "jobId"
 
+  Scenario: Submit batch generation request with inset border
+    Given the database and queue are mock initialized
+    When I send a "POST" request to "/api/generateImages" with body:
+      """
+      [
+        {
+          "width": 800,
+          "height": 600,
+          "backgroundColor": "#4f46e5",
+          "textColor": "#ffffff",
+          "font": "Montserrat",
+          "title": "Batch With Border",
+          "filename": "batch-border.png",
+          "hasBorder": true
+        }
+      ]
+      """
+    Then the response status code should be 202
+    And the response content type should be "application/json"
+    And the response body should contain "message" with value "Batch job accepted for processing."
+    And the response body should contain "jobId"
+
   Scenario: Query batch job status
     Given the database contains a job with ID "65f6ba89e0239c7c00000001" and status "completed"
     When I send a "GET" request to "/api/getJobStatus" with parameters:

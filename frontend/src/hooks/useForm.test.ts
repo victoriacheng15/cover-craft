@@ -140,6 +140,16 @@ describe("useForm", () => {
 			expect(result.current.formData.textColor).toBe("#0000ff");
 		});
 
+		it("updates hasBorder field", () => {
+			const { result } = renderHook(() => useForm());
+
+			act(() => {
+				result.current.handleInputChange("hasBorder", true);
+			});
+
+			expect(result.current.formData.hasBorder).toBe(true);
+		});
+
 		it("updates size field", () => {
 			const { result } = renderHook(() => useForm());
 
@@ -241,6 +251,32 @@ describe("useForm", () => {
 			expect(lastCall).toEqual(
 				expect.objectContaining({
 					clientDuration: 123,
+				}),
+			);
+		});
+
+		it("generates image with hasBorder when enabled", async () => {
+			const mockBlob = new Blob(["test"], { type: "image/png" });
+			generateImageMock.mockResolvedValueOnce({
+				blob: mockBlob,
+				clientDuration: 100,
+			});
+
+			const { result } = renderHook(() => useForm());
+
+			act(() => {
+				result.current.handleInputChange("title", "Bordered Cover");
+				result.current.handleInputChange("hasBorder", true);
+			});
+
+			await act(async () => {
+				await result.current.handleGenerate();
+			});
+
+			expect(generateImage).toHaveBeenCalledWith(
+				expect.objectContaining({
+					title: "Bordered Cover",
+					hasBorder: true,
 				}),
 			);
 		});

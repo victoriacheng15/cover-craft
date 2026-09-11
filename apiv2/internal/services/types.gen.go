@@ -66,11 +66,14 @@ type ImageParams struct {
 	BackgroundColor string          `json:"backgroundColor"`
 	Filename        string          `json:"filename"`
 	Font            ImageParamsFont `json:"font"`
-	Height          int             `json:"height"`
-	Subtitle        *string         `json:"subtitle,omitempty"`
-	TextColor       string          `json:"textColor"`
-	Title           string          `json:"title"`
-	Width           int             `json:"width"`
+
+	// HasBorder Whether to render an inset border around the cover (defaults to false)
+	HasBorder *bool   `json:"hasBorder,omitempty"`
+	Height    int     `json:"height"`
+	Subtitle  *string `json:"subtitle,omitempty"`
+	TextColor string  `json:"textColor"`
+	Title     string  `json:"title"`
+	Width     int     `json:"width"`
 }
 
 // ImageParamsFont defines model for ImageParams.Font.

@@ -87,6 +87,15 @@ export function SchemaReference() {
 							String (Optional, defaults to "cover")
 						</dd>
 					</div>
+
+					<div className="flex flex-col gap-0.5 sm:col-span-2">
+						<dt className="font-mono text-emerald-900 font-bold text-sm">
+							hasBorder
+						</dt>
+						<dd className="text-gray-700">
+							Boolean (Optional, defaults to false)
+						</dd>
+					</div>
 				</dl>
 			</div>
 		</details>

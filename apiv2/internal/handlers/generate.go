@@ -48,6 +48,7 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 		Font:            services.ImageParamsFont(extracted.Font),
 		Title:           extracted.Title,
 		Filename:        filename,
+		HasBorder:       extracted.HasBorder,
 	}
 	if extracted.Subtitle != "" {
 		params.Subtitle = &extracted.Subtitle
@@ -151,6 +152,7 @@ type extractedParams struct {
 	Title           string
 	Subtitle        string
 	Filename        string
+	HasBorder       *bool
 }
 
 // extractParams extracts parameters from query parameters and falls back to JSON body values
@@ -167,6 +169,7 @@ func extractParams(r *http.Request, body string) extractedParams {
 		Title           string `json:"title"`
 		Subtitle        string `json:"subtitle"`
 		Filename        string `json:"filename"`
+		HasBorder       *bool  `json:"hasBorder"`
 	}
 	if body != "" {
 		if err := json.Unmarshal([]byte(body), &bodyParams); err != nil {
@@ -201,6 +204,16 @@ func extractParams(r *http.Request, body string) extractedParams {
 	params.Title = getParamWithFallback(r.URL.Query().Get("title"), bodyParams.Title)
 	params.Subtitle = getParamWithFallback(r.URL.Query().Get("subtitle"), bodyParams.Subtitle)
 	params.Filename = getParamWithFallback(r.URL.Query().Get("filename"), bodyParams.Filename)
+
+	// 4. HasBorder extraction
+	qHasBorder := r.URL.Query().Get("hasBorder")
+	if qHasBorder != "" {
+		if val, err := strconv.ParseBool(qHasBorder); err == nil {
+			params.HasBorder = &val
+		}
+	} else if bodyParams.HasBorder != nil {
+		params.HasBorder = bodyParams.HasBorder
+	}
 
 	return params
 }

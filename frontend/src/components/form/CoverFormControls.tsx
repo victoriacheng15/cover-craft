@@ -158,7 +158,7 @@ export function ColorControls({
 
 interface CoverFormControlsProps {
 	formData: FormData;
-	handleInputChange: (key: keyof FormData, value: string) => void;
+	handleInputChange: (key: keyof FormData, value: string | boolean) => void;
 	error: string | null;
 	isGenerating: boolean;
 	contrastCheck: ContrastCheckResult;
@@ -291,6 +291,23 @@ export function CoverFormControls({
 					))}
 				</Select>
 			</FormField>
+
+			<div className="flex items-center gap-2 py-1">
+				<input
+					type="checkbox"
+					id="has-border"
+					checked={formData.hasBorder ?? false}
+					onChange={(e) => handleInputChange("hasBorder", e.target.checked)}
+					className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+					aria-label="Add inset border around cover"
+				/>
+				<label
+					htmlFor="has-border"
+					className="text-sm font-medium text-gray-900 cursor-pointer"
+				>
+					Add Inset Border
+				</label>
+			</div>
 
 			<FormError error={error} errorId={errorId} />
 

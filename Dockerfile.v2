@@ -64,9 +64,8 @@ if [ ! -d "frontend/node_modules" ]; then\n\
 fi\n\
 \n\
 # Compile the Go Azure Functions binary initially\n\
-cd /app/apiv2\n\
-make build\n\
 cd /app\n\
+make build-go\n\
 \n\
 # Start PM2 dev processes for v2\n\
 exec pm2-runtime /app/processes.dev.v2.json' > /usr/local/bin/entrypoint.sh && \

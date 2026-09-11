@@ -7,6 +7,8 @@ import type { components } from "./types.gen";
 export const IMAGE_CONFIG = {
 	dimensions: {
 		padding: 40,
+		borderInset: 12,
+		borderWidth: 4,
 	},
 	typography: {
 		headingMinSize: 32,
