@@ -16,6 +16,8 @@ import (
 // Constants matching shared configuration
 const (
 	Padding               = 40.0
+	BorderInset           = 12.0
+	BorderWidth           = 4.0
 	HeadingMinSize        = 32.0
 	HeadingPercentage     = 0.075
 	SubheadingMinSize     = 24.0
@@ -30,6 +32,14 @@ func GeneratePNG(params ImageParams) ([]byte, error) {
 	// Fill background
 	dc.SetHexColor(params.BackgroundColor)
 	dc.Clear()
+
+	// Draw inset border if enabled
+	if params.HasBorder != nil && *params.HasBorder {
+		dc.SetHexColor(params.TextColor)
+		dc.SetLineWidth(BorderWidth)
+		dc.DrawRectangle(BorderInset, BorderInset, float64(params.Width)-2*BorderInset, float64(params.Height)-2*BorderInset)
+		dc.Stroke()
+	}
 
 	// Calculate text dimensions
 	maxTextWidth := float64(params.Width) - Padding*2

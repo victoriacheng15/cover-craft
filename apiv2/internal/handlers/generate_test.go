@@ -36,6 +36,14 @@ func TestGenerateImageHandler(t *testing.T) {
 			expectImage: true,
 		},
 		{
+			name:        "GET request with hasBorder query param succeeds",
+			method:      http.MethodGet,
+			url:         "/api/generateImage?width=800&height=600&backgroundColor=%23ffffff&textColor=%23000000&font=Montserrat&title=Border+Test&hasBorder=true",
+			body:        nil,
+			wantStatus:  http.StatusOK,
+			expectImage: true,
+		},
+		{
 			name:   "POST request with JSON body succeeds",
 			method: http.MethodPost,
 			url:    "/api/generateImage",
@@ -48,6 +56,7 @@ func TestGenerateImageHandler(t *testing.T) {
 				"title":           "Test Title",
 				"subtitle":        "Sub",
 				"filename":        "custom-name",
+				"hasBorder":       true,
 			},
 			wantStatus:  http.StatusOK,
 			expectImage: true,

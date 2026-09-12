@@ -29,6 +29,19 @@ export function PreviewCanvas({ params, className }: PreviewCanvasProps) {
 		ctx.fillStyle = params.backgroundColor;
 		ctx.fillRect(0, 0, params.width, params.height);
 
+		// Draw inset border if enabled
+		if (params.hasBorder) {
+			const inset = IMAGE_CONFIG.dimensions.borderInset;
+			ctx.strokeStyle = params.textColor;
+			ctx.lineWidth = IMAGE_CONFIG.dimensions.borderWidth;
+			ctx.strokeRect(
+				inset,
+				inset,
+				params.width - inset * 2,
+				params.height - inset * 2,
+			);
+		}
+
 		// Calculate text positioning (same logic as backend)
 		const padding = IMAGE_CONFIG.dimensions.padding;
 		const maxTextWidth = params.width - padding * 2;
@@ -123,6 +136,7 @@ export function CoverPreviewDisplay({
 								width,
 								height,
 								filename: formData.filename,
+								hasBorder: formData.hasBorder,
 							}}
 							className="w-full h-auto"
 						/>

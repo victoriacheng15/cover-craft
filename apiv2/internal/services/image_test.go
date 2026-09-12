@@ -62,3 +62,25 @@ func TestGeneratePNG_NoSubtitle(t *testing.T) {
 		t.Error("expected non-empty byte slice")
 	}
 }
+
+func TestGeneratePNG_WithBorder(t *testing.T) {
+	hasBorder := true
+	params := ImageParams{
+		Width:           800,
+		Height:          600,
+		BackgroundColor: "#1a1a1a",
+		TextColor:       "#ffffff",
+		Font:            "Montserrat",
+		Title:           "With Inset Border",
+		HasBorder:       &hasBorder,
+	}
+
+	pngBytes, err := GeneratePNG(params)
+	if err != nil {
+		t.Fatalf("expected success with border, got error: %v", err)
+	}
+
+	if len(pngBytes) == 0 {
+		t.Error("expected non-empty byte slice for bordered cover")
+	}
+}

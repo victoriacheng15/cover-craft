@@ -21,7 +21,7 @@ echo "✓ Generated apiv2/internal/services/types.gen.go"
 
 # 3. Formatting & Type Audits
 echo "[3/3] Running Type Parity Audits & Linting..."
-npx biome format --write frontend/src/shared/types.gen.ts || true
+(cd frontend && npx @biomejs/biome format --write src/shared/types.gen.ts) || true
 
 # Run test compile in Go
 (cd apiv2 && go test ./internal/services/... ./internal/handlers/...)

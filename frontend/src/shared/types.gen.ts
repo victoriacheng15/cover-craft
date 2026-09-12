@@ -335,6 +335,11 @@ export interface components {
 			title: string;
 			/** @example Cover Craft */
 			subtitle?: string;
+			/**
+			 * @description Whether to render an inset border around the cover (defaults to false)
+			 * @example false
+			 */
+			hasBorder?: boolean;
 			/** @example cover */
 			filename: string;
 		};

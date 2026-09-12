@@ -3,9 +3,9 @@
     {
       "name": "apiv2-build",
       "script": "make",
-      "args": "build",
-      "cwd": "/app/apiv2",
-      "watch": ["cmd", "internal"],
+      "args": "build-go",
+      "cwd": "/app",
+      "watch": ["apiv2/cmd", "apiv2/internal"],
       "watch_options": {
         "followSymlinks": false
       },

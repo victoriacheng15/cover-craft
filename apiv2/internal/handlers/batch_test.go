@@ -46,6 +46,23 @@ func TestGenerateImagesHandler(t *testing.T) {
 			wantStatus: http.StatusAccepted,
 		},
 		{
+			name:   "Valid batch request with hasBorder succeeds",
+			method: http.MethodPost,
+			body: []map[string]interface{}{
+				{
+					"width":           800,
+					"height":          600,
+					"backgroundColor": "#ffffff",
+					"textColor":       "#000000",
+					"font":            "Montserrat",
+					"title":           "Batch Item With Border",
+					"filename":        "file-border",
+					"hasBorder":       true,
+				},
+			},
+			wantStatus: http.StatusAccepted,
+		},
+		{
 			name:       "Disallowed method GET returns 405",
 			method:     http.MethodGet,
 			body:       nil,
