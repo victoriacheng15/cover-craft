@@ -3,17 +3,25 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/db"
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/handlers"
+	"github.com/victoriacheng15/cover-craft/apiv2/internal/middleware"
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/queue"
 )
 
 func main() {
+	// 0. Initialize Structured Logger with Context-aware correlation ID Handler
+	jsonHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})
+	logger := slog.New(middleware.NewContextHandler(jsonHandler))
+	slog.SetDefault(logger)
+
 	// 1. Resolve Port (FUNCTIONS_CUSTOMHANDLER_PORT is injected by the Azure host)
 	port := os.Getenv("FUNCTIONS_CUSTOMHANDLER_PORT")
 	if port == "" {
@@ -23,25 +31,27 @@ func main() {
 	// 2. Initialize Database Connection
 	mongoURI := os.Getenv("MONGODB_URI")
 	if mongoURI == "" {
-		log.Println("Warning: MONGODB_URI environment variable not set. Running database-less operations only.")
+		slog.Warn("MONGODB_URI environment variable not set. Running database-less operations only.")
 	} else {
-		log.Printf("Connecting to MongoDB...")
+		slog.Info("Connecting to MongoDB...")
 		err := db.ConnectMongo(mongoURI)
 		if err != nil {
-			log.Fatalf("Failed to connect to MongoDB: %v", err)
+			slog.Error("Failed to connect to MongoDB", "error", err)
+			os.Exit(1)
 		}
-		log.Println("MongoDB connection established.")
+		slog.Info("MongoDB connection established.")
 	}
 
 	// 3. Initialize Queue Connection
 	storageConn := os.Getenv("AzureWebJobsStorage")
 	if storageConn == "" {
-		log.Println("Warning: AzureWebJobsStorage not set. Queue operations will fail.")
+		slog.Warn("AzureWebJobsStorage not set. Queue operations will fail.")
 	} else {
-		log.Printf("Connecting to Azure Queue Storage...")
+		slog.Info("Connecting to Azure Queue Storage...")
 		err := queue.InitQueue(storageConn, "batch-jobs")
 		if err != nil {
-			log.Fatalf("Failed to initialize Queue service: %v", err)
+			slog.Error("Failed to initialize Queue service", "error", err)
+			os.Exit(1)
 		}
 
 		// Verify/create queue asynchronously at startup
@@ -49,9 +59,9 @@ func main() {
 		err = queue.QueueClientService.CreateQueueIfNotExists(ctx)
 		cancel()
 		if err != nil {
-			log.Printf("Warning: failed to verify/create queue 'batch-jobs': %v", err)
+			slog.Warn("Failed to verify/create queue 'batch-jobs'", "error", err)
 		} else {
-			log.Println("Queue Storage connection established.")
+			slog.Info("Queue Storage connection established.")
 		}
 	}
 
@@ -65,8 +75,14 @@ func main() {
 	mux.HandleFunc("/api/getJobStatus", handlers.GetJobStatusHandler)
 	mux.HandleFunc("/processJobs", handlers.ProcessJobsHandler)
 
+	// Wrap mux with CorrelationID middleware
+	handler := middleware.CorrelationID(mux)
+
 	// 5. Start Server
 	listenAddr := fmt.Sprintf(":%s", port)
-	log.Printf("Go Azure Functions Custom Handler listening on %s", listenAddr)
-	log.Fatal(http.ListenAndServe(listenAddr, mux))
+	slog.Info("Go Azure Functions Custom Handler listening", "addr", listenAddr)
+	if err := http.ListenAndServe(listenAddr, handler); err != nil {
+		slog.Error("Server terminated unexpectedly", "error", err)
+		os.Exit(1)
+	}
 }
