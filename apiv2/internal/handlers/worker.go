@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -17,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/db"
+	"github.com/victoriacheng15/cover-craft/apiv2/internal/middleware"
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/queue"
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/services"
 )
@@ -32,41 +33,52 @@ func ProcessJobsHandler(w http.ResponseWriter, r *http.Request) {
 		Data map[string]interface{} `json:"Data"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		log.Printf("Failed to decode queue trigger payload: %v", err)
+		slog.ErrorContext(r.Context(), "Failed to decode queue trigger payload", slog.Any("error", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	// Extract the jobIdStr case-insensitively
-	var jobIdStr string
+	// Extract rawQueueItem case-insensitively
+	var rawQueueItem string
 	for k, v := range payload.Data {
 		if strings.ToLower(k) == "myqueueitem" {
-			jobIdStr = fmt.Sprintf("%v", v)
+			rawQueueItem = fmt.Sprintf("%v", v)
 			break
 		}
 	}
-	jobIdStr = strings.Trim(jobIdStr, "\"")
+	rawQueueItem = strings.Trim(rawQueueItem, "\"")
 
-	if jobIdStr == "" {
-		log.Println("Error: myQueueItem missing from trigger payload")
+	if rawQueueItem == "" {
+		slog.WarnContext(r.Context(), "myQueueItem missing from trigger payload")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
+	jobIdStr := rawQueueItem
+	if strings.HasPrefix(rawQueueItem, "{") {
+		var queueMsg QueueJobMessage
+		if err := json.Unmarshal([]byte(rawQueueItem), &queueMsg); err == nil && queueMsg.JobID != "" {
+			jobIdStr = queueMsg.JobID
+			if queueMsg.CorrelationID != "" {
+				r = r.WithContext(middleware.WithCorrelationID(r.Context(), queueMsg.CorrelationID))
+			}
+		}
+	}
+
 	if db.MongoClient == nil {
-		log.Println("Error: MongoDB client not connected in queue worker")
+		slog.ErrorContext(r.Context(), "MongoDB client not connected in queue worker")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	objID, err := primitive.ObjectIDFromHex(jobIdStr)
 	if err != nil {
-		log.Printf("Invalid Job ID format in queue item: %s", jobIdStr)
+		slog.WarnContext(r.Context(), "Invalid Job ID format in queue item", slog.String("job_id", jobIdStr))
 		w.WriteHeader(http.StatusOK) // Return 200 so host removes the corrupted message
 		return
 	}
 
-	log.Printf("Attempting to claim lock on Job %s", jobIdStr)
+	slog.InfoContext(r.Context(), "Attempting to claim lock on job", slog.String("job_id", jobIdStr))
 	collection := db.MongoClient.Database("cover-craft").Collection("jobs")
 	staleBefore := time.Now().Add(-5 * time.Minute)
 
@@ -94,7 +106,7 @@ func ProcessJobsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var job db.Job
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	err = collection.FindOneAndUpdate(
 		ctx,
 		query,
@@ -107,13 +119,13 @@ func ProcessJobsHandler(w http.ResponseWriter, r *http.Request) {
 		if err == mongo.ErrNoDocuments {
 			// Lock failed. Let's inspect the existing job status
 			var existingJob db.Job
-			ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-			findErr := collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&existingJob)
-			cancel()
+			findCtx, findCancel := context.WithTimeout(r.Context(), 5*time.Second)
+			findErr := collection.FindOne(findCtx, bson.M{"_id": objID}).Decode(&existingJob)
+			findCancel()
 			if findErr == nil {
 				if existingJob.Status != "completed" && existingJob.Status != "failed" && existingJob.Attempts >= existingJob.MaxAttempts {
-					ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-					_, _ = collection.UpdateOne(ctx, bson.M{"_id": objID}, bson.M{
+					updateCtx, updateCancel := context.WithTimeout(r.Context(), 5*time.Second)
+					_, _ = collection.UpdateOne(updateCtx, bson.M{"_id": objID}, bson.M{
 						"$set": bson.M{
 							"status":    "failed",
 							"error":     "Job exceeded maximum processing attempts.",
@@ -121,39 +133,39 @@ func ProcessJobsHandler(w http.ResponseWriter, r *http.Request) {
 						},
 						"$unset": bson.M{"processingStartedAt": ""},
 					})
-					cancel()
+					updateCancel()
 				}
 			}
-			log.Printf("Job %s not found, finalized, or processing by another listener", jobIdStr)
+			slog.InfoContext(r.Context(), "Job not found, finalized, or processing by another listener", slog.String("job_id", jobIdStr))
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		log.Printf("Database error claiming lock for job %s: %v", jobIdStr, err)
+		slog.ErrorContext(r.Context(), "Database error claiming lock for job", slog.String("job_id", jobIdStr), slog.Any("error", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("Lock claimed successfully on Job %s. Processing requests...", jobIdStr)
+	slog.InfoContext(r.Context(), "Lock claimed successfully on job. Processing requests...", slog.String("job_id", jobIdStr))
 
 	// Deferred panic recovery to reset/fail job cleanly in case of panic
 	defer func() {
 		if rcv := recover(); rcv != nil {
-			log.Printf("CRITICAL PANIC in worker for jobId %s: %v", jobIdStr, rcv)
-			handleGlobalError(objID, fmt.Errorf("panic: %v", rcv), &job)
+			slog.ErrorContext(r.Context(), "CRITICAL PANIC in worker for job", slog.String("job_id", jobIdStr), slog.Any("panic", rcv))
+			handleGlobalError(r.Context(), objID, fmt.Errorf("panic: %v", rcv), &job)
 		}
 	}()
 
-	err = processJobExecution(objID, job)
+	err = processJobExecution(r.Context(), objID, job)
 	if err != nil {
-		log.Printf("Error during job execution for %s: %v", jobIdStr, err)
-		handleGlobalError(objID, err, &job)
+		slog.ErrorContext(r.Context(), "Error during job execution", slog.String("job_id", jobIdStr), slog.Any("error", err))
+		handleGlobalError(r.Context(), objID, err, &job)
 	}
 
 	w.WriteHeader(http.StatusOK)
 }
 
 // processJobExecution performs the sequential rendering of batch requests
-func processJobExecution(objID primitive.ObjectID, job db.Job) error {
+func processJobExecution(ctx context.Context, objID primitive.ObjectID, job db.Job) error {
 	collection := db.MongoClient.Database("cover-craft").Collection("jobs")
 	resultDetails := make(map[string]db.JobResult)
 	if job.ResultDetails != nil {
@@ -165,7 +177,7 @@ func processJobExecution(objID primitive.ObjectID, job db.Job) error {
 	for i, req := range job.Requests {
 		idxStr := fmt.Sprintf("%d", i)
 		if _, exists := resultDetails[idxStr]; exists {
-			log.Printf("Skipping already finalized image result for job %s index %d", objID.Hex(), i)
+			slog.InfoContext(ctx, "Skipping already finalized image result", slog.String("job_id", objID.Hex()), slog.Int("index", i))
 			continue
 		}
 
@@ -223,7 +235,12 @@ func processJobExecution(objID primitive.ObjectID, job db.Job) error {
 				break
 			} else {
 				lastError = err
-				log.Printf("Image render attempt %d failed for job %s index %d: %v", attempt, objID.Hex(), i, err)
+				slog.WarnContext(ctx, "Image render attempt failed",
+					slog.Int("attempt", attempt),
+					slog.String("job_id", objID.Hex()),
+					slog.Int("index", i),
+					slog.Any("error", err),
+				)
 				if attempt < 3 {
 					// Exponential backoff with jitter (250ms -> 500ms -> 1000ms)
 					delay := 250 * (1 << uint(attempt-1))
@@ -290,9 +307,9 @@ func processJobExecution(objID primitive.ObjectID, job db.Job) error {
 			updateQuery["$set"].(bson.M)["lastError"] = detail.Error
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		_, err = collection.UpdateOne(ctx, bson.M{"_id": objID}, updateQuery)
-		cancel()
+		saveCtx, saveCancel := context.WithTimeout(ctx, 5*time.Second)
+		_, err = collection.UpdateOne(saveCtx, bson.M{"_id": objID}, updateQuery)
+		saveCancel()
 		if err != nil {
 			return fmt.Errorf("failed to save intermediate image result at index %d: %w", i, err)
 		}
@@ -339,19 +356,23 @@ func processJobExecution(objID primitive.ObjectID, job db.Job) error {
 	}
 	updateFinal["$unset"] = unsetFields
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	_, err := collection.UpdateOne(ctx, bson.M{"_id": objID}, updateFinal)
-	cancel()
+	finalCtx, finalCancel := context.WithTimeout(ctx, 5*time.Second)
+	_, err := collection.UpdateOne(finalCtx, bson.M{"_id": objID}, updateFinal)
+	finalCancel()
 	if err != nil {
 		return fmt.Errorf("failed to finalize job document: %w", err)
 	}
 
-	log.Printf("Batch job %s finalized. Processed: %d, status: %s", objID.Hex(), processedCount, finalStatus)
+	slog.InfoContext(ctx, "Batch job finalized",
+		slog.String("job_id", objID.Hex()),
+		slog.Int("processed_count", processedCount),
+		slog.String("status", finalStatus),
+	)
 	return nil
 }
 
 // handleGlobalError recovers the Job status from failures and schedules queue retries
-func handleGlobalError(objID primitive.ObjectID, globalErr error, job *db.Job) {
+func handleGlobalError(ctx context.Context, objID primitive.ObjectID, globalErr error, job *db.Job) {
 	if db.MongoClient == nil {
 		return
 	}
@@ -370,26 +391,31 @@ func handleGlobalError(objID primitive.ObjectID, globalErr error, job *db.Job) {
 	}
 
 	if attempts < maxAttempts {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		_, _ = collection.UpdateOne(ctx, bson.M{"_id": objID}, bson.M{
+		updateCtx, updateCancel := context.WithTimeout(ctx, 5*time.Second)
+		_, _ = collection.UpdateOne(updateCtx, bson.M{"_id": objID}, bson.M{
 			"$set": bson.M{
 				"status":    "pending",
 				"lastError": errorMessage,
 			},
 			"$unset": bson.M{"processingStartedAt": ""},
 		})
-		cancel()
+		updateCancel()
 
 		if queue.QueueClientService != nil {
-			ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-			_ = queue.QueueClientService.EnqueueJobWithDelay(ctx, objID.Hex(), 30)
-			cancel()
+			enqueueCtx, enqueueCancel := context.WithTimeout(ctx, 5*time.Second)
+			corrID := middleware.GetCorrelationID(ctx)
+			msgBytes, _ := json.Marshal(QueueJobMessage{
+				JobID:         objID.Hex(),
+				CorrelationID: corrID,
+			})
+			_ = queue.QueueClientService.EnqueueJobWithDelay(enqueueCtx, string(msgBytes), 30)
+			enqueueCancel()
 		}
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	_, _ = collection.UpdateOne(ctx, bson.M{"_id": objID}, bson.M{
+	failCtx, failCancel := context.WithTimeout(ctx, 5*time.Second)
+	_, _ = collection.UpdateOne(failCtx, bson.M{"_id": objID}, bson.M{
 		"$set": bson.M{
 			"status":    "failed",
 			"error":     errorMessage,
@@ -397,7 +423,7 @@ func handleGlobalError(objID primitive.ObjectID, globalErr error, job *db.Job) {
 		},
 		"$unset": bson.M{"processingStartedAt": ""},
 	})
-	cancel()
+	failCancel()
 }
 
 func publicResultFromDetail(detail db.JobResult) string {

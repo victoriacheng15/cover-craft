@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -61,7 +61,7 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 	// 3. Validate parameters
 	validationErrors := services.ValidateImageParams(params)
 	if len(validationErrors) > 0 {
-		log.Printf("Validation failed for image generation parameters: %v", validationErrors)
+		slog.WarnContext(r.Context(), "Validation failed for image generation parameters", slog.Any("errors", validationErrors))
 
 		// Record validation error metric to MongoDB
 		go storeMetric(db.Metric{
@@ -92,7 +92,7 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 	duration := int(time.Since(startTime).Milliseconds())
 
 	if err != nil {
-		log.Printf("Error generating cover image: %v", err)
+		slog.ErrorContext(r.Context(), "Error generating cover image", slog.Any("error", err))
 
 		// Record error metric to MongoDB
 		go storeMetric(db.Metric{
@@ -132,6 +132,11 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 		WcagLevel:      wcagLevel,
 		Duration:       intPtr(duration),
 	})
+
+	slog.InfoContext(r.Context(), "Cover image generated successfully",
+		slog.String("filename", filename),
+		slog.Int("duration_ms", duration),
+	)
 
 	// 6. Return PNG output
 	w.Header().Set("Content-Type", "image/png")
@@ -173,7 +178,7 @@ func extractParams(r *http.Request, body string) extractedParams {
 	}
 	if body != "" {
 		if err := json.Unmarshal([]byte(body), &bodyParams); err != nil {
-			log.Printf("Request body contained invalid JSON, falling back to query parameters: %v", err)
+			slog.WarnContext(r.Context(), "Request body contained invalid JSON, falling back to query parameters", slog.Any("error", err))
 		}
 	}
 

@@ -374,3 +374,76 @@ func TestProcessJobsMaxAttemptsReached(t *testing.T) {
 		t.Error("expected error to be populated")
 	}
 }
+
+func TestProcessJobsHandler_WithCorrelationPayload(t *testing.T) {
+	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
+		t.Skip("MONGODB_URI not set, skipping database worker test")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		t.Fatalf("failed to connect to mongo: %v", err)
+	}
+	defer func() { _ = client.Disconnect(ctx) }()
+
+	db.MongoClient = client
+	collection := client.Database("cover-craft").Collection("jobs")
+
+	jobId := primitive.NewObjectID()
+	now := time.Now().UTC()
+	job := db.Job{
+		ID:            jobId,
+		Status:        "pending",
+		Requests:      []interface{}{"corrupted-string-request"},
+		Results:       []string{},
+		Attempts:      2,
+		MaxAttempts:   3,
+		ResultDetails: make(map[string]db.JobResult),
+		CreatedAt:     now,
+		UpdatedAt:     now,
+	}
+
+	_, err = collection.InsertOne(ctx, job)
+	if err != nil {
+		t.Fatalf("failed to insert test job: %v", err)
+	}
+	defer func() {
+		ctxDel, cancelDel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancelDel()
+		_, _ = collection.DeleteOne(ctxDel, bson.M{"_id": jobId})
+	}()
+
+	queuePayload, _ := json.Marshal(map[string]string{
+		"jobId":         jobId.Hex(),
+		"correlationId": "worker-corr-12345",
+	})
+
+	body := map[string]interface{}{
+		"Data": map[string]interface{}{
+			"myQueueItem": string(queuePayload),
+		},
+	}
+	jsonBytes, _ := json.Marshal(body)
+	req, _ := http.NewRequest(http.MethodPost, "/processJobs", bytes.NewBuffer(jsonBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(ProcessJobsHandler)
+	handler.ServeHTTP(rr, req)
+
+	var updatedJob db.Job
+	ctxVerify, cancelVerify := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelVerify()
+	err = collection.FindOne(ctxVerify, bson.M{"_id": jobId}).Decode(&updatedJob)
+	if err != nil {
+		t.Fatalf("failed to find updated job: %v", err)
+	}
+
+	if updatedJob.Status != "failed" {
+		t.Errorf("expected status 'failed', got %q", updatedJob.Status)
+	}
+}

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"sort"
@@ -17,9 +17,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/db"
+	"github.com/victoriacheng15/cover-craft/apiv2/internal/middleware"
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/queue"
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/services"
 )
+
+// QueueJobMessage represents the serialized payload sent to the Azure Queue.
+type QueueJobMessage struct {
+	JobID         string `json:"jobId"`
+	CorrelationID string `json:"correlationId,omitempty"`
+}
 
 // GenerateImagesHandler handles bulk image generation job creation (POST /api/generateImages)
 func GenerateImagesHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +45,7 @@ func GenerateImagesHandler(w http.ResponseWriter, r *http.Request) {
 	// 1. Perform bulk validation checks
 	validationErrors := services.ValidateBatchRequest(requests)
 	if len(validationErrors) > 0 {
-		log.Printf("Batch validation failed: %d errors", len(validationErrors))
+		slog.WarnContext(r.Context(), "Batch validation failed", slog.Int("error_count", len(validationErrors)))
 
 		// Capture individual validation metrics asynchronously
 		go func(reqs []services.ImageParams, errs []services.ValidationError) {
@@ -113,31 +120,47 @@ func GenerateImagesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if db.MongoClient != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		_, err = db.MongoClient.Database("cover-craft").Collection("jobs").InsertOne(ctx, job)
 		cancel()
 		if err != nil {
-			log.Printf("Failed to insert job into MongoDB: %v", err)
+			slog.ErrorContext(r.Context(), "Failed to insert job into MongoDB",
+				slog.Any("error", err),
+				slog.String("job_id", jobId.Hex()),
+			)
 			writeJSONError(w, "Failed to provision batch job", http.StatusInternalServerError)
 			return
 		}
 	} else {
-		log.Println("Warning: MongoDB client not configured. Proceeding without database.")
+		slog.WarnContext(r.Context(), "MongoDB client not configured. Proceeding without database.")
 	}
 
-	// 3. Connect to Azure Queue Storage and publish Job ID
+	// 3. Connect to Azure Queue Storage and publish Job ID and correlation ID
 	if queue.QueueClientService != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		err = queue.QueueClientService.EnqueueJob(ctx, jobId.Hex())
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		corrID := middleware.GetCorrelationID(r.Context())
+		msgBytes, _ := json.Marshal(QueueJobMessage{
+			JobID:         jobId.Hex(),
+			CorrelationID: corrID,
+		})
+		err = queue.QueueClientService.EnqueueJob(ctx, string(msgBytes))
 		cancel()
 		if err != nil {
-			log.Printf("Failed to enqueue job message in Queue: %v", err)
+			slog.ErrorContext(r.Context(), "Failed to enqueue job message in Queue",
+				slog.Any("error", err),
+				slog.String("job_id", jobId.Hex()),
+			)
 			writeJSONError(w, "Failed to enqueue batch job task", http.StatusInternalServerError)
 			return
 		}
 	} else {
-		log.Println("Warning: Queue service not configured. Proceeding without enqueuing task.")
+		slog.WarnContext(r.Context(), "Queue service not configured. Proceeding without enqueuing task.")
 	}
+
+	slog.InfoContext(r.Context(), "Batch job accepted for processing",
+		slog.String("job_id", jobId.Hex()),
+		slog.Int("total_requests", len(requests)),
+	)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
@@ -210,7 +233,10 @@ func GetJobStatusHandler(w http.ResponseWriter, r *http.Request) {
 			writeJSONError(w, "Job not found", http.StatusNotFound)
 			return
 		}
-		log.Printf("Database lookup error for jobId %s: %v", jobId, err)
+		slog.ErrorContext(r.Context(), "Database lookup error for jobId",
+			slog.String("job_id", jobId),
+			slog.Any("error", err),
+		)
 		writeJSONError(w, "Database error", http.StatusInternalServerError)
 		return
 	}
