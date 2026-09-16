@@ -98,3 +98,70 @@ func TestMetricsHandler_Integration(t *testing.T) {
 	// Clean up the created test metric document from database
 	_, _ = collection.DeleteMany(ctx, bson.M{"event": testEventName})
 }
+
+func TestMetricsBuffer_EnqueueAndSaturation(t *testing.T) {
+	mb := &MetricsBuffer{
+		ch:            make(chan db.Metric, 2),
+		batchSize:     10,
+		flushInterval: 10 * time.Second,
+		flushReq:      make(chan chan struct{}),
+		stopCh:        make(chan struct{}),
+		doneCh:        make(chan struct{}),
+	}
+	defer close(mb.stopCh)
+
+	if !mb.Enqueue(db.Metric{Event: "event1"}) {
+		t.Error("expected first enqueue to succeed")
+	}
+	if !mb.Enqueue(db.Metric{Event: "event2"}) {
+		t.Error("expected second enqueue to succeed")
+	}
+	if mb.Enqueue(db.Metric{Event: "event3"}) {
+		t.Error("expected third enqueue to be dropped when buffer is full")
+	}
+}
+
+func TestMetricsBuffer_BatchFlush(t *testing.T) {
+	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
+		t.Skip("skipping batch flush test: MONGODB_URI not set")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		t.Skip("failed to connect to MongoDB:", err)
+	}
+	defer client.Disconnect(ctx)
+
+	db.MongoClient = client
+	defer func() { db.MongoClient = nil }()
+
+	coll := client.Database("cover-craft").Collection("metrics")
+	testPrefix := "batch_flush_test_"
+
+	mb := NewMetricsBuffer(100, 3, 50*time.Millisecond)
+	defer mb.Stop()
+
+	for i := 0; i < 3; i++ {
+		mb.Enqueue(db.Metric{
+			Event:     testPrefix + "event",
+			Timestamp: time.Now().UTC(),
+			Status:    "success",
+		})
+	}
+
+	mb.Flush()
+
+	count, err := coll.CountDocuments(ctx, bson.M{"event": testPrefix + "event"})
+	if err != nil {
+		t.Fatalf("failed to count metrics: %v", err)
+	}
+	if count < 3 {
+		t.Errorf("expected at least 3 documents, got %d", count)
+	}
+
+	_, _ = coll.DeleteMany(ctx, bson.M{"event": testPrefix + "event"})
+}

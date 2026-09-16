@@ -5,6 +5,9 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func TestConnectMongo(t *testing.T) {
@@ -36,5 +39,32 @@ func TestConnectMongo(t *testing.T) {
 	err = MongoClient.Ping(ctx, nil)
 	if err != nil {
 		t.Errorf("failed to ping MongoDB instance: %v", err)
+	}
+}
+
+func TestEnsureMetricsIndexes(t *testing.T) {
+	// 1. Nil client returns nil
+	if err := EnsureMetricsIndexes(context.Background(), nil); err != nil {
+		t.Errorf("expected nil error for nil client, got %v", err)
+	}
+
+	// 2. Integration check if MONGODB_URI is provided
+	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
+		t.Log("skipping EnsureMetricsIndexes integration: MONGODB_URI not set")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		t.Skip("failed to connect to MongoDB:", err)
+	}
+	defer client.Disconnect(ctx)
+
+	if err := EnsureMetricsIndexes(ctx, client); err != nil {
+		t.Errorf("failed to create metrics compound index: %v", err)
 	}
 }

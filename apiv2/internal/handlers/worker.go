@@ -209,29 +209,27 @@ func processJobExecution(ctx context.Context, objID primitive.ObjectID, job db.J
 					UpdatedAt: time.Now().UTC(),
 				}
 
-				// Store success metric asynchronously
-				go func(item services.ImageParams, dur int, att int) {
-					contrastRatio, _ := services.GetContrastRatio(item.BackgroundColor, item.TextColor)
-					wcagLevel := services.GetWCAGLevel(contrastRatio)
+				// Store success metric into bounded in-memory buffer
+				contrastRatio, _ := services.GetContrastRatio(currentRequest.BackgroundColor, currentRequest.TextColor)
+				wcagLevel := services.GetWCAGLevel(contrastRatio)
 
-					var subLen int
-					if item.Subtitle != nil {
-						subLen = len(*item.Subtitle)
-					}
+				var subLen int
+				if currentRequest.Subtitle != nil {
+					subLen = len(*currentRequest.Subtitle)
+				}
 
-					storeMetric(db.Metric{
-						Event:          "image_generated",
-						Timestamp:      time.Now().UTC(),
-						Status:         "success",
-						Size:           &db.SizePreset{Width: item.Width, Height: item.Height},
-						Font:           string(item.Font),
-						TitleLength:    intPtr(len(item.Title)),
-						SubtitleLength: intPtr(subLen),
-						ContrastRatio:  floatPtr(contrastRatio),
-						WcagLevel:      wcagLevel,
-						Duration:       intPtr(dur),
-					})
-				}(currentRequest, durationMs, attempt)
+				storeMetric(db.Metric{
+					Event:          "image_generated",
+					Timestamp:      time.Now().UTC(),
+					Status:         "success",
+					Size:           &db.SizePreset{Width: currentRequest.Width, Height: currentRequest.Height},
+					Font:           string(currentRequest.Font),
+					TitleLength:    intPtr(len(currentRequest.Title)),
+					SubtitleLength: intPtr(subLen),
+					ContrastRatio:  floatPtr(contrastRatio),
+					WcagLevel:      wcagLevel,
+					Duration:       intPtr(durationMs),
+				})
 				break
 			} else {
 				lastError = err
@@ -264,30 +262,28 @@ func processJobExecution(ctx context.Context, objID primitive.ObjectID, job db.J
 				UpdatedAt: time.Now().UTC(),
 			}
 
-			// Store error metric asynchronously
-			go func(item services.ImageParams, dur int, msg string) {
-				contrastRatio, _ := services.GetContrastRatio(item.BackgroundColor, item.TextColor)
-				wcagLevel := services.GetWCAGLevel(contrastRatio)
+			// Store error metric into bounded in-memory buffer
+			contrastRatio, _ := services.GetContrastRatio(currentRequest.BackgroundColor, currentRequest.TextColor)
+			wcagLevel := services.GetWCAGLevel(contrastRatio)
 
-				var subLen int
-				if item.Subtitle != nil {
-					subLen = len(*item.Subtitle)
-				}
+			var subLen int
+			if currentRequest.Subtitle != nil {
+				subLen = len(*currentRequest.Subtitle)
+			}
 
-				storeMetric(db.Metric{
-					Event:          "image_generated",
-					Timestamp:      time.Now().UTC(),
-					Status:         "error",
-					ErrorMessage:   msg,
-					Size:           &db.SizePreset{Width: item.Width, Height: item.Height},
-					Font:           string(item.Font),
-					TitleLength:    intPtr(len(item.Title)),
-					SubtitleLength: intPtr(subLen),
-					ContrastRatio:  floatPtr(contrastRatio),
-					WcagLevel:      wcagLevel,
-					Duration:       intPtr(dur),
-				})
-			}(currentRequest, durationMs, errMsg)
+			storeMetric(db.Metric{
+				Event:          "image_generated",
+				Timestamp:      time.Now().UTC(),
+				Status:         "error",
+				ErrorMessage:   errMsg,
+				Size:           &db.SizePreset{Width: currentRequest.Width, Height: currentRequest.Height},
+				Font:           string(currentRequest.Font),
+				TitleLength:    intPtr(len(currentRequest.Title)),
+				SubtitleLength: intPtr(subLen),
+				ContrastRatio:  floatPtr(contrastRatio),
+				WcagLevel:      wcagLevel,
+				Duration:       intPtr(durationMs),
+			})
 		}
 
 		resultDetails[idxStr] = *detail
