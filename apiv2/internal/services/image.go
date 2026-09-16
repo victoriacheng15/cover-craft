@@ -25,31 +25,31 @@ const (
 	LineSpacingMultiplier = 1.2
 )
 
-// GeneratePNG renders the canvas and returns raw PNG bytes
-func GeneratePNG(params ImageParams) ([]byte, error) {
-	dc := gg.NewContext(params.Width, params.Height)
+// RenderFrame renders a canvas frame into an image.Image
+func RenderFrame(width, height int, backgroundColor, textColor, font, title string, subtitle *string, hasBorder bool) (image.Image, error) {
+	dc := gg.NewContext(width, height)
 
 	// Fill background
-	dc.SetHexColor(params.BackgroundColor)
+	dc.SetHexColor(backgroundColor)
 	dc.Clear()
 
 	// Draw inset border if enabled
-	if params.HasBorder != nil && *params.HasBorder {
-		dc.SetHexColor(params.TextColor)
+	if hasBorder {
+		dc.SetHexColor(textColor)
 		dc.SetLineWidth(BorderWidth)
-		dc.DrawRectangle(BorderInset, BorderInset, float64(params.Width)-2*BorderInset, float64(params.Height)-2*BorderInset)
+		dc.DrawRectangle(BorderInset, BorderInset, float64(width)-2*BorderInset, float64(height)-2*BorderInset)
 		dc.Stroke()
 	}
 
 	// Calculate text dimensions
-	maxTextWidth := float64(params.Width) - Padding*2
-	centerX := float64(params.Width) / 2.0
-	centerY := float64(params.Height) / 2.0
+	maxTextWidth := float64(width) - Padding*2
+	centerX := float64(width) / 2.0
+	centerY := float64(height) / 2.0
 
 	// Dynamic scaling base
-	scaleBase := float64(params.Width)
-	if float64(params.Height) > scaleBase {
-		scaleBase = float64(params.Height)
+	scaleBase := float64(width)
+	if float64(height) > scaleBase {
+		scaleBase = float64(height)
 	}
 
 	// Calculate font sizes
@@ -58,7 +58,7 @@ func GeneratePNG(params ImageParams) ([]byte, error) {
 	lineSpacing := headingFontSize * LineSpacingMultiplier
 
 	// Clean font name (e.g. "Open Sans" -> "OpenSans")
-	fontNameCleaned := strings.ReplaceAll(string(params.Font), " ", "")
+	fontNameCleaned := strings.ReplaceAll(font, " ", "")
 
 	// Load Bold Font for Heading
 	boldFontFile := fmt.Sprintf("%s-Bold.ttf", fontNameCleaned)
@@ -70,16 +70,16 @@ func GeneratePNG(params ImageParams) ([]byte, error) {
 		return nil, fmt.Errorf("failed to load bold font face from %s: %w", boldFontPath, err)
 	}
 
-	dc.SetHexColor(params.TextColor)
+	dc.SetHexColor(textColor)
 
-	hasSubtitle := params.Subtitle != nil && *params.Subtitle != ""
+	hasSubtitle := subtitle != nil && *subtitle != ""
 	headingY := centerY
 	if hasSubtitle {
 		headingY = centerY - lineSpacing/2
 	}
 
 	// Draw heading text
-	if err := drawTextWithCompression(dc, params.Title, centerX, headingY, maxTextWidth); err != nil {
+	if err := drawTextWithCompression(dc, title, centerX, headingY, maxTextWidth); err != nil {
 		return nil, err
 	}
 
@@ -94,15 +94,25 @@ func GeneratePNG(params ImageParams) ([]byte, error) {
 			return nil, fmt.Errorf("failed to load regular font face from %s: %w", regularFontPath, err)
 		}
 
-		dc.SetHexColor(params.TextColor)
+		dc.SetHexColor(textColor)
 		subheadingY := centerY + lineSpacing/2
 
-		if err := drawTextWithCompression(dc, *params.Subtitle, centerX, subheadingY, maxTextWidth); err != nil {
+		if err := drawTextWithCompression(dc, *subtitle, centerX, subheadingY, maxTextWidth); err != nil {
 			return nil, err
 		}
 	}
 
-	return encodePNG(dc.Image())
+	return dc.Image(), nil
+}
+
+// GeneratePNG renders the canvas and returns raw PNG bytes
+func GeneratePNG(params ImageParams) ([]byte, error) {
+	hasBorder := params.HasBorder != nil && *params.HasBorder
+	img, err := RenderFrame(params.Width, params.Height, params.BackgroundColor, params.TextColor, string(params.Font), params.Title, params.Subtitle, hasBorder)
+	if err != nil {
+		return nil, err
+	}
+	return encodePNG(img)
 }
 
 // drawTextWithCompression mimics canvas fillText with a maxWidth parameter

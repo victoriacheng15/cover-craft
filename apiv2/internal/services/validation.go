@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"math"
+	"math/rand/v2"
 	"regexp"
 	"strconv"
 	"strings"
@@ -208,5 +209,149 @@ func ValidateBatchRequest(requests []ImageParams) []ValidationError {
 			})
 		}
 	}
+	return errors
+}
+
+var compliantCandidateColors = []string{
+	"#FFFFFF", "#000000", "#F9FAFB", "#111827", "#3B82F6",
+	"#1D4ED8", "#10B981", "#047857", "#F59E0B", "#B45309",
+	"#EF4444", "#B91C1C", "#8B5CF6", "#6D28D9", "#EC4899",
+	"#BE185D", "#06B6D4", "#0E7490", "#F3F4F6", "#1F2937",
+	"#FCD34D", "#78350F", "#6EE7B7", "#064E3B", "#93C5FD",
+	"#1E3A8A", "#C4B5FD", "#4C1D95", "#F472B6", "#831843",
+	"#E0E7FF", "#312E81", "#FEF3C7", "#D1FAE5",
+}
+
+// GenerateCompliantTextColor returns a random hex color that achieves at least WCAG AA contrast (>= 4.5:1) against the given background.
+func GenerateCompliantTextColor(bgColor string) (string, error) {
+	if !HexColorRegex.MatchString(bgColor) {
+		return "", fmt.Errorf("invalid background color format")
+	}
+
+	var compliant []string
+	for _, candidate := range compliantCandidateColors {
+		ratio, err := GetContrastRatio(bgColor, candidate)
+		if err == nil && ratio >= WcagAaThreshold {
+			compliant = append(compliant, candidate)
+		}
+	}
+
+	if len(compliant) > 0 {
+		return compliant[rand.IntN(len(compliant))], nil
+	}
+
+	// Fallback to black or white, whichever has higher contrast against the background
+	blackRatio, _ := GetContrastRatio(bgColor, "#000000")
+	whiteRatio, _ := GetContrastRatio(bgColor, "#FFFFFF")
+	if blackRatio >= whiteRatio {
+		return "#000000", nil
+	}
+	return "#FFFFFF", nil
+}
+
+// ValidateGifParams checks all constraints for animated GIF generation requests
+func ValidateGifParams(params GifParams) []ValidationError {
+	var errors []ValidationError
+
+	// Size validation
+	if params.Width < MinSize || params.Width > MaxSize {
+		errors = append(errors, ValidationError{
+			Field:   "width",
+			Message: fmt.Sprintf("Width must be between %d and %d", MinSize, MaxSize),
+		})
+	}
+	if params.Height < MinSize || params.Height > MaxSize {
+		errors = append(errors, ValidationError{
+			Field:   "height",
+			Message: fmt.Sprintf("Height must be between %d and %d", MinSize, MaxSize),
+		})
+	}
+
+	// Background color format validation
+	bgValid := HexColorRegex.MatchString(params.BackgroundColor)
+	if !bgValid {
+		errors = append(errors, ValidationError{
+			Field:   "backgroundColor",
+			Message: "Color must be a valid HEX format (e.g., #FFFFFF or #FFF)",
+		})
+	}
+
+	// Delay validation if provided
+	if params.DelayMs != nil {
+		d := int(*params.DelayMs)
+		if d != 1000 && d != 1500 && d != 2000 && d != 3000 {
+			errors = append(errors, ValidationError{
+				Field:   "delayMs",
+				Message: "Delay must be one of: 1000, 1500, 2000, 3000",
+			})
+		}
+	}
+
+	// Slides validation: minimum of 2 slides required
+	if len(params.Slides) < 2 {
+		errors = append(errors, ValidationError{
+			Field:   "slides",
+			Message: "GIF slideshow must contain at least 2 slides",
+		})
+	}
+
+	// Validate each slide
+	for i, slide := range params.Slides {
+		prefix := fmt.Sprintf("slides[%d]", i)
+
+		// Title validation
+		if strings.TrimSpace(slide.Title) == "" {
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.title", prefix),
+				Message: "Title is required",
+			})
+		} else if len(slide.Title) > MaxTitleLength {
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.title", prefix),
+				Message: fmt.Sprintf("Title must be %d characters or less", MaxTitleLength),
+			})
+		}
+
+		// Subtitle validation
+		if slide.Subtitle != nil && len(*slide.Subtitle) > MaxSubtitleLength {
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.subtitle", prefix),
+				Message: fmt.Sprintf("Subtitle must be %d characters or less", MaxSubtitleLength),
+			})
+		}
+
+		// Font validation
+		if !AllowedFonts[string(slide.Font)] {
+			var fontNames []string
+			for f := range AllowedFonts {
+				fontNames = append(fontNames, f)
+			}
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.font", prefix),
+				Message: fmt.Sprintf("Font must be one of: %s", strings.Join(fontNames, ", ")),
+			})
+		}
+
+		// Text color validation (if provided)
+		if slide.TextColor != nil && strings.TrimSpace(*slide.TextColor) != "" {
+			textColor := *slide.TextColor
+			if !HexColorRegex.MatchString(textColor) {
+				errors = append(errors, ValidationError{
+					Field:   fmt.Sprintf("%s.textColor", prefix),
+					Message: "Color must be a valid HEX format (e.g., #FFFFFF or #FFF)",
+				})
+			} else if bgValid {
+				// Contrast check against uniform background color
+				ratio, err := GetContrastRatio(params.BackgroundColor, textColor)
+				if err != nil || ratio < WcagAaThreshold {
+					errors = append(errors, ValidationError{
+						Field:   fmt.Sprintf("%s.contrast", prefix),
+						Message: fmt.Sprintf("Contrast ratio must be at least %.1f for WCAG AA compliance", WcagAaThreshold),
+					})
+				}
+			}
+		}
+	}
+
 	return errors
 }

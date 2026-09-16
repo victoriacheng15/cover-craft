@@ -7,13 +7,30 @@ import (
 	"time"
 )
 
+// Defines values for GifParamsDelayMs.
+const (
+	N1000 GifParamsDelayMs = 1000
+	N1500 GifParamsDelayMs = 1500
+	N2000 GifParamsDelayMs = 2000
+	N3000 GifParamsDelayMs = 3000
+)
+
+// Defines values for GifSlideParamsFont.
+const (
+	GifSlideParamsFontLato            GifSlideParamsFont = "Lato"
+	GifSlideParamsFontMontserrat      GifSlideParamsFont = "Montserrat"
+	GifSlideParamsFontOpenSans        GifSlideParamsFont = "Open Sans"
+	GifSlideParamsFontPlayfairDisplay GifSlideParamsFont = "Playfair Display"
+	GifSlideParamsFontRoboto          GifSlideParamsFont = "Roboto"
+)
+
 // Defines values for ImageParamsFont.
 const (
-	Lato            ImageParamsFont = "Lato"
-	Montserrat      ImageParamsFont = "Montserrat"
-	OpenSans        ImageParamsFont = "Open Sans"
-	PlayfairDisplay ImageParamsFont = "Playfair Display"
-	Roboto          ImageParamsFont = "Roboto"
+	ImageParamsFontLato            ImageParamsFont = "Lato"
+	ImageParamsFontMontserrat      ImageParamsFont = "Montserrat"
+	ImageParamsFontOpenSans        ImageParamsFont = "Open Sans"
+	ImageParamsFontPlayfairDisplay ImageParamsFont = "Playfair Display"
+	ImageParamsFontRoboto          ImageParamsFont = "Roboto"
 )
 
 // Defines values for JobStatusResponseStatus.
@@ -50,6 +67,35 @@ type AnalyticsResult struct {
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
+
+// GifParams defines model for GifParams.
+type GifParams struct {
+	BackgroundColor string            `json:"backgroundColor"`
+	DelayMs         *GifParamsDelayMs `json:"delayMs,omitempty"`
+	Filename        *string           `json:"filename,omitempty"`
+	Height          int               `json:"height"`
+	Slides          []GifSlideParams  `json:"slides"`
+	Width           int               `json:"width"`
+}
+
+// GifParamsDelayMs defines model for GifParams.DelayMs.
+type GifParamsDelayMs int
+
+// GifSlideParams defines model for GifSlideParams.
+type GifSlideParams struct {
+	Font GifSlideParamsFont `json:"font"`
+
+	// HasBorder Whether to render an inset border around the slide (defaults to false)
+	HasBorder *bool   `json:"hasBorder,omitempty"`
+	Subtitle  *string `json:"subtitle,omitempty"`
+
+	// TextColor Slide text color. If omitted, a random WCAG AA compliant color is generated.
+	TextColor *string `json:"textColor,omitempty"`
+	Title     string  `json:"title"`
+}
+
+// GifSlideParamsFont defines model for GifSlideParams.Font.
+type GifSlideParamsFont string
 
 // HealthResponse defines model for HealthResponse.
 type HealthResponse struct {
@@ -138,6 +184,9 @@ type PostGenerateImagesJSONBody = []ImageParams
 type GetGetJobStatusParams struct {
 	JobId string `form:"jobId" json:"jobId"`
 }
+
+// PostGenerateGifJSONRequestBody defines body for PostGenerateGif for application/json ContentType.
+type PostGenerateGifJSONRequestBody = GifParams
 
 // PostGenerateImageJSONRequestBody defines body for PostGenerateImage for application/json ContentType.
 type PostGenerateImageJSONRequestBody = ImageParams
