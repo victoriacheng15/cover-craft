@@ -306,3 +306,235 @@ func TestHexToRGB_Errors(t *testing.T) {
 		t.Error("expected error for invalid hex color format")
 	}
 }
+
+func TestGenerateCompliantTextColor(t *testing.T) {
+	bgColors := []string{"#000000", "#FFFFFF", "#374151", "#1E3A8A", "#F9FAFB", "#F59E0B"}
+	for _, bg := range bgColors {
+		textColor, err := GenerateCompliantTextColor(bg)
+		if err != nil {
+			t.Fatalf("unexpected error generating text color for %s: %v", bg, err)
+		}
+		if !HexColorRegex.MatchString(textColor) {
+			t.Errorf("expected valid hex color for %s, got %s", bg, textColor)
+		}
+		ratio, err := GetContrastRatio(bg, textColor)
+		if err != nil {
+			t.Fatalf("failed to calculate contrast ratio for %s vs %s: %v", bg, textColor, err)
+		}
+		if ratio < WcagAaThreshold {
+			t.Errorf("contrast ratio for %s vs %s is %.2f, want >= %.1f", bg, textColor, ratio, WcagAaThreshold)
+		}
+	}
+
+	_, err := GenerateCompliantTextColor("invalid-hex")
+	if err == nil {
+		t.Error("expected error for invalid hex color format")
+	}
+}
+
+func TestValidateGifParams(t *testing.T) {
+	subGood := "Valid Subtitle"
+	subTooLong := makeStringOfLength(100)
+	titleTooLong := makeStringOfLength(50)
+	goodTextColor := "#FFFFFF"
+	poorTextColor := "#404040" // Poor contrast against #374151
+	invalidHexColor := "not-a-color"
+
+	validSlide1 := GifSlideParams{
+		Title: "Slide One",
+		Font:  GifSlideParamsFontMontserrat,
+	}
+	validSlide2 := GifSlideParams{
+		Title:     "Slide Two",
+		Subtitle:  &subGood,
+		Font:      GifSlideParamsFontRoboto,
+		TextColor: &goodTextColor,
+	}
+
+	delay1000 := GifParamsDelayMs(1000)
+	delay9999 := GifParamsDelayMs(9999)
+
+	tests := []struct {
+		name        string
+		params      GifParams
+		expectError bool
+		errorField  string
+	}{
+		{
+			name: "Valid 2-slide GIF succeeds",
+			params: GifParams{
+				Width:           1200,
+				Height:          627,
+				BackgroundColor: "#374151",
+				DelayMs:         &delay1000,
+				Slides:          []GifSlideParams{validSlide1, validSlide2},
+			},
+			expectError: false,
+		},
+		{
+			name: "Less than 2 slides fails",
+			params: GifParams{
+				Width:           1200,
+				Height:          627,
+				BackgroundColor: "#374151",
+				Slides:          []GifSlideParams{validSlide1},
+			},
+			expectError: true,
+			errorField:  "slides",
+		},
+		{
+			name: "Invalid width fails",
+			params: GifParams{
+				Width:           0,
+				Height:          627,
+				BackgroundColor: "#374151",
+				Slides:          []GifSlideParams{validSlide1, validSlide2},
+			},
+			expectError: true,
+			errorField:  "width",
+		},
+		{
+			name: "Invalid height fails",
+			params: GifParams{
+				Width:           1200,
+				Height:          1500,
+				BackgroundColor: "#374151",
+				Slides:          []GifSlideParams{validSlide1, validSlide2},
+			},
+			expectError: true,
+			errorField:  "height",
+		},
+		{
+			name: "Invalid background color fails",
+			params: GifParams{
+				Width:           1200,
+				Height:          627,
+				BackgroundColor: "invalid",
+				Slides:          []GifSlideParams{validSlide1, validSlide2},
+			},
+			expectError: true,
+			errorField:  "backgroundColor",
+		},
+		{
+			name: "Invalid delay fails",
+			params: GifParams{
+				Width:           1200,
+				Height:          627,
+				BackgroundColor: "#374151",
+				DelayMs:         &delay9999,
+				Slides:          []GifSlideParams{validSlide1, validSlide2},
+			},
+			expectError: true,
+			errorField:  "delayMs",
+		},
+		{
+			name: "Empty slide title fails",
+			params: GifParams{
+				Width:           1200,
+				Height:          627,
+				BackgroundColor: "#374151",
+				Slides: []GifSlideParams{
+					{Title: "   ", Font: GifSlideParamsFontMontserrat},
+					validSlide2,
+				},
+			},
+			expectError: true,
+			errorField:  "slides[0].title",
+		},
+		{
+			name: "Title too long fails",
+			params: GifParams{
+				Width:           1200,
+				Height:          627,
+				BackgroundColor: "#374151",
+				Slides: []GifSlideParams{
+					{Title: titleTooLong, Font: GifSlideParamsFontMontserrat},
+					validSlide2,
+				},
+			},
+			expectError: true,
+			errorField:  "slides[0].title",
+		},
+		{
+			name: "Subtitle too long fails",
+			params: GifParams{
+				Width:           1200,
+				Height:          627,
+				BackgroundColor: "#374151",
+				Slides: []GifSlideParams{
+					validSlide1,
+					{Title: "Valid", Subtitle: &subTooLong, Font: GifSlideParamsFontRoboto},
+				},
+			},
+			expectError: true,
+			errorField:  "slides[1].subtitle",
+		},
+		{
+			name: "Invalid slide font fails",
+			params: GifParams{
+				Width:           1200,
+				Height:          627,
+				BackgroundColor: "#374151",
+				Slides: []GifSlideParams{
+					{Title: "Valid", Font: "Comic Sans"},
+					validSlide2,
+				},
+			},
+			expectError: true,
+			errorField:  "slides[0].font",
+		},
+		{
+			name: "Invalid text color format fails",
+			params: GifParams{
+				Width:           1200,
+				Height:          627,
+				BackgroundColor: "#374151",
+				Slides: []GifSlideParams{
+					{Title: "Valid", Font: GifSlideParamsFontMontserrat, TextColor: &invalidHexColor},
+					validSlide2,
+				},
+			},
+			expectError: true,
+			errorField:  "slides[0].textColor",
+		},
+		{
+			name: "Poor contrast text color fails WCAG AA check",
+			params: GifParams{
+				Width:           1200,
+				Height:          627,
+				BackgroundColor: "#374151",
+				Slides: []GifSlideParams{
+					{Title: "Valid", Font: GifSlideParamsFontMontserrat, TextColor: &poorTextColor},
+					validSlide2,
+				},
+			},
+			expectError: true,
+			errorField:  "slides[0].contrast",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			errs := ValidateGifParams(tt.params)
+			if tt.expectError {
+				if len(errs) == 0 {
+					t.Fatalf("expected validation errors, got 0")
+				}
+				found := false
+				for _, err := range errs {
+					if err.Field == tt.errorField {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("expected error field %q, but got errors: %+v", tt.errorField, errs)
+				}
+			} else {
+				if len(errs) > 0 {
+					t.Errorf("expected 0 errors, got %d: %+v", len(errs), errs)
+				}
+			}
+		})
+	}
+}

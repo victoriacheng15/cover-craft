@@ -64,6 +64,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	// Register router handlers
 	tc.router.HandleFunc("/api/health", handlers.HealthHandler)
 	tc.router.HandleFunc("/api/generateImage", handlers.GenerateImageHandler)
+	tc.router.HandleFunc("/api/generateGif", handlers.GenerateGifHandler)
 	tc.router.HandleFunc("/api/generateImages", handlers.GenerateImagesHandler)
 	tc.router.HandleFunc("/api/getJobStatus", handlers.GetJobStatusHandler)
 	tc.router.HandleFunc("/api/analytics", handlers.AnalyticsHandler)
