@@ -47,47 +47,45 @@ func GenerateImagesHandler(w http.ResponseWriter, r *http.Request) {
 	if len(validationErrors) > 0 {
 		slog.WarnContext(r.Context(), "Batch validation failed", slog.Int("error_count", len(validationErrors)))
 
-		// Capture individual validation metrics asynchronously
-		go func(reqs []services.ImageParams, errs []services.ValidationError) {
-			for i, item := range reqs {
-				contrastRatio, _ := services.GetContrastRatio(item.BackgroundColor, item.TextColor)
-				wcagLevel := services.GetWCAGLevel(contrastRatio)
+		// Capture individual validation metrics into bounded in-memory buffer
+		for i, item := range requests {
+			contrastRatio, _ := services.GetContrastRatio(item.BackgroundColor, item.TextColor)
+			wcagLevel := services.GetWCAGLevel(contrastRatio)
 
-				var itemErrors []string
-				prefix := fmt.Sprintf("requests[%d].", i)
-				for _, e := range errs {
-					if strings.HasPrefix(e.Field, prefix) {
-						itemErrors = append(itemErrors, e.Message)
-					}
+			var itemErrors []string
+			prefix := fmt.Sprintf("requests[%d].", i)
+			for _, e := range validationErrors {
+				if strings.HasPrefix(e.Field, prefix) {
+					itemErrors = append(itemErrors, e.Message)
 				}
-
-				errMsg := "Validation failed"
-				if len(itemErrors) > 0 {
-					errMsg = strings.Join(itemErrors, "; ")
-				}
-				if len(errMsg) > 1000 {
-					errMsg = errMsg[:1000]
-				}
-
-				var subLen int
-				if item.Subtitle != nil {
-					subLen = len(*item.Subtitle)
-				}
-
-				storeMetric(db.Metric{
-					Event:          "image_generated",
-					Timestamp:      time.Now().UTC(),
-					Status:         "validation_error",
-					ErrorMessage:   errMsg,
-					Size:           &db.SizePreset{Width: item.Width, Height: item.Height},
-					Font:           string(item.Font),
-					TitleLength:    intPtr(len(item.Title)),
-					SubtitleLength: intPtr(subLen),
-					ContrastRatio:  floatPtr(contrastRatio),
-					WcagLevel:      wcagLevel,
-				})
 			}
-		}(requests, validationErrors)
+
+			errMsg := "Validation failed"
+			if len(itemErrors) > 0 {
+				errMsg = strings.Join(itemErrors, "; ")
+			}
+			if len(errMsg) > 1000 {
+				errMsg = errMsg[:1000]
+			}
+
+			var subLen int
+			if item.Subtitle != nil {
+				subLen = len(*item.Subtitle)
+			}
+
+			storeMetric(db.Metric{
+				Event:          "image_generated",
+				Timestamp:      time.Now().UTC(),
+				Status:         "validation_error",
+				ErrorMessage:   errMsg,
+				Size:           &db.SizePreset{Width: item.Width, Height: item.Height},
+				Font:           string(item.Font),
+				TitleLength:    intPtr(len(item.Title)),
+				SubtitleLength: intPtr(subLen),
+				ContrastRatio:  floatPtr(contrastRatio),
+				WcagLevel:      wcagLevel,
+			})
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)

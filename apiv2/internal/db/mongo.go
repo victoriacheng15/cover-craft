@@ -70,5 +70,31 @@ func ConnectMongo(uri string) error {
 	}
 
 	MongoClient = client
+
+	// Ensure compound index { event: 1, timestamp: -1 } on metrics collection
+	indexCtx, indexCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer indexCancel()
+	if err := EnsureMetricsIndexes(indexCtx, client); err != nil {
+		// Non-fatal warning to permit running under restricted database roles
+		return nil
+	}
+
 	return nil
+}
+
+// EnsureMetricsIndexes creates the compound index on { event: 1, timestamp: -1 } for query performance.
+func EnsureMetricsIndexes(ctx context.Context, client *mongo.Client) error {
+	if client == nil {
+		return nil
+	}
+	coll := client.Database("cover-craft").Collection("metrics")
+	indexModel := mongo.IndexModel{
+		Keys: primitive.D{
+			{Key: "event", Value: 1},
+			{Key: "timestamp", Value: -1},
+		},
+		Options: options.Index().SetName("event_1_timestamp_-1"),
+	}
+	_, err := coll.Indexes().CreateOne(ctx, indexModel)
+	return err
 }

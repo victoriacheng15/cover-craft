@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -64,7 +63,7 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 		slog.WarnContext(r.Context(), "Validation failed for image generation parameters", slog.Any("errors", validationErrors))
 
 		// Record validation error metric to MongoDB
-		go storeMetric(db.Metric{
+		storeMetric(db.Metric{
 			Event:          "image_generated",
 			Timestamp:      time.Now().UTC(),
 			Status:         "validation_error",
@@ -95,7 +94,7 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 		slog.ErrorContext(r.Context(), "Error generating cover image", slog.Any("error", err))
 
 		// Record error metric to MongoDB
-		go storeMetric(db.Metric{
+		storeMetric(db.Metric{
 			Event:          "image_generated",
 			Timestamp:      time.Now().UTC(),
 			Status:         "error",
@@ -120,7 +119,7 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 5. Store Success Metric
-	go storeMetric(db.Metric{
+	storeMetric(db.Metric{
 		Event:          "image_generated",
 		Timestamp:      time.Now().UTC(),
 		Status:         "success",
@@ -228,16 +227,6 @@ func getParamWithFallback(queryVal, bodyVal string) string {
 		return queryVal
 	}
 	return bodyVal
-}
-
-func storeMetric(metric db.Metric) {
-	if db.MongoClient == nil {
-		return
-	}
-	coll := db.MongoClient.Database("cover-craft").Collection("metrics")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	_, _ = coll.InsertOne(ctx, metric)
 }
 
 func intPtr(v int) *int {
