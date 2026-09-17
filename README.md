@@ -1,8 +1,8 @@
 # Cover Craft
 
-Cover Craft is a serverless cover image generator built with React, Next.js, Go, Azure Functions, Azure Queue Storage, MongoDB, and Terraform.
+Cover Craft is a serverless cover image and animated GIF slideshow generator built with React, Next.js, Go, Azure Functions, Azure Queue Storage, MongoDB, and Terraform.
 
-It supports fast single-image generation and queued batch processing, with shared validation, accessibility checks, and automated Azure deployment built into the workflow.
+It supports single-cover generation, multi-frame animated GIF slideshows, and queued batch processing, with shared validation, accessibility checks, and automated Azure deployment built into the workflow.
 
 [Live Project](https://cover-craft-ui.azurewebsites.net/) | [Full Documentation](./docs/README.md)
 
@@ -64,41 +64,43 @@ The platform's cloud infrastructure is declared using Terraform and deployed via
 
 ### Application Request Flow
 
-The platform has two runtime generation paths:
+The platform provides three runtime generation paths:
 
 | Path | Use case | Flow |
 | :--- | :--- | :--- |
-| Single image | Fast interactive generation | User request -> Go Function -> Go 2D graphics library -> image response |
-| Batch images | Larger workloads | User request -> HTTP 202 -> Azure Queue Storage -> Go Function worker -> MongoDB job status |
+| Image covers | Fast interactive cover generation | User request -> Go Function -> Go 2D graphics library -> PNG response |
+| Animated GIF slideshow | Multi-slide animated social clips | User request -> Go Function -> Go 2D graphics & GIF encoder -> animated GIF response |
+| Batch covers | Asynchronous bulk workloads | User request -> HTTP 202 -> Azure Queue Storage -> Go Function worker -> MongoDB job status |
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
 │                        Next.js Client UI                         │
 └──────────────────────────────────────────────────────────────────┘
                                  │
-                                 │ POST /api/generateImage (Single)
+                                 │ POST /api/generateImage (Cover)
                                  │ POST /api/generateImages (Batch)
+                                 │ POST /api/generateGif (Slideshow)
                                  │ GET /api/jobStatus (Poll Status)
                                  ▼
 ┌──────────────────────────────────────────────────────────────────┐
 │                        Next.js BFF Server                        │
 └──────────────────────────────────────────────────────────────────┘
          │                       │                       │
-         │ /generateImage        │ /generateImages       │ /getJobStatus
-         ▼                       ▼                       ▼
-┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│   Go Function    │    │   Go Function    │    │   Go Function    │
-│  (SingleRender)  │    │ (QueueProducer)  │    │  (GetJobStatus)  │
-└──────────────────┘    └──────────────────┘    └──────────────────┘
-         │                       │                       │
-         │ Uses                  │ Enqueues              │ Reads
-         ▼                       ▼                       │ Status
-┌──────────────────┐    ┌──────────────────┐             │
-│  Go 2D Graphics  │    │   Azure Queue    │             │
-└──────────────────┘    │     Storage      │             │
-         ▲              └──────────────────┘             │
-         │                       │                       │
-         │ Uses                  │ Triggers              │
+         │ /generateImage,       │ /generateImages       │ /getJobStatus
+         │ /generateGif          ▼                       ▼
+         ▼              ┌──────────────────┐    ┌──────────────────┐
+┌──────────────────┐    │   Go Function    │    │   Go Function    │
+│   Go Functions   │    │ (QueueProducer)  │    │  (GetJobStatus)  │
+│(Image/GifRender) │    └──────────────────┘    └──────────────────┘
+└──────────────────┘             │                       │
+         │                       │ Enqueues              │ Reads
+         │ Uses                  ▼                       │ Status
+         ▼              ┌──────────────────┐             │
+┌──────────────────┐    │   Azure Queue    │             │
+│  Go 2D Graphics  │    │     Storage      │             │
+│  & GIF Encoder   │    └──────────────────┘             │
+└──────────────────┘             │                       │
+         ▲                       │ Triggers              │
          │                       ▼                       │
          │              ┌──────────────────┐             │
          │              │   Go Function    │             │
@@ -110,7 +112,7 @@ The platform has two runtime generation paths:
                                  ▼                       ▼
                         ┌──────────────────────────────────┐
                         │             MongoDB              │
-                        │           (Job Status)           │
+                        │    (Job Status & Telemetry)      │
                         └──────────────────────────────────┘
 ```
 
@@ -121,10 +123,27 @@ The platform has two runtime generation paths:
 | Layer | Tools |
 | :--- | :--- |
 | Language | Go, TypeScript, React, Tailwind CSS |
+| Graphics & Animation | Pure-Go 2D graphics (gg), standard library image/gif |
 | Infrastructure | Azure Functions, Azure Queue Storage, Azure App Service, Terraform |
 | Data stores | MongoDB for job state and metrics |
 | Testing | Vitest, Go testing (Unit & BDD) |
 | CI/CD | GitHub Actions |
+
+---
+
+## API Endpoints
+
+The API follows a contract-first design with `openapi.yaml` as the canonical specification:
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/generateImage` | Synchronous cover image generation (PNG) |
+| `POST` | `/generateGif` | Synchronous animated slideshow cover generation (GIF) |
+| `POST` | `/generateImages` | Asynchronous batch cover generation (enqueues up to 5 covers) |
+| `GET` | `/jobStatus` | Poll status and download URLs for batch generation jobs |
+| `GET` | `/analytics` | System telemetry, format distribution, and user engagement metrics |
+| `POST` | `/metrics` | Buffered ingestion of client telemetry events |
+| `GET` | `/health` | Service health check |
 
 ---
 

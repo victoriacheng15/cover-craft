@@ -58,7 +58,7 @@ export const landingConfig: LandingConfig = {
 	},
 	llms: {
 		objective:
-			"Generate clean, readable cover images via interactive controls and queued batch processing without manual design-tool setup.",
+			"Generate clean, readable cover images and animated GIF slideshows via interactive controls and queued batch processing without manual design-tool setup.",
 		stack:
 			"React, Next.js (App Router), TypeScript, Azure Functions (Go Custom Handler), Azure Queue Storage, MongoDB, Terraform, Biome, Vitest",
 		pattern:
@@ -75,29 +75,30 @@ export const landingConfig: LandingConfig = {
 │                        Next.js Client UI                         │
 └──────────────────────────────────────────────────────────────────┘
                                  │
-                                 │ POST /api/generateImage (Single)
+                                 │ POST /api/generateImage (Cover)
                                  │ POST /api/generateImages (Batch)
+                                 │ POST /api/generateGif (Slideshow)
                                  │ GET /api/jobStatus (Poll Status)
                                  ▼
 ┌──────────────────────────────────────────────────────────────────┐
 │                        Next.js BFF Server                        │
 └──────────────────────────────────────────────────────────────────┘
          │                       │                       │
-         │ /generateImage        │ /generateImages       │ /getJobStatus
-         ▼                       ▼                       ▼
-┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│   Go Function    │    │   Go Function    │    │   Go Function    │
-│  (SingleRender)  │    │ (QueueProducer)  │    │  (GetJobStatus)  │
-└──────────────────┘    └──────────────────┘    └──────────────────┘
-         │                       │                       │
-         │ Uses                  │ Enqueues              │ Reads
-         ▼                       ▼                       │ Status
-┌──────────────────┐    ┌──────────────────┐             │
-│  Go 2D Graphics  │    │   Azure Queue    │             │
-└──────────────────┘    │     Storage      │             │
-         ▲              └──────────────────┘             │
-         │                       │                       │
-         │ Uses                  │ Triggers              │
+         │ /generateImage,       │ /generateImages       │ /getJobStatus
+         │ /generateGif          ▼                       ▼
+         ▼              ┌──────────────────┐    ┌──────────────────┐
+┌──────────────────┐    │   Go Function    │    │   Go Function    │
+│   Go Functions   │    │ (QueueProducer)  │    │  (GetJobStatus)  │
+│(Image/GifRender) │    └──────────────────┘    └──────────────────┘
+└──────────────────┘             │                       │
+         │                       │ Enqueues              │ Reads
+         │ Uses                  ▼                       │ Status
+         ▼              ┌──────────────────┐             │
+┌──────────────────┐    │   Azure Queue    │             │
+│  Go 2D Graphics  │    │     Storage      │             │
+│  & GIF Encoder   │    └──────────────────┘             │
+└──────────────────┘             │                       │
+         ▲                       │ Triggers              │
          │                       ▼                       │
          │              ┌──────────────────┐             │
          │              │   Go Function    │             │
@@ -109,7 +110,7 @@ export const landingConfig: LandingConfig = {
                                  ▼                       ▼
                         ┌──────────────────────────────────┐
                         │             MongoDB              │
-                        │           (Job Status)           │
+                        │    (Job Status & Telemetry)      │
                         └──────────────────────────────────┘`,
 		pipeline_diagram_ascii: `┌──────────────────────────────────────────────────────────────────┐
 │                     Git Push / Merge to main                     │
@@ -154,6 +155,11 @@ export const landingConfig: LandingConfig = {
 				"Go 2D graphics library running inside a Go Custom Handler Function App to draw typography, colors, and layout styles into consistent PNG images without C++ runtime dependencies.",
 		},
 		{
+			title: "Pure-Go Animated GIF Engine",
+			description:
+				"Multi-frame GIF generation engine using Go standard library image/gif and palette quantization to assemble accessible animated cover slideshows without external C++ or FFmpeg dependencies.",
+		},
+		{
 			title: "Queue-backed Batch Processor",
 			description:
 				"Queue-backed batch processor with a retry-aware serverless worker that coordinates bulk generation requests asynchronously via Azure Queue Storage and tracks progress in MongoDB.",
@@ -196,7 +202,7 @@ export const landingConfig: LandingConfig = {
 		],
 		objective_clarity: {
 			description:
-				"Supports rendering custom text and layout templates for PNG outputs up to 1200x630. Batch jobs are limited to a maximum of 5 images per request to prevent API timeout constraints.",
+				"Supports rendering custom text and layout templates for PNG outputs up to 1200x630, and animated GIF slideshows with 2 to 10 slides and configurable frame delays (1000ms to 3000ms). Batch jobs are limited to a maximum of 5 images per request to prevent API timeout constraints.",
 		},
 		verifiable_outputs: [
 			{
@@ -204,29 +210,61 @@ export const landingConfig: LandingConfig = {
 				terminal_output: `> frontend@0.1.0 test
 > vitest run
 
- RUN  v4.1.10 /frontend
+ RUN  v5.0.0 /frontend
 
- ✓ src/lib/download.test.ts (4 tests)
- ✓ src/components/ui/Cards.test.tsx (15 tests)
+ ✓ src/lib/utils.test.ts (7 tests)
+ ✓ src/services/api.test.ts (32 tests)
+ ✓ src/app/api/_utils/index.test.ts (16 tests)
  ✓ src/hooks/useBatchForm.test.ts (9 tests)
- ✓ src/hooks/useForm.test.ts (29 tests)
- ✓ src/components/form/FormField.test.tsx (5 tests)
- ✓ src/components/ui/SectionTitle.test.tsx (12 tests)
- ✓ src/components/display/BatchResultsDisplay.test.tsx (6 tests)
+ ✓ src/hooks/useGifForm.test.ts (11 tests)
+ ✓ src/hooks/useForm.test.ts (31 tests)
+ ✓ src/components/GenerationNav.test.tsx (2 tests)
+ ✓ src/components/form/GifPreviewDisplay.test.tsx (2 tests)
+ ✓ src/components/form/GifSettingsControls.test.tsx (1 test)
+ ✓ src/components/ui.test.tsx (37 tests)
+ ✓ src/hooks/useAnalytics.test.ts (13 tests)
  ...
 
- Test Files  14 passed (14)
-      Tests  98 passed (98)
-   Duration  1.82s`,
+ Test Files  16 passed (16)
+      Tests  218 passed (218)
+   Duration  2.10s`,
 			},
 			{
 				title: "Go API Statement Coverage",
 				terminal_output: `cd apiv2 && go test -coverprofile=coverage.out ./internal/... && go tool cover -func=coverage.out
-ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/db	coverage: 70.0% of statements
-ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/handlers	coverage: 83.4% of statements
+ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/db	coverage: 65.0% of statements
+ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/handlers	coverage: 73.1% of statements
+ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/middleware	coverage: 78.3% of statements
 ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/queue	coverage: 32.1% of statements
-ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/services	coverage: 89.7% of statements
-total:											(statements)			82.6%`,
+ok  	github.com/victoriacheng15/cover-craft/apiv2/internal/services	coverage: 83.0% of statements
+total:											(statements)			74.3%`,
+			},
+			{
+				title: "Go BDD End-to-End Scenarios",
+				terminal_output: `make test-bdd
+cd apiv2 && go test -v ./e2e/... && cd ..
+
+Feature: Animated GIF Generation API
+  Scenario: Generate animated GIF with valid parameters          # features/gif.feature:6
+    When I send a "POST" request to "/api/generateGif" with body
+    Then the response status code should be 200
+    And the response content type should be "image/gif"
+
+Feature: Batch Image Generation API
+  Scenario: Submit batch generation request with inset border    # features/batch.feature:18
+    When I send a "POST" request to "/api/generateImages" with body
+    Then the response status code should be 202
+
+Feature: Cover Craft REST API
+  Scenario: Generate image with inset border enabled             # features/generate.feature:12
+    When I send a "POST" request to "/api/generateImage" with body
+    Then the response status code should be 200
+  ...
+
+25 scenarios (25 passed)
+97 steps (97 passed)
+PASS
+ok  	github.com/victoriacheng15/cover-craft/apiv2/e2e	0.51s`,
 			},
 			{
 				title: "Terraform Managed Infrastructure (State List)",
