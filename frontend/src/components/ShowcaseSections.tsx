@@ -10,7 +10,6 @@ export function HeroSection() {
 			label: "View source",
 			external: true,
 		},
-		{ href: "/generate/batch", label: "Bulk generation", external: false },
 		{ href: "/analytics", label: "Analytics", external: false },
 		{ href: "/evolution", label: "Evolution", external: false },
 	];
@@ -21,7 +20,8 @@ export function HeroSection() {
 		<section className="flex flex-col items-center gap-8 py-10 text-center">
 			<div className="flex flex-col items-center gap-5 max-w-3xl">
 				<SectionTitle size="xl" as="h2" className="text-4xl md:text-5xl">
-					Generate clean, readable cover images without design-tool setup.
+					Generate clean, readable cover images and GIF slideshows without
+					design-tool setup.
 				</SectionTitle>
 				<p className="text-lg md:text-xl text-gray-700 leading-relaxed">
 					{landingConfig.llms.objective}
@@ -30,11 +30,8 @@ export function HeroSection() {
 
 			<nav aria-label="Landing page actions" className="w-full max-w-2xl">
 				<ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					{actions.map(({ href, label, external }, index) => (
-						<li
-							key={href}
-							className={index === actions.length - 1 ? "sm:col-span-2" : ""}
-						>
+					{actions.map(({ href, label, external }) => (
+						<li key={href}>
 							<Link
 								href={href}
 								target={external ? "_blank" : undefined}

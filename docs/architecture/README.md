@@ -9,7 +9,7 @@ This directory documents the main system architecture for Cover Craft across the
 
 ## System View
 
-Cover Craft is split into a Next.js frontend and an Azure Functions backend. Shared validation rules and types live in `@cover-craft/shared`, while Azure cloud resources are managed through OpenTofu.
+Cover Craft is split into a Next.js frontend and a Go Azure Functions backend. API contracts and types are synchronized from `openapi.yaml`, while Azure cloud resources are managed through OpenTofu.
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
@@ -18,31 +18,31 @@ Cover Craft is split into a Next.js frontend and an Azure Functions backend. Sha
                                  │
                                  │ POST /api/generateImage (Single)
                                  │ POST /api/generateImages (Batch)
+                                 │ POST /api/generateGif (GIF Slideshow)
                                  │ GET /api/jobStatus (Poll Status)
                                  ▼
 ┌──────────────────────────────────────────────────────────────────┐
 │                        Next.js BFF Server                        │
 └──────────────────────────────────────────────────────────────────┘
          │                       │                       │
-         │ /generateImage        │ /generateImages       │ /getJobStatus
-         ▼                       ▼                       ▼
-┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│  Azure Function  │    │  Azure Function  │    │  Azure Function  │
-│  (SingleRender)  │    │ (QueueProducer)  │    │  (GetJobStatus)  │
-└──────────────────┘    └──────────────────┘    └──────────────────┘
-         │                       │                       │
-         │ Uses                  │ Enqueues              │ Reads
-         ▼                       ▼                       │ Status
-         │                       │                       │
-┌──────────────────┐    ┌──────────────────┐             │
-│  Canvas Library  │    │   Azure Queue    │             │
-└──────────────────┘    │     Storage      │             │
-         ▲              └──────────────────┘             │
-         │                       │                       │
-         │ Uses                  │ Triggers              │
+         │ /generateImage,       │ /generateImages       │ /getJobStatus
+         │ /generateGif          ▼                       ▼
+         ▼              ┌──────────────────┐    ┌──────────────────┐
+┌──────────────────┐    │   Go Function    │    │   Go Function    │
+│   Go Functions   │    │ (QueueProducer)  │    │  (GetJobStatus)  │
+│(Image/GifRender) │    └──────────────────┘    └──────────────────┘
+└──────────────────┘             │                       │
+         │                       │ Enqueues              │ Reads
+         │ Uses                  ▼                       │ Status
+         ▼              ┌──────────────────┐             │
+┌──────────────────┐    │   Azure Queue    │             │
+│  Go 2D Graphics  │    │     Storage      │             │
+│  & GIF Encoder   │    └──────────────────┘             │
+└──────────────────┘             │                       │
+         ▲                       │ Triggers              │
          │                       ▼                       │
          │              ┌──────────────────┐             │
-         │              │  Azure Function  │             │
+         │              │   Go Function    │             │
          │              │  (QueueWorker)   │             │
          │              └──────────────────┘             │
          │                       │                       │
@@ -51,6 +51,6 @@ Cover Craft is split into a Next.js frontend and an Azure Functions backend. Sha
                                  ▼                       ▼
                         ┌──────────────────────────────────┐
                         │             MongoDB              │
-                        │           (Job Status)           │
+                        │    (Job Status & Telemetry)      │
                         └──────────────────────────────────┘
 ```

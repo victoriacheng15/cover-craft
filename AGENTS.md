@@ -4,10 +4,10 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Project Overview
 
-Cover Craft is a serverless cover image generator. It consists of two main components:
+Cover Craft is a serverless cover image and animated GIF generator. It consists of two main components:
 
 1. **Next.js Frontend**: A standalone React application (located in `frontend/`) providing interactive controls and a Backend-for-Frontend (BFF) proxy.
-2. **Go Azure Functions Backend**: A serverless API (located in `apiv2/`) running as a Go Custom Handler to render 2D graphics and process queue-backed generation jobs.
+2. **Go Azure Functions Backend**: A serverless API (located in `apiv2/`) running as a Go Custom Handler to render 2D graphics, generate animated GIF slideshows, and process queue-backed generation jobs.
 
 ## Development Commands
 
@@ -52,6 +52,8 @@ make contract-sync  # Re-generate Go structs and TypeScript interfaces from open
 ### Testing
 
 ```bash
+make test-go      # Run Go unit tests
+make test-bdd     # Run Go BDD end-to-end features
 make test-all-go  # Run Go unit and BDD tests
 make test-ui      # Run frontend component and hook tests
 make cov-go       # Run Go coverage analysis (requires MONGODB_URI)
@@ -66,8 +68,8 @@ make cov-go       # Run Go coverage analysis (requires MONGODB_URI)
 
 ### Graphics Rendering
 
-- Image generation uses the pure-Go 2D graphics library `github.com/fogleman/gg`.
-- Do not introduce C++ native dependencies (like Cairo or node-canvas) which break the serverless deployment and dev containers.
+- Image and animated GIF generation uses the pure-Go 2D graphics library `github.com/fogleman/gg` and Go standard library `image/gif`.
+- Do not introduce C++ native dependencies or external CLI tools (like Cairo, node-canvas, or FFmpeg) which break the serverless deployment and dev containers.
 
 ### Key Directories
 
@@ -86,3 +88,4 @@ make cov-go       # Run Go coverage analysis (requires MONGODB_URI)
 1. **Loopback Bindings**: Do not bind services inside containers to `127.0.0.1` or `localhost` as they block port forwarding. Use wildcard `0.0.0.0` instead.
 2. **Pie Chart Cells**: Do not use deprecated Recharts `<Cell>` components. Map sector colors directly using the dataset `fill` property.
 3. **Secrets Management**: Keep credentials out of the codebase. Use `frontend/.env` and `apiv2/local.settings.json` locally.
+4. **Color Contrast Compliance**: Image and GIF generation enforces WCAG AA contrast (minimum 4.5:1 ratio between text and background or border colors).
