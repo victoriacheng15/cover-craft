@@ -41,6 +41,9 @@ export type JobStatus =
 export const GENERATE_CLICK_EVENT = "generate_click";
 export const DOWNLOAD_CLICK_EVENT = "download_click";
 export const IMAGE_GENERATED_EVENT = "image_generated";
+export const GENERATE_GIF_CLICK_EVENT = "generate_gif_click";
+export const DOWNLOAD_GIF_CLICK_EVENT = "download_gif_click";
+export const GIF_GENERATED_EVENT = "gif_generated";
 export const METRIC_STATUS_SUCCESS = "success";
 export const METRIC_STATUS_ERROR = "error";
 export const METRIC_STATUS_VALIDATION_ERROR = "validation_error";
@@ -54,7 +57,10 @@ export type MetricStatus =
 export type EventType =
 	| typeof GENERATE_CLICK_EVENT
 	| typeof DOWNLOAD_CLICK_EVENT
-	| typeof IMAGE_GENERATED_EVENT;
+	| typeof IMAGE_GENERATED_EVENT
+	| typeof GENERATE_GIF_CLICK_EVENT
+	| typeof DOWNLOAD_GIF_CLICK_EVENT
+	| typeof GIF_GENERATED_EVENT;
 
 export type MetricPayload = components["schemas"]["MetricPayload"];
 

@@ -74,12 +74,13 @@ func GenerateImagesHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			storeMetric(db.Metric{
-				Event:          "image_generated",
+				Event:          EventImageGenerated,
 				Timestamp:      time.Now().UTC(),
 				Status:         "validation_error",
 				ErrorMessage:   errMsg,
 				Size:           &db.SizePreset{Width: item.Width, Height: item.Height},
 				Font:           string(item.Font),
+				HasBorder:      item.HasBorder,
 				TitleLength:    intPtr(len(item.Title)),
 				SubtitleLength: intPtr(subLen),
 				ContrastRatio:  floatPtr(contrastRatio),

@@ -113,3 +113,30 @@ func TestGenerateGifHandler_Success(t *testing.T) {
 		t.Errorf("expected 2 frames in animated GIF, got %d", len(decoded.Image))
 	}
 }
+
+func TestGifHasBorder(t *testing.T) {
+	// Empty slides
+	if res := gifHasBorder(nil); res != nil {
+		t.Errorf("expected nil for empty slides, got %v", *res)
+	}
+
+	// No border on any slide
+	f := false
+	slidesNoBorder := []services.GifSlideParams{
+		{Title: "1", HasBorder: &f},
+		{Title: "2"},
+	}
+	if res := gifHasBorder(slidesNoBorder); res == nil || *res != false {
+		t.Errorf("expected false, got %v", res)
+	}
+
+	// Border on one slide
+	tr := true
+	slidesWithBorder := []services.GifSlideParams{
+		{Title: "1", HasBorder: &f},
+		{Title: "2", HasBorder: &tr},
+	}
+	if res := gifHasBorder(slidesWithBorder); res == nil || *res != true {
+		t.Errorf("expected true, got %v", res)
+	}
+}

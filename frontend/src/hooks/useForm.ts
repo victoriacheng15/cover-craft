@@ -104,6 +104,7 @@ export function useForm() {
 					width: selectedSize.width,
 					height: selectedSize.height,
 				},
+				hasBorder: formData.hasBorder,
 			});
 
 			setGeneratedImage(blob);

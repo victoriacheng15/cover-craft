@@ -148,10 +148,12 @@ type MetricPayload struct {
 	ErrorMessage   *string  `json:"errorMessage,omitempty"`
 	Event          string   `json:"event"`
 	Font           *string  `json:"font,omitempty"`
+	HasBorder      *bool    `json:"hasBorder,omitempty"`
 	Size           *struct {
 		Height int `json:"height"`
 		Width  int `json:"width"`
 	} `json:"size,omitempty"`
+	SlideCount     *int                    `json:"slideCount,omitempty"`
 	Status         MetricPayloadStatus     `json:"status"`
 	SubtitleLength *int                    `json:"subtitleLength,omitempty"`
 	Timestamp      time.Time               `json:"timestamp"`

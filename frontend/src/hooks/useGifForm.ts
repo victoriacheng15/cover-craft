@@ -10,7 +10,11 @@ import {
 } from "@cover-craft/shared";
 import { useState } from "react";
 import { calculatePreviewDimensions, downloadImage } from "@/lib/utils";
-import { generateGif } from "@/services/api";
+import {
+	generateGif,
+	sendDownloadGifEvent,
+	sendGenerateGifEvent,
+} from "@/services/api";
 import { useContrastCheck } from "./useContrastCheck";
 
 export interface SlideItem {
@@ -177,7 +181,7 @@ export function useGifForm() {
 				}
 			}
 
-			const { blob } = await generateGif({
+			const { blob, clientDuration } = await generateGif({
 				width: selectedSize.width,
 				height: selectedSize.height,
 				backgroundColor: formData.backgroundColor,
@@ -190,6 +194,16 @@ export function useGifForm() {
 					textColor: formData.textColor,
 					hasBorder: formData.hasBorder,
 				})),
+			});
+
+			sendGenerateGifEvent({
+				clientDuration,
+				size: {
+					width: selectedSize.width,
+					height: selectedSize.height,
+				},
+				hasBorder: formData.hasBorder,
+				slideCount: formData.slides.length,
 			});
 
 			setGeneratedGif(blob);
@@ -208,6 +222,7 @@ export function useGifForm() {
 	const handleDownload = async () => {
 		if (!generatedGif) return;
 		try {
+			sendDownloadGifEvent();
 			const timestamp = Math.floor(Date.now() / 1000);
 			const filename = `${formData.filename || "slideshow"}-${timestamp}.gif`;
 			await downloadImage(generatedGif, filename);

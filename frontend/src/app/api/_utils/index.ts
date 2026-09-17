@@ -1,7 +1,10 @@
 import {
 	DOWNLOAD_CLICK_EVENT,
+	DOWNLOAD_GIF_CLICK_EVENT,
 	type EventType,
 	GENERATE_CLICK_EVENT,
+	GENERATE_GIF_CLICK_EVENT,
+	GIF_GENERATED_EVENT,
 	type GifParams,
 	type GifSlideParams,
 	type ImageParams,
@@ -14,8 +17,11 @@ import { NextResponse } from "next/server";
 
 export {
 	DOWNLOAD_CLICK_EVENT,
+	DOWNLOAD_GIF_CLICK_EVENT,
 	type EventType,
 	GENERATE_CLICK_EVENT,
+	GENERATE_GIF_CLICK_EVENT,
+	GIF_GENERATED_EVENT,
 	type GifParams,
 	type GifSlideParams,
 	type ImageParams,

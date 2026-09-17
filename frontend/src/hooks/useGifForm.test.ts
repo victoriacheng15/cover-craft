@@ -1,14 +1,32 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { generateGif } from "@/services/api";
+import { downloadImage } from "@/lib/utils";
+import {
+	generateGif,
+	sendDownloadGifEvent,
+	sendGenerateGifEvent,
+} from "@/services/api";
 import { useGifForm } from "./useGifForm";
 
 vi.mock("@/services/api", () => ({
 	generateGif: vi.fn(),
+	sendGenerateGifEvent: vi.fn(),
+	sendDownloadGifEvent: vi.fn(),
 }));
+
+vi.mock("@/lib/utils", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@/lib/utils")>();
+	return {
+		...actual,
+		downloadImage: vi.fn(),
+	};
+});
 
 describe("useGifForm", () => {
 	const generateGifMock = vi.mocked(generateGif);
+	const sendGenerateGifEventMock = vi.mocked(sendGenerateGifEvent);
+	const sendDownloadGifEventMock = vi.mocked(sendDownloadGifEvent);
+	const downloadImageMock = vi.mocked(downloadImage);
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -124,6 +142,17 @@ describe("useGifForm", () => {
 				]),
 			}),
 		);
+		expect(sendGenerateGifEventMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				clientDuration: 12,
+				hasBorder: true,
+				slideCount: 2,
+				size: expect.objectContaining({
+					width: expect.any(Number),
+					height: expect.any(Number),
+				}),
+			}),
+		);
 		expect(result.current.error).toBeNull();
 	});
 
@@ -187,5 +216,29 @@ describe("useGifForm", () => {
 
 		expect(result.current.formData.backgroundColor).toMatch(/^#[0-9a-f]{6}$/);
 		expect(result.current.formData.textColor).toMatch(/^#[0-9a-f]{6}$/);
+	});
+
+	it("emits telemetry and calls downloadImage on handleDownload", async () => {
+		const mockBlob = new Blob(["gif-mock"], { type: "image/gif" });
+		generateGifMock.mockResolvedValueOnce({
+			blob: mockBlob,
+			clientDuration: 10,
+		});
+
+		const { result } = renderHook(() => useGifForm());
+
+		await act(async () => {
+			await result.current.handleGenerate();
+		});
+
+		await act(async () => {
+			await result.current.handleDownload();
+		});
+
+		expect(sendDownloadGifEventMock).toHaveBeenCalled();
+		expect(downloadImageMock).toHaveBeenCalledWith(
+			mockBlob,
+			expect.stringMatching(/^slideshow-\d+\.gif$/),
+		);
 	});
 });

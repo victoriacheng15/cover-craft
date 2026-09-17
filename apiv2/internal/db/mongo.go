@@ -45,12 +45,14 @@ type Metric struct {
 	ErrorMessage   string      `bson:"errorMessage,omitempty" json:"errorMessage,omitempty"`
 	Size           *SizePreset `bson:"size,omitempty" json:"size,omitempty"`
 	Font           string      `bson:"font,omitempty" json:"font,omitempty"`
+	HasBorder      *bool       `bson:"hasBorder,omitempty" json:"hasBorder,omitempty"`
 	TitleLength    *int        `bson:"titleLength,omitempty" json:"titleLength,omitempty"`
 	SubtitleLength *int        `bson:"subtitleLength,omitempty" json:"subtitleLength,omitempty"`
 	ContrastRatio  *float64    `bson:"contrastRatio,omitempty" json:"contrastRatio,omitempty"`
 	WcagLevel      string      `bson:"wcagLevel,omitempty" json:"wcagLevel,omitempty"`
 	Duration       *int        `bson:"duration,omitempty" json:"duration,omitempty"`
 	ClientDuration *int        `bson:"clientDuration,omitempty" json:"clientDuration,omitempty"`
+	SlideCount     *int        `bson:"slideCount,omitempty" json:"slideCount,omitempty"`
 }
 
 var MongoClient *mongo.Client
