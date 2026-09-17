@@ -3,7 +3,9 @@ import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	DOWNLOAD_CLICK_EVENT,
+	DOWNLOAD_GIF_CLICK_EVENT,
 	GENERATE_CLICK_EVENT,
+	GENERATE_GIF_CLICK_EVENT,
 	type GifParams,
 	generateBatchImages,
 	generateGif,
@@ -13,7 +15,9 @@ import {
 	health,
 	type ImageParams,
 	sendDownloadEvent,
+	sendDownloadGifEvent,
 	sendGenerateEvent,
+	sendGenerateGifEvent,
 	sendMetrics,
 } from "./api";
 
@@ -528,6 +532,67 @@ describe("API Service Wrapper", () => {
 		it("silently catches errors on fetch failure", async () => {
 			fetchMock.mockRejectedValueOnce(new Error("Network failure"));
 			await expect(sendDownloadEvent()).resolves.not.toThrow();
+		});
+	});
+
+	describe("sendGenerateGifEvent", () => {
+		it("sends generation click event with success status and properties", async () => {
+			fetchMock.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ success: true }),
+			} as unknown as Response);
+
+			const payload = {
+				clientDuration: 250,
+				size: { width: 800, height: 600 },
+				hasBorder: true,
+				slideCount: 3,
+			};
+
+			await sendGenerateGifEvent(payload);
+
+			expect(fetchMock).toHaveBeenCalledWith("/api/metrics", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: expect.stringContaining(`"event":"${GENERATE_GIF_CLICK_EVENT}"`),
+			});
+			const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string);
+			expect(body.hasBorder).toBe(true);
+			expect(body.slideCount).toBe(3);
+			expect(body.clientDuration).toBe(250);
+		});
+
+		it("ignores call when payload is invalid", async () => {
+			// @ts-expect-error
+			await sendGenerateGifEvent({ event: 123 });
+			expect(fetchMock).not.toHaveBeenCalled();
+		});
+
+		it("silently catches errors on fetch failure", async () => {
+			fetchMock.mockRejectedValueOnce(new Error("Network failure"));
+			await expect(sendGenerateGifEvent({})).resolves.not.toThrow();
+		});
+	});
+
+	describe("sendDownloadGifEvent", () => {
+		it("sends download gif click event", async () => {
+			fetchMock.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ success: true }),
+			} as unknown as Response);
+
+			await sendDownloadGifEvent();
+
+			expect(fetchMock).toHaveBeenCalledWith("/api/metrics", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: expect.stringContaining(`"event":"${DOWNLOAD_GIF_CLICK_EVENT}"`),
+			});
+		});
+
+		it("silently catches errors on fetch failure", async () => {
+			fetchMock.mockRejectedValueOnce(new Error("Network failure"));
+			await expect(sendDownloadGifEvent()).resolves.not.toThrow();
 		});
 	});
 });

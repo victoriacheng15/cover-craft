@@ -368,6 +368,8 @@ components:
             - height
         font:
           type: string
+        hasBorder:
+          type: boolean
         titleLength:
           type: integer
         subtitleLength:
@@ -380,6 +382,8 @@ components:
         duration:
           type: integer
         clientDuration:
+          type: integer
+        slideCount:
           type: integer
       required:
         - event

@@ -64,12 +64,13 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Record validation error metric to MongoDB
 		storeMetric(db.Metric{
-			Event:          "image_generated",
+			Event:          EventImageGenerated,
 			Timestamp:      time.Now().UTC(),
 			Status:         "validation_error",
 			ErrorMessage:   fmt.Sprintf("Validation failed: %d errors", len(validationErrors)),
 			Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
 			Font:           string(params.Font),
+			HasBorder:      params.HasBorder,
 			TitleLength:    intPtr(len(params.Title)),
 			SubtitleLength: intPtr(len(extracted.Subtitle)),
 			ContrastRatio:  floatPtr(contrastRatio),
@@ -95,12 +96,13 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Record error metric to MongoDB
 		storeMetric(db.Metric{
-			Event:          "image_generated",
+			Event:          EventImageGenerated,
 			Timestamp:      time.Now().UTC(),
 			Status:         "error",
 			ErrorMessage:   err.Error(),
 			Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
 			Font:           string(params.Font),
+			HasBorder:      params.HasBorder,
 			TitleLength:    intPtr(len(params.Title)),
 			SubtitleLength: intPtr(len(extracted.Subtitle)),
 			ContrastRatio:  floatPtr(contrastRatio),
@@ -120,11 +122,12 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 5. Store Success Metric
 	storeMetric(db.Metric{
-		Event:          "image_generated",
+		Event:          EventImageGenerated,
 		Timestamp:      time.Now().UTC(),
 		Status:         "success",
 		Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
 		Font:           string(params.Font),
+		HasBorder:      params.HasBorder,
 		TitleLength:    intPtr(len(params.Title)),
 		SubtitleLength: intPtr(len(extracted.Subtitle)),
 		ContrastRatio:  floatPtr(contrastRatio),

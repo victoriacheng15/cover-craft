@@ -219,11 +219,12 @@ func processJobExecution(ctx context.Context, objID primitive.ObjectID, job db.J
 				}
 
 				storeMetric(db.Metric{
-					Event:          "image_generated",
+					Event:          EventImageGenerated,
 					Timestamp:      time.Now().UTC(),
 					Status:         "success",
 					Size:           &db.SizePreset{Width: currentRequest.Width, Height: currentRequest.Height},
 					Font:           string(currentRequest.Font),
+					HasBorder:      currentRequest.HasBorder,
 					TitleLength:    intPtr(len(currentRequest.Title)),
 					SubtitleLength: intPtr(subLen),
 					ContrastRatio:  floatPtr(contrastRatio),
@@ -272,12 +273,13 @@ func processJobExecution(ctx context.Context, objID primitive.ObjectID, job db.J
 			}
 
 			storeMetric(db.Metric{
-				Event:          "image_generated",
+				Event:          EventImageGenerated,
 				Timestamp:      time.Now().UTC(),
 				Status:         "error",
 				ErrorMessage:   errMsg,
 				Size:           &db.SizePreset{Width: currentRequest.Width, Height: currentRequest.Height},
 				Font:           string(currentRequest.Font),
+				HasBorder:      currentRequest.HasBorder,
 				TitleLength:    intPtr(len(currentRequest.Title)),
 				SubtitleLength: intPtr(subLen),
 				ContrastRatio:  floatPtr(contrastRatio),

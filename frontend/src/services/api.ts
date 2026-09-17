@@ -1,7 +1,10 @@
 import {
 	DOWNLOAD_CLICK_EVENT,
+	DOWNLOAD_GIF_CLICK_EVENT,
 	type EventType,
 	GENERATE_CLICK_EVENT,
+	GENERATE_GIF_CLICK_EVENT,
+	GIF_GENERATED_EVENT,
 	type GifParams,
 	type GifSlideParams,
 	type ImageParams,
@@ -14,8 +17,11 @@ import {
 // Re-export type contracts
 export {
 	DOWNLOAD_CLICK_EVENT,
+	DOWNLOAD_GIF_CLICK_EVENT,
 	type EventType,
 	GENERATE_CLICK_EVENT,
+	GENERATE_GIF_CLICK_EVENT,
+	GIF_GENERATED_EVENT,
 	type GifParams,
 	type GifSlideParams,
 	type ImageParams,
@@ -260,6 +266,68 @@ export async function sendDownloadEvent(payload?: Partial<MetricPayload>) {
 	try {
 		const payloadToSend: MetricPayload = {
 			event: DOWNLOAD_CLICK_EVENT,
+			timestamp: new Date().toISOString(),
+			status: "success",
+			...payload,
+		};
+
+		if (
+			!payloadToSend ||
+			typeof payloadToSend !== "object" ||
+			Array.isArray(payloadToSend) ||
+			typeof payloadToSend.event !== "string"
+		) {
+			return;
+		}
+
+		await fetch("/api/metrics", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(payloadToSend),
+		});
+	} catch (_err) {
+		// Silently fail - metrics are not critical to app functionality
+	}
+}
+
+/**
+ * Client-side function to send generate animated GIF event
+ */
+export async function sendGenerateGifEvent(payload: Partial<MetricPayload>) {
+	try {
+		const payloadToSend: MetricPayload = {
+			event: GENERATE_GIF_CLICK_EVENT,
+			timestamp: new Date().toISOString(),
+			status: "success",
+			...payload,
+		};
+
+		if (
+			!payloadToSend ||
+			typeof payloadToSend !== "object" ||
+			Array.isArray(payloadToSend) ||
+			typeof payloadToSend.event !== "string"
+		) {
+			return;
+		}
+
+		await fetch("/api/metrics", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(payloadToSend),
+		});
+	} catch (_err) {
+		// Silently fail - metrics are not critical to app functionality
+	}
+}
+
+/**
+ * Client-side function to send download animated GIF event
+ */
+export async function sendDownloadGifEvent(payload?: Partial<MetricPayload>) {
+	try {
+		const payloadToSend: MetricPayload = {
+			event: DOWNLOAD_GIF_CLICK_EVENT,
 			timestamp: new Date().toISOString(),
 			status: "success",
 			...payload,

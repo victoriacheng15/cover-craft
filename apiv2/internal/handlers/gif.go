@@ -57,11 +57,13 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 		slog.WarnContext(r.Context(), "Validation failed for GIF generation parameters", slog.Any("errors", validationErrors))
 
 		storeMetric(db.Metric{
-			Event:        "gif_generated",
+			Event:        EventGifGenerated,
 			Timestamp:    time.Now().UTC(),
 			Status:       "validation_error",
 			ErrorMessage: fmt.Sprintf("Validation failed: %d errors", len(validationErrors)),
 			Size:         &db.SizePreset{Width: params.Width, Height: params.Height},
+			HasBorder:    gifHasBorder(params.Slides),
+			SlideCount:   intPtr(len(params.Slides)),
 		})
 
 		w.Header().Set("Content-Type", "application/json")
@@ -82,11 +84,13 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 		slog.ErrorContext(r.Context(), "Error generating animated GIF", slog.Any("error", err))
 
 		storeMetric(db.Metric{
-			Event:        "gif_generated",
+			Event:        EventGifGenerated,
 			Timestamp:    time.Now().UTC(),
 			Status:       "error",
 			ErrorMessage: err.Error(),
 			Size:         &db.SizePreset{Width: params.Width, Height: params.Height},
+			HasBorder:    gifHasBorder(params.Slides),
+			SlideCount:   intPtr(len(params.Slides)),
 			Duration:     intPtr(duration),
 		})
 
@@ -102,11 +106,13 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Store Success Metric
 	storeMetric(db.Metric{
-		Event:     "gif_generated",
-		Timestamp: time.Now().UTC(),
-		Status:    "success",
-		Size:      &db.SizePreset{Width: params.Width, Height: params.Height},
-		Duration:  intPtr(duration),
+		Event:      EventGifGenerated,
+		Timestamp:  time.Now().UTC(),
+		Status:     "success",
+		Size:       &db.SizePreset{Width: params.Width, Height: params.Height},
+		HasBorder:  gifHasBorder(params.Slides),
+		SlideCount: intPtr(len(params.Slides)),
+		Duration:   intPtr(duration),
 	})
 
 	slog.InfoContext(r.Context(), "Animated GIF generated successfully",
@@ -123,4 +129,18 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Generation-Duration", strconv.Itoa(duration))
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(gifBytes)
+}
+
+func gifHasBorder(slides []services.GifSlideParams) *bool {
+	if len(slides) == 0 {
+		return nil
+	}
+	hasBorder := false
+	for _, s := range slides {
+		if s.HasBorder != nil && *s.HasBorder {
+			hasBorder = true
+			break
+		}
+	}
+	return &hasBorder
 }

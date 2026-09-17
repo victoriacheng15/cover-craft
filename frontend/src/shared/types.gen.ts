@@ -470,6 +470,7 @@ export interface components {
 				height: number;
 			};
 			font?: string;
+			hasBorder?: boolean;
 			titleLength?: number;
 			subtitleLength?: number;
 			contrastRatio?: number;
@@ -477,6 +478,7 @@ export interface components {
 			wcagLevel?: "AAA" | "AA" | "FAIL";
 			duration?: number;
 			clientDuration?: number;
+			slideCount?: number;
 		};
 		JobStatusResponse: {
 			id: string;
