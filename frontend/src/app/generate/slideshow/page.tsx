@@ -1,25 +1,26 @@
-import { CoverForm } from "@/components/form";
+import { GifForm } from "@/components/form";
 import { GenerationNav } from "@/components/GenerationNav";
 import { MainLayout } from "@/components/layouts";
 import { SectionTitle } from "@/components/ui";
 
-export default function GeneratePage() {
+export default function SlideshowPage() {
 	return (
 		<MainLayout>
 			<article className="w-full">
 				<header className="mb-8 text-center">
 					<SectionTitle size="xl" as="h1">
-						Generate Your Cover
+						Animated GIF Slideshow
 					</SectionTitle>
 					<p className="text-gray-600 mt-2 text-lg">
-						Customize your cover image with privacy-first tools.
+						Design multi-frame animated cover slideshows with customizable delay
+						and accessible colors.
 					</p>
 
-					<GenerationNav activeMode="single" className="mt-6" />
+					<GenerationNav activeMode="gif" className="mt-6" />
 				</header>
 
-				<section aria-label="Single image generation form">
-					<CoverForm />
+				<section aria-label="Animated GIF slideshow generation form">
+					<GifForm />
 				</section>
 			</article>
 		</MainLayout>

@@ -1,9 +1,11 @@
 import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	type GifParams,
 	handleApiError,
 	type ImageParams,
 	proxyAnalytics,
+	proxyGenerateGif,
 	proxyGenerateImage,
 	proxyGenerateImages,
 	proxyHealth,
@@ -108,6 +110,39 @@ describe("apiUtils", () => {
 
 			expect(fetchMock).toHaveBeenCalledWith(
 				expect.stringMatching(/generateImage$/),
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(body),
+				},
+			);
+			expect(response).toBe(fakeResponse);
+		});
+	});
+
+	describe("proxyGenerateGif", () => {
+		it("forwards body to proxy generateGif endpoint", async () => {
+			const body: GifParams = {
+				width: 1200,
+				height: 627,
+				backgroundColor: "#374151",
+				delayMs: 1500,
+				slides: [
+					{ title: "Slide 1", font: "Montserrat" },
+					{ title: "Slide 2", font: "Roboto" },
+				],
+			};
+
+			const fakeResponse = { ok: true, status: 200 };
+			// @ts-expect-error
+			fetchMock.mockResolvedValueOnce(fakeResponse);
+
+			const response = await proxyGenerateGif(body);
+
+			expect(fetchMock).toHaveBeenCalledWith(
+				expect.stringMatching(/generateGif$/),
 				{
 					method: "POST",
 					headers: {

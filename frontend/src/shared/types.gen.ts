@@ -193,6 +193,67 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	"/generateGif": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Generate an animated GIF slideshow
+		 * @description Renders a multi-frame animated GIF cover sequence using the pure-Go canvas engine.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["GifParams"];
+				};
+			};
+			responses: {
+				/** @description Rendered animated GIF slideshow */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"image/gif": string;
+					};
+				};
+				/** @description Validation failed (e.g. less than 2 slides, low contrast, invalid size) */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["ValidationErrorResponse"];
+					};
+				};
+				/** @description Internal rendering error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["ErrorResponse"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	"/generateImages": {
 		parameters: {
 			query?: never;
@@ -342,6 +403,44 @@ export interface components {
 			hasBorder?: boolean;
 			/** @example cover */
 			filename: string;
+		};
+		GifSlideParams: {
+			/** @example Welcome */
+			title: string;
+			/** @example Cover Craft */
+			subtitle?: string;
+			/**
+			 * @example Montserrat
+			 * @enum {string}
+			 */
+			font: "Montserrat" | "Roboto" | "Lato" | "Playfair Display" | "Open Sans";
+			/**
+			 * @description Slide text color. If omitted, a random WCAG AA compliant color is generated.
+			 * @example #F9FAFB
+			 */
+			textColor?: string;
+			/**
+			 * @description Whether to render an inset border around the slide (defaults to false)
+			 * @example false
+			 */
+			hasBorder?: boolean;
+		};
+		GifParams: {
+			/** @example 1200 */
+			width: number;
+			/** @example 627 */
+			height: number;
+			/** @example #374151 */
+			backgroundColor: string;
+			/**
+			 * @default 1500
+			 * @example 1500
+			 * @enum {integer}
+			 */
+			delayMs: 1000 | 1500 | 2000 | 3000;
+			slides: components["schemas"]["GifSlideParams"][];
+			/** @example slideshow */
+			filename?: string;
 		};
 		ValidationError: {
 			/** @example width */
