@@ -28,7 +28,7 @@ export default function AnalyticsPage() {
 
 	return (
 		<MainLayout>
-			<div className="max-w-3xl mx-auto">
+			<div className="max-w-5xl mx-auto">
 				<div className="flex flex-col gap-4 mb-8">
 					<div className="flex items-center gap-3">
 						<SectionTitle size="lg">Analytics</SectionTitle>

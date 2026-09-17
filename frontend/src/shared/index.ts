@@ -100,6 +100,21 @@ export type PerformanceBySize = {
 	p95ClientDuration: number;
 };
 
+export type FormatItem = {
+	format: string;
+	count: number;
+};
+
+export type BorderDistribution = {
+	withBorder: number;
+	withoutBorder: number;
+};
+
+export type SlideCountDistributionItem = {
+	range: string;
+	count: number;
+};
+
 export type UserEngagement = {
 	uiGenerationAttempts: number;
 	totalDownloads: number;
@@ -109,6 +124,10 @@ export type UserEngagement = {
 	uiUsagePercent: number;
 	apiUsagePercent: number;
 	hourlyTrend: HourlyTrendItem[];
+	gifGenerationAttempts?: number;
+	totalSuccessfulGifGenerations?: number;
+	totalGifDownloads?: number;
+	gifDownloadRate?: number;
 };
 
 export type FeaturePopularity = {
@@ -124,6 +143,11 @@ export type FeaturePopularity = {
 	subtitleUsagePercent: number;
 	subtitleUsageDistribution: SubtitleDistribution;
 	subtitleTrendOverTime: WeeklyTrendItem[];
+	formatDistribution?: FormatItem[];
+	borderUsagePercent?: number;
+	borderUsageDistribution?: BorderDistribution;
+	avgSlideCount?: number;
+	slideCountDistribution?: SlideCountDistributionItem[];
 };
 
 export type AccessibilityCompliance = {
@@ -146,6 +170,7 @@ export type PerformanceMetrics = {
 		p95BackendDuration: number;
 		p99BackendDuration: number;
 		backendDurationTrend: Array<{ date: string; avgDuration: number }>;
+		avgGifBackendDuration?: number;
 	};
 	clientPerformance: {
 		avgClientDuration: number;

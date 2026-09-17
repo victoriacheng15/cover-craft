@@ -21,8 +21,13 @@ export function UserEngagementSkeleton() {
 			<SectionTitle as="h3" size="md">
 				User Engagement
 			</SectionTitle>
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
 				{["e1", "e2", "e3", "e4", "e5", "e6"].map((id) => (
+					<Card key={`kpi-skeleton-${id}`} className="h-24" />
+				))}
+			</div>
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+				{["g1", "g2", "g3", "g4"].map((id) => (
 					<Card key={`kpi-skeleton-${id}`} className="h-24" />
 				))}
 			</div>
@@ -43,44 +48,84 @@ export function UserEngagement({
 			<SectionTitle as="h3" size="md">
 				User Engagement
 			</SectionTitle>
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-				{[
-					{
-						title: "Generation Attempts",
-						value: userEngagement.uiGenerationAttempts,
-						color: "blue" as const,
-					},
-					{
-						title: "Successful Generations",
-						value: userEngagement.totalSuccessfulGenerations,
-						color: "green" as const,
-					},
-					{
-						title: "UI Usage",
-						value: userEngagement.uiUsagePercent,
-						color: "orange" as const,
-						suffix: "%",
-					},
-					{
-						title: "API Usage",
-						value: userEngagement.apiUsagePercent,
-						color: "orange" as const,
-						suffix: "%",
-					},
-					{
-						title: "Downloads",
-						value: userEngagement.totalDownloads,
-						color: "indigo" as const,
-					},
-					{
-						title: "Download Rate",
-						value: userEngagement.downloadRate,
-						color: "pink" as const,
-						suffix: "%",
-					},
-				].map((card) => (
-					<KPICard key={card.title} {...card} />
-				))}
+			{/* Image Covers */}
+			<div className="mb-6">
+				<SectionTitle as="h4" size="sm" className="mb-3 text-gray-700">
+					Image Covers
+				</SectionTitle>
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+					{[
+						{
+							title: "Generation Attempts",
+							value: userEngagement.uiGenerationAttempts,
+							color: "blue" as const,
+						},
+						{
+							title: "Successful Generations",
+							value: userEngagement.totalSuccessfulGenerations,
+							color: "green" as const,
+						},
+						{
+							title: "UI Usage",
+							value: userEngagement.uiUsagePercent,
+							color: "orange" as const,
+							suffix: "%",
+						},
+						{
+							title: "API Usage",
+							value: userEngagement.apiUsagePercent,
+							color: "orange" as const,
+							suffix: "%",
+						},
+						{
+							title: "Downloads",
+							value: userEngagement.totalDownloads,
+							color: "indigo" as const,
+						},
+						{
+							title: "Download Rate",
+							value: userEngagement.downloadRate,
+							color: "pink" as const,
+							suffix: "%",
+						},
+					].map((card) => (
+						<KPICard key={card.title} {...card} />
+					))}
+				</div>
+			</div>
+
+			{/* Animated GIF Slideshows */}
+			<div className="mb-6">
+				<SectionTitle as="h4" size="sm" className="mb-3 text-gray-700">
+					Animated GIF Slideshows
+				</SectionTitle>
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+					{[
+						{
+							title: "GIF Attempts",
+							value: userEngagement.gifGenerationAttempts ?? 0,
+							color: "blue" as const,
+						},
+						{
+							title: "Successful GIFs",
+							value: userEngagement.totalSuccessfulGifGenerations ?? 0,
+							color: "green" as const,
+						},
+						{
+							title: "GIF Downloads",
+							value: userEngagement.totalGifDownloads ?? 0,
+							color: "indigo" as const,
+						},
+						{
+							title: "GIF Download Rate",
+							value: userEngagement.gifDownloadRate ?? 0,
+							color: "pink" as const,
+							suffix: "%",
+						},
+					].map((card) => (
+						<KPICard key={card.title} {...card} />
+					))}
+				</div>
 			</div>
 			{/* Daily & Hourly Trends */}
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
