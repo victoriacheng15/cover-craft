@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { BatchResultsDisplay } from "@/components/BatchResultsDisplay";
 import { BatchFormControls } from "@/components/form";
+import { GenerationNav } from "@/components/GenerationNav";
 import { MainLayout } from "@/components/layouts";
-import { Button, SectionTitle } from "@/components/ui";
+import { SectionTitle } from "@/components/ui";
 import { useBatchForm } from "@/hooks";
 
 export default function BatchPage() {
@@ -24,7 +24,7 @@ export default function BatchPage() {
 
 	return (
 		<MainLayout>
-			<article className="flex flex-col gap-10">
+			<article className="w-full flex flex-col gap-10">
 				<header className="flex flex-col gap-6 items-center">
 					<div className="flex flex-col gap-2 text-center">
 						<SectionTitle size="xl" as="h1">
@@ -36,19 +36,7 @@ export default function BatchPage() {
 						</p>
 					</div>
 
-					<nav
-						className="flex justify-center gap-4"
-						aria-label="Generation modes"
-					>
-						<Link href="/generate">
-							<Button
-								variant="outline"
-								className="border-gray-900 text-gray-900 hover:bg-gray-50 font-bold"
-							>
-								Switch to Single Generation
-							</Button>
-						</Link>
-					</nav>
+					<GenerationNav activeMode="bulk" />
 				</header>
 
 				<section className="bg-gray-50 border border-gray-100 rounded-2xl p-8 flex flex-col gap-4">

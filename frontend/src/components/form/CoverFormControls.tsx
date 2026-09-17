@@ -56,10 +56,14 @@ export function FormField({
 
 interface ColorContrastMessageProps {
 	contrastCheck: ContrastCheckResult;
+	stacked?: boolean;
+	className?: string;
 }
 
 export function ColorContrastMessage({
 	contrastCheck,
+	stacked = false,
+	className = "",
 }: ColorContrastMessageProps) {
 	function getContrastColorClasses(status: "good" | "warning" | "poor") {
 		const colorMap: Record<
@@ -73,8 +77,48 @@ export function ColorContrastMessage({
 		return colorMap[status];
 	}
 
+	if (stacked) {
+		return (
+			<div
+				className={cn(
+					"p-2.5 bg-emerald-50 rounded-xl border border-emerald-100 flex flex-col items-center justify-center text-center min-h-16",
+					className,
+				)}
+			>
+				<p className="text-xs font-medium text-emerald-900">Color Contrast</p>
+				<output
+					className="flex items-center justify-center gap-1.5 mt-0.5"
+					aria-live="polite"
+					aria-atomic="true"
+				>
+					{contrastCheck.status && (
+						<>
+							<span
+								className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${getContrastColorClasses(contrastCheck.status).dot}`}
+								aria-hidden="true"
+							/>
+							<p
+								className={`text-xs font-semibold truncate ${getContrastColorClasses(contrastCheck.status).text}`}
+							>
+								{contrastCheck.message}
+							</p>
+							<span className="sr-only">
+								Contrast status is {contrastCheck.status}
+							</span>
+						</>
+					)}
+				</output>
+			</div>
+		);
+	}
+
 	return (
-		<div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+		<div
+			className={cn(
+				"p-3 bg-emerald-50 rounded-xl border border-emerald-100",
+				className,
+			)}
+		>
 			<div className="flex items-center justify-between">
 				<p className="text-sm font-medium text-emerald-900">Color Contrast</p>
 				<output
@@ -87,7 +131,7 @@ export function ColorContrastMessage({
 							<span
 								className={`inline-block w-3 h-3 rounded-full ${getContrastColorClasses(contrastCheck.status).dot}`}
 								aria-hidden="true"
-							></span>
+							/>
 							<p
 								className={`text-sm font-semibold ${getContrastColorClasses(contrastCheck.status).text}`}
 							>
@@ -299,13 +343,13 @@ export function CoverFormControls({
 					checked={formData.hasBorder ?? false}
 					onChange={(e) => handleInputChange("hasBorder", e.target.checked)}
 					className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-					aria-label="Add inset border around cover"
+					aria-label="Add border around cover"
 				/>
 				<label
 					htmlFor="has-border"
 					className="text-sm font-medium text-gray-900 cursor-pointer"
 				>
-					Add Inset Border
+					Add Border
 				</label>
 			</div>
 

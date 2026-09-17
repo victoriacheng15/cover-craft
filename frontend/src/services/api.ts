@@ -2,6 +2,8 @@ import {
 	DOWNLOAD_CLICK_EVENT,
 	type EventType,
 	GENERATE_CLICK_EVENT,
+	type GifParams,
+	type GifSlideParams,
 	type ImageParams,
 	type MetricPayload,
 	type MetricStatus,
@@ -14,6 +16,8 @@ export {
 	DOWNLOAD_CLICK_EVENT,
 	type EventType,
 	GENERATE_CLICK_EVENT,
+	type GifParams,
+	type GifSlideParams,
 	type ImageParams,
 	type MetricPayload,
 	type MetricStatus,
@@ -77,6 +81,53 @@ export async function generateImage(
 			// ignore parse errors
 		}
 		const baseMessage = errorBody?.error ?? "Failed to generate cover image";
+		const details =
+			errorBody && Array.isArray(errorBody.details) ? errorBody.details : [];
+		let message = baseMessage;
+		if (details.length > 0) {
+			const detailsText = details
+				.map((detail) => `${detail.field}: ${detail.message}`)
+				.join("; ");
+			message = `${message}: ${detailsText}`;
+		}
+		const err = new Error(message) as Error & {
+			clientDuration?: number;
+			details?: ValidationError[];
+		};
+		err.clientDuration = clientDuration;
+		err.details = details;
+		throw err;
+	}
+
+	const blob = await response.blob();
+	return { blob, clientDuration };
+}
+
+/**
+ * Client-side function to call the generateGif endpoint and get animated GIF blob
+ */
+export async function generateGif(
+	params: GifParams,
+): Promise<{ blob: Blob; clientDuration: number }> {
+	const startTime = performance.now();
+	const response = await fetch("/api/generateGif", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(params),
+	});
+
+	const clientDuration = Math.round(performance.now() - startTime);
+
+	if (!response.ok) {
+		let errorBody: ApiErrorResponse | null = null;
+		try {
+			errorBody = await response.json();
+		} catch (_err) {
+			// ignore parse errors
+		}
+		const baseMessage = errorBody?.error ?? "Failed to generate animated GIF";
 		const details =
 			errorBody && Array.isArray(errorBody.details) ? errorBody.details : [];
 		let message = baseMessage;

@@ -2,6 +2,8 @@ import {
 	DOWNLOAD_CLICK_EVENT,
 	type EventType,
 	GENERATE_CLICK_EVENT,
+	type GifParams,
+	type GifSlideParams,
 	type ImageParams,
 	type MetricPayload,
 	type MetricStatus,
@@ -14,6 +16,8 @@ export {
 	DOWNLOAD_CLICK_EVENT,
 	type EventType,
 	GENERATE_CLICK_EVENT,
+	type GifParams,
+	type GifSlideParams,
 	type ImageParams,
 	type MetricPayload,
 	type MetricStatus,
@@ -68,6 +72,22 @@ export async function proxyAnalytics() {
 export async function proxyGenerateImage(body: ImageParams) {
 	const API_URL = process.env.AZURE_FUNCTION_URL;
 	const response = await fetch(`${API_URL}/generateImage`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(body),
+	});
+
+	return response;
+}
+
+/**
+ * Server-side proxy handler for the generateGif endpoint
+ */
+export async function proxyGenerateGif(body: GifParams) {
+	const API_URL = process.env.AZURE_FUNCTION_URL;
+	const response = await fetch(`${API_URL}/generateGif`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",

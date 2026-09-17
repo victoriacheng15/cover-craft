@@ -220,7 +220,13 @@ export const DEFAULT_FILENAME = "cover";
 
 export type AllowedFont = (typeof FONT_OPTIONS)[number];
 
+export const GIF_DELAY_PRESETS = [1000, 1500, 2000, 3000] as const;
+export type GifDelayPreset = (typeof GIF_DELAY_PRESETS)[number];
+export const DEFAULT_GIF_DELAY: GifDelayPreset = 1500;
+
 export type ImageParams = components["schemas"]["ImageParams"];
+export type GifParams = components["schemas"]["GifParams"];
+export type GifSlideParams = components["schemas"]["GifSlideParams"];
 export type ValidationError = components["schemas"]["ValidationError"];
 
 // ===================================================================================

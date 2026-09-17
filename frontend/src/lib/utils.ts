@@ -91,6 +91,7 @@ export async function downloadImage(blob: Blob, filename: string) {
 	try {
 		// Try using the modern File System Access API if available
 		if ("showSaveFilePicker" in window) {
+			const isGif = filename.toLowerCase().endsWith(".gif");
 			const handle: FileSystemFileHandle = await (
 				window as unknown as {
 					showSaveFilePicker: (
@@ -100,10 +101,15 @@ export async function downloadImage(blob: Blob, filename: string) {
 			).showSaveFilePicker({
 				suggestedName: filename,
 				types: [
-					{
-						description: "PNG Image",
-						accept: { "image/png": [".png"] },
-					},
+					isGif
+						? {
+								description: "GIF Animation",
+								accept: { "image/gif": [".gif"] },
+							}
+						: {
+								description: "PNG Image",
+								accept: { "image/png": [".png"] },
+							},
 				],
 			});
 			const writable = await handle.createWritable();

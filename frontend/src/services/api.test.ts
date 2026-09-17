@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	DOWNLOAD_CLICK_EVENT,
 	GENERATE_CLICK_EVENT,
+	type GifParams,
 	generateBatchImages,
+	generateGif,
 	generateImage,
 	getAnalytics,
 	getBatchJobStatus,
@@ -246,6 +248,82 @@ describe("API Service Wrapper", () => {
 
 			await expect(generateImage(params)).rejects.toThrow(
 				"Failed to generate cover image",
+			);
+		});
+	});
+
+	describe("generateGif", () => {
+		it("calls /api/generateGif and returns blob and client duration", async () => {
+			const mockBlob = new Blob(["gif-data"], { type: "image/gif" });
+			const params: GifParams = {
+				width: 1200,
+				height: 627,
+				backgroundColor: "#374151",
+				delayMs: 1500,
+				slides: [
+					{ title: "Slide 1", font: "Montserrat" },
+					{ title: "Slide 2", font: "Roboto" },
+				],
+			};
+
+			fetchMock.mockResolvedValueOnce({
+				ok: true,
+				blob: async () => mockBlob,
+			} as unknown as Response);
+
+			const result = await generateGif(params);
+
+			expect(fetchMock).toHaveBeenCalledWith("/api/generateGif", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(params),
+			});
+			expect(result.blob).toEqual(mockBlob);
+			expect(result.clientDuration).toEqual(expect.any(Number));
+		});
+
+		it("throws error with message when backend fails", async () => {
+			const params: GifParams = {
+				width: 1200,
+				height: 627,
+				backgroundColor: "#374151",
+				delayMs: 1500,
+				slides: [{ title: "Only 1", font: "Montserrat" }],
+			};
+
+			// @ts-expect-error
+			fetchMock.mockResolvedValueOnce({
+				ok: false,
+				json: async () => ({ error: "Validation failed" }),
+			});
+
+			await expect(generateGif(params)).rejects.toThrow("Validation failed");
+		});
+
+		it("throws fallback error when response parsing fails", async () => {
+			const params: GifParams = {
+				width: 1200,
+				height: 627,
+				backgroundColor: "#374151",
+				delayMs: 1500,
+				slides: [
+					{ title: "Slide 1", font: "Montserrat" },
+					{ title: "Slide 2", font: "Roboto" },
+				],
+			};
+
+			// @ts-expect-error
+			fetchMock.mockResolvedValueOnce({
+				ok: false,
+				json: async () => {
+					throw new Error("Invalid json");
+				},
+			});
+
+			await expect(generateGif(params)).rejects.toThrow(
+				"Failed to generate animated GIF",
 			);
 		});
 	});
