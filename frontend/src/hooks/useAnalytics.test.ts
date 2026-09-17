@@ -626,4 +626,106 @@ describe("useAnalytics", () => {
 		expect(result.current.error).toBe("Unknown error");
 		expect(result.current.userEngagement).toBeUndefined();
 	});
+
+	it("calculates total GIF clicks data and preserves extended metrics", async () => {
+		const mockData = {
+			userEngagement: {
+				uiGenerationAttempts: 100,
+				totalDownloads: 50,
+				downloadRate: 50,
+				dailyTrend: [],
+				totalSuccessfulGenerations: 100,
+				uiUsagePercent: 100,
+				apiUsagePercent: 50,
+				hourlyTrend: [],
+				gifGenerationAttempts: 40,
+				totalSuccessfulGifGenerations: 35,
+				totalGifDownloads: 20,
+				gifDownloadRate: 50,
+			},
+			featurePopularity: {
+				topFonts: [],
+				topSizes: [],
+				titleLengthStats: {
+					_id: null,
+					avgTitleLength: 0,
+					minTitleLength: 0,
+					maxTitleLength: 0,
+				},
+				titleLengthDistribution: { short: 0, medium: 0, long: 0 },
+				subtitleUsagePercent: 0,
+				subtitleUsageDistribution: { none: 0, short: 0, medium: 0, long: 0 },
+				subtitleTrendOverTime: [],
+				formatDistribution: [
+					{ format: "Image Cover", count: 100 },
+					{ format: "GIF Slideshow", count: 35 },
+				],
+				borderUsagePercent: 25,
+				borderUsageDistribution: { withBorder: 25, withoutBorder: 75 },
+				avgSlideCount: 3.2,
+				slideCountDistribution: [
+					{ range: "2 slides", count: 10 },
+					{ range: "3-4 slides", count: 20 },
+					{ range: "5+ slides", count: 5 },
+				],
+			},
+			accessibilityCompliance: {
+				wcagDistribution: [],
+				contrastStats: {
+					_id: null,
+					avgContrastRatio: 0,
+					minContrastRatio: 0,
+					maxContrastRatio: 0,
+				},
+				wcagTrend: [],
+			},
+			performanceMetrics: {
+				backendPerformance: {
+					avgBackendDuration: 0,
+					minBackendDuration: 0,
+					maxBackendDuration: 0,
+					p50BackendDuration: 0,
+					p95BackendDuration: 0,
+					p99BackendDuration: 0,
+					backendDurationTrend: [],
+					avgGifBackendDuration: 450,
+				},
+				clientPerformance: {
+					avgClientDuration: 0,
+					minClientDuration: 0,
+					maxClientDuration: 0,
+					p50ClientDuration: 0,
+					p95ClientDuration: 0,
+					p99ClientDuration: 0,
+					clientDurationTrend: [],
+				},
+				networkLatency: {
+					avgNetworkLatency: 0,
+				},
+				performanceBySize: [],
+			},
+		};
+
+		getAnalyticsMock.mockResolvedValueOnce({
+			success: true,
+			data: mockData,
+		});
+
+		const { result } = renderHook(() => useAnalytics());
+
+		await waitFor(() => {
+			expect(result.current.loading).toBe(false);
+		});
+
+		expect(result.current.totalGifClicksData).toEqual([
+			{ name: "Total", value: 60 },
+			{ name: "Generate GIF", value: 40 },
+			{ name: "Download GIF", value: 20 },
+		]);
+		expect(result.current.featurePopularity?.formatDistribution).toHaveLength(
+			2,
+		);
+		expect(result.current.featurePopularity?.borderUsagePercent).toBe(25);
+		expect(result.current.featurePopularity?.avgSlideCount).toBe(3.2);
+	});
 });

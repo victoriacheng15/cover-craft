@@ -36,6 +36,14 @@ export function FeaturePopularitySkeleton() {
 				<Card className="h-87.5" />
 				<Card className="h-87.5" />
 			</div>
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
+				<Card className="h-87.5" />
+				<Card className="h-87.5" />
+			</div>
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
+				<Card className="h-87.5" />
+				<Card className="h-87.5" />
+			</div>
 			<Card className="h-62.5 mb-6" />
 			<Card className="h-48" />
 		</section>
@@ -100,6 +108,143 @@ export function FeaturePopularity({
 							<Legend />
 						</PieChart>
 					</ResponsiveContainer>
+				</Card>
+			</div>
+
+			{/* Format & Border Adoption */}
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
+				{/* Format Distribution */}
+				<Card>
+					<SectionTitle as="h4" size="sm" className="mb-4">
+						Generation Format
+					</SectionTitle>
+					<ResponsiveContainer width="100%" height={300}>
+						<PieChart>
+							<Pie
+								data={(
+									featurePopularity.formatDistribution || [
+										{ format: "Image Cover", count: 0 },
+										{ format: "GIF Slideshow", count: 0 },
+									]
+								).map((entry, idx) => ({
+									...entry,
+									fill: COLORS[idx % COLORS.length],
+								}))}
+								dataKey="count"
+								nameKey="format"
+								cx="50%"
+								cy="50%"
+								outerRadius={100}
+								label
+							/>
+							<Tooltip />
+							<Legend />
+						</PieChart>
+					</ResponsiveContainer>
+				</Card>
+
+				{/* Border Adoption */}
+				<Card>
+					<SectionTitle as="h4" size="sm" className="mb-4">
+						Border Adoption
+					</SectionTitle>
+					<ResponsiveContainer width="100%" height={230}>
+						<PieChart>
+							<Pie
+								data={[
+									{
+										name: "With Border",
+										value:
+											featurePopularity.borderUsageDistribution?.withBorder ||
+											0,
+									},
+									{
+										name: "Without Border",
+										value:
+											featurePopularity.borderUsageDistribution
+												?.withoutBorder || 0,
+									},
+								].map((item, idx) => ({
+									...item,
+									fill: COLORS[(idx + 2) % COLORS.length],
+								}))}
+								dataKey="value"
+								nameKey="name"
+								cx="50%"
+								cy="50%"
+								outerRadius={80}
+								label
+							/>
+							<Tooltip />
+							<Legend />
+						</PieChart>
+					</ResponsiveContainer>
+					<div className="p-3 bg-white rounded-xl border border-gray-100 mt-2">
+						<p className="text-sm">
+							<span className="font-semibold text-emerald-600">
+								{(featurePopularity.borderUsagePercent || 0).toFixed(1)}%
+							</span>{" "}
+							of generated outputs include a border
+						</p>
+					</div>
+				</Card>
+			</div>
+
+			{/* Slideshow Slide Counts */}
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
+				{/* Slide Count Distribution */}
+				<Card>
+					<SectionTitle as="h4" size="sm" className="mb-4">
+						Slideshow Length Distribution
+					</SectionTitle>
+					<ResponsiveContainer width="100%" height={300}>
+						<PieChart>
+							<Pie
+								data={(
+									featurePopularity.slideCountDistribution || [
+										{ range: "2 slides", count: 0 },
+										{ range: "3-4 slides", count: 0 },
+										{ range: "5+ slides", count: 0 },
+									]
+								).map((entry, idx) => ({
+									...entry,
+									fill: COLORS[(idx + 4) % COLORS.length],
+								}))}
+								dataKey="count"
+								nameKey="range"
+								cx="50%"
+								cy="50%"
+								outerRadius={100}
+								label
+							/>
+							<Tooltip />
+							<Legend />
+						</PieChart>
+					</ResponsiveContainer>
+				</Card>
+
+				{/* Average Slide Count KPI */}
+				<Card className="flex flex-col justify-between">
+					<div>
+						<SectionTitle as="h4" size="sm" className="mb-4">
+							Slideshow Complexity
+						</SectionTitle>
+						<div className="grid grid-cols-1 gap-4 mb-4">
+							<KPICard
+								title="Average Slides per GIF"
+								value={Number(
+									(featurePopularity.avgSlideCount || 0).toFixed(1),
+								)}
+								color="purple"
+							/>
+						</div>
+					</div>
+					<div className="p-3 bg-white rounded-xl border border-gray-100">
+						<p className="text-sm text-gray-600">
+							Captures multi-slide carousel engagement across 2 to 10 frame
+							sequences.
+						</p>
+					</div>
 				</Card>
 			</div>
 

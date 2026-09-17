@@ -35,14 +35,33 @@ type HourlyTrendItem struct {
 }
 
 type UserEngagementData struct {
-	UiGenerationAttempts       int               `json:"uiGenerationAttempts"`
-	TotalDownloads             int               `json:"totalDownloads"`
-	DownloadRate               float64           `json:"downloadRate"`
-	DailyTrend                 []DailyTrendItem  `json:"dailyTrend"`
-	TotalSuccessfulGenerations int               `json:"totalSuccessfulGenerations"`
-	UiUsagePercent             float64           `json:"uiUsagePercent"`
-	ApiUsagePercent            float64           `json:"apiUsagePercent"`
-	HourlyTrend                []HourlyTrendItem `json:"hourlyTrend"`
+	UiGenerationAttempts          int               `json:"uiGenerationAttempts"`
+	TotalDownloads                int               `json:"totalDownloads"`
+	DownloadRate                  float64           `json:"downloadRate"`
+	DailyTrend                    []DailyTrendItem  `json:"dailyTrend"`
+	TotalSuccessfulGenerations    int               `json:"totalSuccessfulGenerations"`
+	UiUsagePercent                float64           `json:"uiUsagePercent"`
+	ApiUsagePercent               float64           `json:"apiUsagePercent"`
+	HourlyTrend                   []HourlyTrendItem `json:"hourlyTrend"`
+	GifGenerationAttempts         int               `json:"gifGenerationAttempts"`
+	TotalSuccessfulGifGenerations int               `json:"totalSuccessfulGifGenerations"`
+	TotalGifDownloads             int               `json:"totalGifDownloads"`
+	GifDownloadRate               float64           `json:"gifDownloadRate"`
+}
+
+type FormatItem struct {
+	Format string `json:"format"`
+	Count  int    `json:"count"`
+}
+
+type BorderDistribution struct {
+	WithBorder    int `json:"withBorder"`
+	WithoutBorder int `json:"withoutBorder"`
+}
+
+type SlideCountItem struct {
+	Range string `json:"range"`
+	Count int    `json:"count"`
 }
 
 type FontItem struct {
@@ -88,6 +107,11 @@ type FeaturePopularityData struct {
 	SubtitleUsagePercent      float64              `json:"subtitleUsagePercent"`
 	SubtitleUsageDistribution SubtitleDistribution `json:"subtitleUsageDistribution"`
 	SubtitleTrendOverTime     []WeeklyTrendItem    `json:"subtitleTrendOverTime"`
+	FormatDistribution        []FormatItem         `json:"formatDistribution"`
+	BorderUsagePercent        float64              `json:"borderUsagePercent"`
+	BorderUsageDistribution   BorderDistribution   `json:"borderUsageDistribution"`
+	AvgSlideCount             float64              `json:"avgSlideCount"`
+	SlideCountDistribution    []SlideCountItem     `json:"slideCountDistribution"`
 }
 
 type WcagDistributionItem struct {
@@ -123,13 +147,14 @@ type DurationTrendItem struct {
 }
 
 type BackendPerformance struct {
-	AvgBackendDuration   float64             `json:"avgBackendDuration"`
-	MinBackendDuration   float64             `json:"minBackendDuration"`
-	MaxBackendDuration   float64             `json:"maxBackendDuration"`
-	P50BackendDuration   float64             `json:"p50BackendDuration"`
-	P95BackendDuration   float64             `json:"p95BackendDuration"`
-	P99BackendDuration   float64             `json:"p99BackendDuration"`
-	BackendDurationTrend []DurationTrendItem `json:"backendDurationTrend"`
+	AvgBackendDuration    float64             `json:"avgBackendDuration"`
+	MinBackendDuration    float64             `json:"minBackendDuration"`
+	MaxBackendDuration    float64             `json:"maxBackendDuration"`
+	P50BackendDuration    float64             `json:"p50BackendDuration"`
+	P95BackendDuration    float64             `json:"p95BackendDuration"`
+	P99BackendDuration    float64             `json:"p99BackendDuration"`
+	BackendDurationTrend  []DurationTrendItem `json:"backendDurationTrend"`
+	AvgGifBackendDuration float64             `json:"avgGifBackendDuration,omitempty"`
 }
 
 type ClientPerformance struct {
@@ -285,11 +310,31 @@ func queryUserEngagement(ctx context.Context, coll *mongo.Collection, thirtyDays
 		data.UiUsagePercent = 100 - data.ApiUsagePercent
 	}
 
-	// Daily trend (IMAGE_GENERATED successes)
+	// GIF-specific engagement metrics
+	gifAttempts, err := coll.CountDocuments(ctx, bson.M{"event": EventGenerateGifClick})
+	if err == nil {
+		data.GifGenerationAttempts = int(gifAttempts)
+	}
+
+	totalGifSuccess, err := coll.CountDocuments(ctx, bson.M{"event": EventGifGenerated, "status": "success"})
+	if err == nil {
+		data.TotalSuccessfulGifGenerations = int(totalGifSuccess)
+	}
+
+	totalGifDownloads, err := coll.CountDocuments(ctx, bson.M{"event": EventDownloadGifClick, "status": "success"})
+	if err == nil {
+		data.TotalGifDownloads = int(totalGifDownloads)
+	}
+
+	if data.GifGenerationAttempts > 0 {
+		data.GifDownloadRate = float64(data.TotalGifDownloads) / float64(data.GifGenerationAttempts) * 100
+	}
+
+	// Daily trend (both IMAGE_GENERATED and GIF_GENERATED successes)
 	dailyPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
 			"timestamp": bson.M{"$gte": thirtyDaysAgo},
-			"event":     EventImageGenerated,
+			"event":     bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated}},
 			"status":    "success",
 		}}},
 		{{Key: "$group", Value: bson.M{
@@ -319,7 +364,7 @@ func queryUserEngagement(ctx context.Context, coll *mongo.Collection, thirtyDays
 	hourlyPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
 			"timestamp": bson.M{"$gte": thirtyDaysAgo},
-			"event":     EventImageGenerated,
+			"event":     bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated}},
 			"status":    "success",
 		}}},
 		{{Key: "$group", Value: bson.M{
@@ -386,7 +431,7 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 
 	// Top Sizes
 	sizePipe := mongo.Pipeline{
-		{{Key: "$match", Value: bson.M{"event": EventImageGenerated, "status": "success"}}},
+		{{Key: "$match", Value: bson.M{"event": bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated}}, "status": "success"}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":   bson.M{"width": "$size.width", "height": "$size.height"},
 			"count": bson.M{"$sum": 1},
@@ -562,6 +607,118 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 		}
 	}
 
+	// Format Distribution (Image Cover vs GIF Slideshow)
+	coverCount, _ := coll.CountDocuments(ctx, bson.M{"event": EventImageGenerated, "status": "success"})
+	gifCount, _ := coll.CountDocuments(ctx, bson.M{"event": EventGifGenerated, "status": "success"})
+	data.FormatDistribution = []FormatItem{
+		{Format: "Image Cover", Count: int(coverCount)},
+		{Format: "GIF Slideshow", Count: int(gifCount)},
+	}
+
+	// Border Usage across all successful generations
+	borderPipe := mongo.Pipeline{
+		{{Key: "$match", Value: bson.M{
+			"event":  bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated}},
+			"status": "success",
+		}}},
+		{{Key: "$group", Value: bson.M{
+			"_id":   bson.M{"$ifNull": bson.A{"$hasBorder", false}},
+			"count": bson.M{"$sum": 1},
+		}}},
+	}
+	borderCursor, err := coll.Aggregate(ctx, borderPipe)
+	if err == nil {
+		defer borderCursor.Close(ctx)
+		for borderCursor.Next(ctx) {
+			var res struct {
+				ID    bool `bson:"_id"`
+				Count int  `bson:"count"`
+			}
+			if err := borderCursor.Decode(&res); err == nil {
+				if res.ID {
+					data.BorderUsageDistribution.WithBorder = res.Count
+				} else {
+					data.BorderUsageDistribution.WithoutBorder = res.Count
+				}
+			}
+		}
+		totalWithBorder := data.BorderUsageDistribution.WithBorder
+		totalAll := totalWithBorder + data.BorderUsageDistribution.WithoutBorder
+		if totalAll > 0 {
+			data.BorderUsagePercent = float64(totalWithBorder) / float64(totalAll) * 100
+		}
+	}
+
+	// Slide Count Stats for GIFs
+	slideStatsPipe := mongo.Pipeline{
+		{{Key: "$match", Value: bson.M{
+			"event":      EventGifGenerated,
+			"status":     "success",
+			"slideCount": bson.M{"$exists": true, "$ne": nil},
+		}}},
+		{{Key: "$group", Value: bson.M{
+			"_id":           nil,
+			"avgSlideCount": bson.M{"$avg": "$slideCount"},
+		}}},
+	}
+	slideStatsCursor, err := coll.Aggregate(ctx, slideStatsPipe)
+	if err == nil {
+		defer slideStatsCursor.Close(ctx)
+		if slideStatsCursor.Next(ctx) {
+			var res struct {
+				AvgSlideCount float64 `bson:"avgSlideCount"`
+			}
+			if err := slideStatsCursor.Decode(&res); err == nil {
+				data.AvgSlideCount = res.AvgSlideCount
+			}
+		}
+	}
+
+	// Slide Count Distribution (2 slides, 3-4 slides, 5+ slides)
+	slideDistPipe := mongo.Pipeline{
+		{{Key: "$match", Value: bson.M{
+			"event":      EventGifGenerated,
+			"status":     "success",
+			"slideCount": bson.M{"$exists": true, "$ne": nil},
+		}}},
+		{{Key: "$group", Value: bson.M{
+			"_id": bson.M{"$cond": bson.A{
+				bson.M{"$eq": bson.A{"$slideCount", 2}},
+				"2 slides",
+				bson.M{"$cond": bson.A{
+					bson.M{"$lte": bson.A{"$slideCount", 4}},
+					"3-4 slides",
+					"5+ slides",
+				}},
+			}},
+			"count": bson.M{"$sum": 1},
+		}}},
+	}
+	slideDistCursor, err := coll.Aggregate(ctx, slideDistPipe)
+	data.SlideCountDistribution = []SlideCountItem{
+		{Range: "2 slides", Count: 0},
+		{Range: "3-4 slides", Count: 0},
+		{Range: "5+ slides", Count: 0},
+	}
+	if err == nil {
+		defer slideDistCursor.Close(ctx)
+		slideCounts := make(map[string]int)
+		for slideDistCursor.Next(ctx) {
+			var res struct {
+				ID    string `bson:"_id"`
+				Count int    `bson:"count"`
+			}
+			if err := slideDistCursor.Decode(&res); err == nil && res.ID != "" {
+				slideCounts[res.ID] = res.Count
+			}
+		}
+		data.SlideCountDistribution = []SlideCountItem{
+			{Range: "2 slides", Count: slideCounts["2 slides"]},
+			{Range: "3-4 slides", Count: slideCounts["3-4 slides"]},
+			{Range: "5+ slides", Count: slideCounts["5+ slides"]},
+		}
+	}
+
 	return data, nil
 }
 
@@ -692,6 +849,31 @@ func queryPerformanceMetrics(ctx context.Context, coll *mongo.Collection, thirty
 			data.BackendPerformance.P50BackendDuration = calculatePercentile(durations, 0.50)
 			data.BackendPerformance.P95BackendDuration = calculatePercentile(durations, 0.95)
 			data.BackendPerformance.P99BackendDuration = calculatePercentile(durations, 0.99)
+		}
+	}
+
+	// Get GIF backend durations
+	gifCursor, err := coll.Find(ctx, bson.M{
+		"event":    EventGifGenerated,
+		"status":   "success",
+		"duration": bson.M{"$exists": true, "$ne": nil},
+	})
+	if err == nil {
+		defer gifCursor.Close(ctx)
+		gifDurations := []float64{}
+		sumGifDur := 0.0
+		for gifCursor.Next(ctx) {
+			var metric struct {
+				Duration *int `bson:"duration"`
+			}
+			if err := gifCursor.Decode(&metric); err == nil && metric.Duration != nil {
+				val := float64(*metric.Duration)
+				gifDurations = append(gifDurations, val)
+				sumGifDur += val
+			}
+		}
+		if len(gifDurations) > 0 {
+			data.BackendPerformance.AvgGifBackendDuration = sumGifDur / float64(len(gifDurations))
 		}
 	}
 

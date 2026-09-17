@@ -64,6 +64,17 @@ export function useAnalytics() {
 		{ name: "Download", value: totalDownload },
 	];
 
+	// Prepare data for GIF clicks
+	const totalGifGenerate = userEngagement?.gifGenerationAttempts || 0;
+	const totalGifDownload = userEngagement?.totalGifDownloads || 0;
+	const totalGifCombined = totalGifGenerate + totalGifDownload;
+
+	const totalGifClicksData = [
+		{ name: "Total", value: totalGifCombined },
+		{ name: "Generate GIF", value: totalGifGenerate },
+		{ name: "Download GIF", value: totalGifDownload },
+	];
+
 	// Prepare data for daily trend chart (last 30 days from available data)
 	const dailyTrendData = (userEngagement?.dailyTrend || [])
 		.slice(-30)
@@ -84,6 +95,7 @@ export function useAnalytics() {
 		error,
 		COLORS,
 		totalClicksData,
+		totalGifClicksData,
 		dailyTrendData,
 	};
 }

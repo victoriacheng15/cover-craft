@@ -59,3 +59,21 @@ func TestAnalyticsHandler_Integration(t *testing.T) {
 		t.Errorf("expected status 200, got %d. Body: %s", rr.Code, rr.Body.String())
 	}
 }
+
+func TestCalculatePercentile(t *testing.T) {
+	// Empty slice
+	if p := calculatePercentile(nil, 0.5); p != 0.0 {
+		t.Errorf("expected 0.0 for empty slice, got %f", p)
+	}
+
+	// Normal slice
+	durations := []float64{10, 20, 30, 40, 50, 60, 70, 80, 90, 100}
+	p50 := calculatePercentile(durations, 0.5)
+	if p50 != 60 {
+		t.Errorf("expected 60 for p50, got %f", p50)
+	}
+	p95 := calculatePercentile(durations, 0.95)
+	if p95 != 100 {
+		t.Errorf("expected 100 for p95, got %f", p95)
+	}
+}
