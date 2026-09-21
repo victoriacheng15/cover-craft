@@ -538,3 +538,359 @@ func TestValidateGifParams(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateCarouselParams(t *testing.T) {
+	validSlide1 := CarouselSlideParams{
+		Title: "Slide 1 Title",
+	}
+	validSlide2 := CarouselSlideParams{
+		Title: "Slide 2 Title",
+	}
+
+	validSubtitle := "This is a valid subtitle commentary."
+	tooLongSubtitle := makeStringOfLength(121)
+
+	validList := []string{"First key point", "Second key point", "Third key point"}
+	tooFewList := []string{"Only one item"}
+	tooManyList := []string{"Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"}
+	emptyItemInList := []string{"Item 1", "   ", "Item 3"}
+	tooLongItemInList := []string{"Item 1", makeStringOfLength(71)}
+
+	validAuthor := "@engineer"
+	tooLongAuthor := makeStringOfLength(31)
+
+	invalidBorderStyle := CarouselParamsBorderStyle("dotted")
+	validBorderStyle := Single
+	invalidAuthorPos := CarouselParamsAuthorHandlePosition("middle")
+	invalidSlideNumPos := CarouselParamsSlideNumberPosition("center")
+	invalidAlign := CarouselSlideParamsTextAlign("justify")
+	invalidVAlign := CarouselSlideParamsVerticalAlign("middle")
+
+	invalidColor := "not-hex"
+	poorTextColor := "#384151" // against #374151
+
+	baseValidParams := CarouselParams{
+		Width:           1080,
+		Height:          1350,
+		BackgroundColor: "#0F172A",
+		TextColor:       "#F8FAFC",
+		Font:            CarouselParamsFontMontserrat,
+		BorderStyle:     &validBorderStyle,
+		AuthorHandle:    &validAuthor,
+		Slides:          []CarouselSlideParams{validSlide1, validSlide2},
+	}
+
+	tests := []struct {
+		name        string
+		params      CarouselParams
+		expectError bool
+		errorField  string
+	}{
+		{
+			name:        "Valid carousel parameters succeed",
+			params:      baseValidParams,
+			expectError: false,
+		},
+		{
+			name: "Width 1400 is accepted",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Width = 1400
+				return p
+			}(),
+			expectError: false,
+		},
+		{
+			name: "Width 1401 fails boundary",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Width = 1401
+				return p
+			}(),
+			expectError: true,
+			errorField:  "width",
+		},
+		{
+			name: "Width 0 fails boundary",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Width = 0
+				return p
+			}(),
+			expectError: true,
+			errorField:  "width",
+		},
+		{
+			name: "Height 1400 is accepted",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Height = 1400
+				return p
+			}(),
+			expectError: false,
+		},
+		{
+			name: "Height 1401 fails boundary",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Height = 1401
+				return p
+			}(),
+			expectError: true,
+			errorField:  "height",
+		},
+		{
+			name: "Invalid background color fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.BackgroundColor = invalidColor
+				return p
+			}(),
+			expectError: true,
+			errorField:  "backgroundColor",
+		},
+		{
+			name: "Invalid text color fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.TextColor = invalidColor
+				return p
+			}(),
+			expectError: true,
+			errorField:  "textColor",
+		},
+		{
+			name: "Poor deck contrast fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.BackgroundColor = "#374151"
+				p.TextColor = "#384151"
+				return p
+			}(),
+			expectError: true,
+			errorField:  "contrast",
+		},
+		{
+			name: "Invalid font fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Font = "Comic Sans"
+				return p
+			}(),
+			expectError: true,
+			errorField:  "font",
+		},
+		{
+			name: "Invalid borderStyle fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.BorderStyle = &invalidBorderStyle
+				return p
+			}(),
+			expectError: true,
+			errorField:  "borderStyle",
+		},
+		{
+			name: "AuthorHandle too long fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.AuthorHandle = &tooLongAuthor
+				return p
+			}(),
+			expectError: true,
+			errorField:  "authorHandle",
+		},
+		{
+			name: "Invalid AuthorHandlePosition fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.AuthorHandlePosition = &invalidAuthorPos
+				return p
+			}(),
+			expectError: true,
+			errorField:  "authorHandlePosition",
+		},
+		{
+			name: "Invalid SlideNumberPosition fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.SlideNumberPosition = &invalidSlideNumPos
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slideNumberPosition",
+		},
+		{
+			name: "Less than 2 slides fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{validSlide1}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides",
+		},
+		{
+			name: "More than 10 slides fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				slides := make([]CarouselSlideParams, 11)
+				for i := range slides {
+					slides[i] = CarouselSlideParams{Title: "Slide"}
+				}
+				p.Slides = slides
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides",
+		},
+		{
+			name: "Slide title empty fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{{Title: "   "}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].title",
+		},
+		{
+			name: "Slide title too long (>50) fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{{Title: makeStringOfLength(51)}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].title",
+		},
+		{
+			name: "Slide subtitle too long (>120) fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{{Title: "Valid", Subtitle: &tooLongSubtitle}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].subtitle",
+		},
+		{
+			name: "Slide list items too few (<2) fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{{Title: "Valid", ListItems: &tooFewList}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].listItems",
+		},
+		{
+			name: "Slide list items too many (>5) fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{{Title: "Valid", ListItems: &tooManyList}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].listItems",
+		},
+		{
+			name: "Slide list items empty item fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{{Title: "Valid", ListItems: &emptyItemInList}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].listItems[1]",
+		},
+		{
+			name: "Slide list items item too long (>70) fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{{Title: "Valid", ListItems: &tooLongItemInList}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].listItems[1]",
+		},
+		{
+			name: "Slide with valid list items succeeds",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{
+					{Title: "Valid", ListItems: &validList},
+					{Title: "Valid 2", Subtitle: &validSubtitle},
+				}
+				return p
+			}(),
+			expectError: false,
+		},
+		{
+			name: "Slide textAlign invalid fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{{Title: "Valid", TextAlign: &invalidAlign}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].textAlign",
+		},
+		{
+			name: "Slide verticalAlign invalid fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{{Title: "Valid", VerticalAlign: &invalidVAlign}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].verticalAlign",
+		},
+		{
+			name: "Slide textColor override invalid fails",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.Slides = []CarouselSlideParams{{Title: "Valid", TextColor: &invalidColor}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].textColor",
+		},
+		{
+			name: "Slide contrast override fail",
+			params: func() CarouselParams {
+				p := baseValidParams
+				p.BackgroundColor = "#374151"
+				p.Slides = []CarouselSlideParams{{Title: "Valid", TextColor: &poorTextColor}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].contrast",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			errs := ValidateCarouselParams(tt.params)
+			if tt.expectError {
+				if len(errs) == 0 {
+					t.Fatalf("expected validation errors, got 0")
+				}
+				found := false
+				for _, err := range errs {
+					if err.Field == tt.errorField {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("expected error field %q, but got errors: %+v", tt.errorField, errs)
+				}
+			} else {
+				if len(errs) > 0 {
+					t.Errorf("expected 0 errors, got %d: %+v", len(errs), errs)
+				}
+			}
+		})
+	}
+}

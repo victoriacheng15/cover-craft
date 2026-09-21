@@ -13,8 +13,17 @@ const (
 	MaxTitleLength    = 40
 	MaxSubtitleLength = 70
 	MinSize           = 1
-	MaxSize           = 1200
+	MaxSize           = 1400
 	WcagAaThreshold   = 4.5
+
+	MaxCarouselTitleLength        = 50
+	MaxCarouselSubtitleLength     = 120
+	MinCarouselListItems          = 2
+	MaxCarouselListItems          = 5
+	MaxCarouselListItemLength     = 70
+	MaxCarouselAuthorHandleLength = 30
+	MinCarouselSlides             = 2
+	MaxCarouselSlides             = 10
 )
 
 var (
@@ -25,6 +34,27 @@ var (
 		"Lato":             true,
 		"Playfair Display": true,
 		"Open Sans":        true,
+	}
+	AllowedBorderStyles = map[string]bool{
+		"none":   true,
+		"single": true,
+		"double": true,
+	}
+	AllowedCornerPositions = map[string]bool{
+		"top-left":     true,
+		"top-right":    true,
+		"bottom-left":  true,
+		"bottom-right": true,
+	}
+	AllowedTextAligns = map[string]bool{
+		"left":   true,
+		"center": true,
+		"right":  true,
+	}
+	AllowedVerticalAligns = map[string]bool{
+		"top":    true,
+		"center": true,
+		"bottom": true,
 	}
 )
 
@@ -349,6 +379,217 @@ func ValidateGifParams(params GifParams) []ValidationError {
 						Message: fmt.Sprintf("Contrast ratio must be at least %.1f for WCAG AA compliance", WcagAaThreshold),
 					})
 				}
+			}
+		}
+	}
+
+	return errors
+}
+
+// ValidateCarouselParams checks all constraints for carousel generation requests
+func ValidateCarouselParams(params CarouselParams) []ValidationError {
+	var errors []ValidationError
+
+	// Size validation
+	if params.Width < MinSize || params.Width > MaxSize {
+		errors = append(errors, ValidationError{
+			Field:   "width",
+			Message: fmt.Sprintf("Width must be between %d and %d", MinSize, MaxSize),
+		})
+	}
+	if params.Height < MinSize || params.Height > MaxSize {
+		errors = append(errors, ValidationError{
+			Field:   "height",
+			Message: fmt.Sprintf("Height must be between %d and %d", MinSize, MaxSize),
+		})
+	}
+
+	// Deck background and text color validation
+	bgValid := HexColorRegex.MatchString(params.BackgroundColor)
+	if !bgValid {
+		errors = append(errors, ValidationError{
+			Field:   "backgroundColor",
+			Message: "Color must be a valid HEX format (e.g., #FFFFFF or #FFF)",
+		})
+	}
+	textValid := HexColorRegex.MatchString(params.TextColor)
+	if !textValid {
+		errors = append(errors, ValidationError{
+			Field:   "textColor",
+			Message: "Color must be a valid HEX format (e.g., #FFFFFF or #FFF)",
+		})
+	}
+
+	// Deck-level contrast check
+	if bgValid && textValid {
+		ratio, err := GetContrastRatio(params.BackgroundColor, params.TextColor)
+		if err != nil || ratio < WcagAaThreshold {
+			errors = append(errors, ValidationError{
+				Field:   "contrast",
+				Message: fmt.Sprintf("Contrast ratio must be at least %.1f for WCAG AA compliance", WcagAaThreshold),
+			})
+		}
+	}
+
+	// Font validation
+	if !AllowedFonts[string(params.Font)] {
+		var fontNames []string
+		for f := range AllowedFonts {
+			fontNames = append(fontNames, f)
+		}
+		errors = append(errors, ValidationError{
+			Field:   "font",
+			Message: fmt.Sprintf("Font must be one of: %s", strings.Join(fontNames, ", ")),
+		})
+	}
+
+	// Border style validation
+	if params.BorderStyle != nil && !AllowedBorderStyles[string(*params.BorderStyle)] {
+		errors = append(errors, ValidationError{
+			Field:   "borderStyle",
+			Message: "Border style must be one of: none, single, double",
+		})
+	}
+
+	// Author handle validation
+	if params.AuthorHandle != nil && len(*params.AuthorHandle) > MaxCarouselAuthorHandleLength {
+		errors = append(errors, ValidationError{
+			Field:   "authorHandle",
+			Message: fmt.Sprintf("Author handle must be %d characters or less", MaxCarouselAuthorHandleLength),
+		})
+	}
+
+	// Author handle position validation
+	if params.AuthorHandlePosition != nil && !AllowedCornerPositions[string(*params.AuthorHandlePosition)] {
+		errors = append(errors, ValidationError{
+			Field:   "authorHandlePosition",
+			Message: "Author handle position must be one of: bottom-left, bottom-right, top-left, top-right",
+		})
+	}
+
+	// Slide number position validation
+	if params.SlideNumberPosition != nil && !AllowedCornerPositions[string(*params.SlideNumberPosition)] {
+		errors = append(errors, ValidationError{
+			Field:   "slideNumberPosition",
+			Message: "Slide number position must be one of: top-right, bottom-right, top-left, bottom-left",
+		})
+	}
+
+	// Slides count validation
+	if len(params.Slides) < MinCarouselSlides {
+		errors = append(errors, ValidationError{
+			Field:   "slides",
+			Message: fmt.Sprintf("Carousel must contain at least %d slides", MinCarouselSlides),
+		})
+	} else if len(params.Slides) > MaxCarouselSlides {
+		errors = append(errors, ValidationError{
+			Field:   "slides",
+			Message: fmt.Sprintf("Carousel cannot exceed %d slides", MaxCarouselSlides),
+		})
+	}
+
+	// Per-slide validation
+	for i, slide := range params.Slides {
+		prefix := fmt.Sprintf("slides[%d]", i)
+
+		// Title validation
+		if strings.TrimSpace(slide.Title) == "" {
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.title", prefix),
+				Message: "Title is required",
+			})
+		} else if len(slide.Title) > MaxCarouselTitleLength {
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.title", prefix),
+				Message: fmt.Sprintf("Title must be %d characters or less", MaxCarouselTitleLength),
+			})
+		}
+
+		// Subtitle validation
+		if slide.Subtitle != nil && len(*slide.Subtitle) > MaxCarouselSubtitleLength {
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.subtitle", prefix),
+				Message: fmt.Sprintf("Subtitle must be %d characters or less", MaxCarouselSubtitleLength),
+			})
+		}
+
+		// List items validation
+		if slide.ListItems != nil && len(*slide.ListItems) > 0 {
+			items := *slide.ListItems
+			if len(items) < MinCarouselListItems || len(items) > MaxCarouselListItems {
+				errors = append(errors, ValidationError{
+					Field:   fmt.Sprintf("%s.listItems", prefix),
+					Message: fmt.Sprintf("List must contain between %d and %d items", MinCarouselListItems, MaxCarouselListItems),
+				})
+			}
+			for j, item := range items {
+				if strings.TrimSpace(item) == "" {
+					errors = append(errors, ValidationError{
+						Field:   fmt.Sprintf("%s.listItems[%d]", prefix, j),
+						Message: "List item cannot be empty",
+					})
+				} else if len(item) > MaxCarouselListItemLength {
+					errors = append(errors, ValidationError{
+						Field:   fmt.Sprintf("%s.listItems[%d]", prefix, j),
+						Message: fmt.Sprintf("List item must be %d characters or less", MaxCarouselListItemLength),
+					})
+				}
+			}
+		}
+
+		// TextAlign validation
+		if slide.TextAlign != nil && !AllowedTextAligns[string(*slide.TextAlign)] {
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.textAlign", prefix),
+				Message: "Text align must be one of: left, center, right",
+			})
+		}
+
+		// VerticalAlign validation
+		if slide.VerticalAlign != nil && !AllowedVerticalAligns[string(*slide.VerticalAlign)] {
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.verticalAlign", prefix),
+				Message: "Vertical align must be one of: top, center, bottom",
+			})
+		}
+
+		// Per-slide color overrides validation
+		effectiveBg := params.BackgroundColor
+		effectiveText := params.TextColor
+		hasOverride := false
+
+		if slide.BackgroundColor != nil && strings.TrimSpace(*slide.BackgroundColor) != "" {
+			hasOverride = true
+			if !HexColorRegex.MatchString(*slide.BackgroundColor) {
+				errors = append(errors, ValidationError{
+					Field:   fmt.Sprintf("%s.backgroundColor", prefix),
+					Message: "Color must be a valid HEX format (e.g., #FFFFFF or #FFF)",
+				})
+			} else {
+				effectiveBg = *slide.BackgroundColor
+			}
+		}
+
+		if slide.TextColor != nil && strings.TrimSpace(*slide.TextColor) != "" {
+			hasOverride = true
+			if !HexColorRegex.MatchString(*slide.TextColor) {
+				errors = append(errors, ValidationError{
+					Field:   fmt.Sprintf("%s.textColor", prefix),
+					Message: "Color must be a valid HEX format (e.g., #FFFFFF or #FFF)",
+				})
+			} else {
+				effectiveText = *slide.TextColor
+			}
+		}
+
+		// If either color was overridden, validate contrast against effective colors
+		if hasOverride && HexColorRegex.MatchString(effectiveBg) && HexColorRegex.MatchString(effectiveText) {
+			ratio, err := GetContrastRatio(effectiveBg, effectiveText)
+			if err != nil || ratio < WcagAaThreshold {
+				errors = append(errors, ValidationError{
+					Field:   fmt.Sprintf("%s.contrast", prefix),
+					Message: fmt.Sprintf("Contrast ratio must be at least %.1f for WCAG AA compliance", WcagAaThreshold),
+				})
 			}
 		}
 	}

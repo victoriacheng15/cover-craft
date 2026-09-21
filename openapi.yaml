@@ -145,6 +145,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
 
+  /generateCarousel:
+    post:
+      summary: Submit a LinkedIn carousel generation job
+      description: Enqueues a carousel deck to be rendered into a multi-page PDF and PNG archive asynchronously.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarouselParams'
+      responses:
+        '202':
+          description: Carousel job accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The unique Job ID for status polling.
+                required:
+                  - id
+        '400':
+          description: Carousel validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
   /getJobStatus:
     get:
       summary: Poll status of a bulk generation batch
@@ -199,12 +229,12 @@ components:
         width:
           type: integer
           minimum: 1
-          maximum: 1200
+          maximum: 1400
           example: 1200
         height:
           type: integer
           minimum: 1
-          maximum: 1200
+          maximum: 1400
           example: 627
         backgroundColor:
           type: string
@@ -276,12 +306,12 @@ components:
         width:
           type: integer
           minimum: 1
-          maximum: 1200
+          maximum: 1400
           example: 1200
         height:
           type: integer
           minimum: 1
-          maximum: 1200
+          maximum: 1400
           example: 627
         backgroundColor:
           type: string
@@ -306,6 +336,119 @@ components:
         - backgroundColor
         - slides
 
+    CarouselSlideParams:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 50
+          example: Building Scalable Systems
+        subtitle:
+          type: string
+          maxLength: 120
+          description: Optional paragraph or subtitle commentary
+          example: Architectural principles for high-throughput distributed systems.
+        listItems:
+          type: array
+          minItems: 2
+          maxItems: 5
+          items:
+            type: string
+            maxLength: 70
+          description: Optional bulleted or numbered list items
+          example:
+            - Design for horizontal scalability
+            - Decouple compute from storage
+            - Enforce strict API contracts
+        textAlign:
+          type: string
+          enum: [left, center, right]
+          default: left
+          example: left
+        verticalAlign:
+          type: string
+          enum: [top, center, bottom]
+          default: top
+          example: top
+        backgroundColor:
+          type: string
+          pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+          description: Slide background color override. If omitted, uses deck backgroundColor.
+          example: '#1E293B'
+        textColor:
+          type: string
+          pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+          description: Slide text color override. If omitted, uses deck textColor.
+          example: '#F8FAFC'
+      required:
+        - title
+
+    CarouselParams:
+      type: object
+      properties:
+        width:
+          type: integer
+          minimum: 1
+          maximum: 1400
+          example: 1080
+        height:
+          type: integer
+          minimum: 1
+          maximum: 1400
+          example: 1350
+        backgroundColor:
+          type: string
+          pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+          example: '#0F172A'
+        textColor:
+          type: string
+          pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+          example: '#F8FAFC'
+        font:
+          type: string
+          enum: [Montserrat, Roboto, Lato, Playfair Display, Open Sans]
+          example: Montserrat
+        borderStyle:
+          type: string
+          enum: [none, single, double]
+          default: none
+          example: single
+        authorHandle:
+          type: string
+          maxLength: 30
+          example: '@username'
+        authorHandlePosition:
+          type: string
+          enum: [bottom-left, bottom-right, top-left, top-right]
+          default: bottom-left
+          example: bottom-left
+        showSlideNumbers:
+          type: boolean
+          default: true
+          example: true
+        slideNumberPosition:
+          type: string
+          enum: [top-right, bottom-right, top-left, bottom-left]
+          default: top-right
+          example: top-right
+        slides:
+          type: array
+          minItems: 2
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/CarouselSlideParams'
+        filename:
+          type: string
+          maxLength: 50
+          example: carousel
+      required:
+        - width
+        - height
+        - backgroundColor
+        - textColor
+        - font
+        - slides
+
     ValidationError:
       type: object
       properties:
@@ -314,7 +457,7 @@ components:
           example: width
         message:
           type: string
-          example: Width must be between 1 and 1200
+          example: Width must be between 1 and 1400
       required:
         - field
         - message

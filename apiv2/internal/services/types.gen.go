@@ -7,6 +7,52 @@ import (
 	"time"
 )
 
+// Defines values for CarouselParamsAuthorHandlePosition.
+const (
+	CarouselParamsAuthorHandlePositionBottomLeft  CarouselParamsAuthorHandlePosition = "bottom-left"
+	CarouselParamsAuthorHandlePositionBottomRight CarouselParamsAuthorHandlePosition = "bottom-right"
+	CarouselParamsAuthorHandlePositionTopLeft     CarouselParamsAuthorHandlePosition = "top-left"
+	CarouselParamsAuthorHandlePositionTopRight    CarouselParamsAuthorHandlePosition = "top-right"
+)
+
+// Defines values for CarouselParamsBorderStyle.
+const (
+	Double CarouselParamsBorderStyle = "double"
+	None   CarouselParamsBorderStyle = "none"
+	Single CarouselParamsBorderStyle = "single"
+)
+
+// Defines values for CarouselParamsFont.
+const (
+	CarouselParamsFontLato            CarouselParamsFont = "Lato"
+	CarouselParamsFontMontserrat      CarouselParamsFont = "Montserrat"
+	CarouselParamsFontOpenSans        CarouselParamsFont = "Open Sans"
+	CarouselParamsFontPlayfairDisplay CarouselParamsFont = "Playfair Display"
+	CarouselParamsFontRoboto          CarouselParamsFont = "Roboto"
+)
+
+// Defines values for CarouselParamsSlideNumberPosition.
+const (
+	CarouselParamsSlideNumberPositionBottomLeft  CarouselParamsSlideNumberPosition = "bottom-left"
+	CarouselParamsSlideNumberPositionBottomRight CarouselParamsSlideNumberPosition = "bottom-right"
+	CarouselParamsSlideNumberPositionTopLeft     CarouselParamsSlideNumberPosition = "top-left"
+	CarouselParamsSlideNumberPositionTopRight    CarouselParamsSlideNumberPosition = "top-right"
+)
+
+// Defines values for CarouselSlideParamsTextAlign.
+const (
+	CarouselSlideParamsTextAlignCenter CarouselSlideParamsTextAlign = "center"
+	CarouselSlideParamsTextAlignLeft   CarouselSlideParamsTextAlign = "left"
+	CarouselSlideParamsTextAlignRight  CarouselSlideParamsTextAlign = "right"
+)
+
+// Defines values for CarouselSlideParamsVerticalAlign.
+const (
+	CarouselSlideParamsVerticalAlignBottom CarouselSlideParamsVerticalAlign = "bottom"
+	CarouselSlideParamsVerticalAlignCenter CarouselSlideParamsVerticalAlign = "center"
+	CarouselSlideParamsVerticalAlignTop    CarouselSlideParamsVerticalAlign = "top"
+)
+
 // Defines values for GifParamsDelayMs.
 const (
 	N1000 GifParamsDelayMs = 1000
@@ -26,11 +72,11 @@ const (
 
 // Defines values for ImageParamsFont.
 const (
-	ImageParamsFontLato            ImageParamsFont = "Lato"
-	ImageParamsFontMontserrat      ImageParamsFont = "Montserrat"
-	ImageParamsFontOpenSans        ImageParamsFont = "Open Sans"
-	ImageParamsFontPlayfairDisplay ImageParamsFont = "Playfair Display"
-	ImageParamsFontRoboto          ImageParamsFont = "Roboto"
+	Lato            ImageParamsFont = "Lato"
+	Montserrat      ImageParamsFont = "Montserrat"
+	OpenSans        ImageParamsFont = "Open Sans"
+	PlayfairDisplay ImageParamsFont = "Playfair Display"
+	Roboto          ImageParamsFont = "Roboto"
 )
 
 // Defines values for JobStatusResponseStatus.
@@ -62,6 +108,58 @@ type AnalyticsResult struct {
 	PerformanceMetrics      map[string]interface{} `json:"performanceMetrics"`
 	UserEngagement          map[string]interface{} `json:"userEngagement"`
 }
+
+// CarouselParams defines model for CarouselParams.
+type CarouselParams struct {
+	AuthorHandle         *string                             `json:"authorHandle,omitempty"`
+	AuthorHandlePosition *CarouselParamsAuthorHandlePosition `json:"authorHandlePosition,omitempty"`
+	BackgroundColor      string                              `json:"backgroundColor"`
+	BorderStyle          *CarouselParamsBorderStyle          `json:"borderStyle,omitempty"`
+	Filename             *string                             `json:"filename,omitempty"`
+	Font                 CarouselParamsFont                  `json:"font"`
+	Height               int                                 `json:"height"`
+	ShowSlideNumbers     *bool                               `json:"showSlideNumbers,omitempty"`
+	SlideNumberPosition  *CarouselParamsSlideNumberPosition  `json:"slideNumberPosition,omitempty"`
+	Slides               []CarouselSlideParams               `json:"slides"`
+	TextColor            string                              `json:"textColor"`
+	Width                int                                 `json:"width"`
+}
+
+// CarouselParamsAuthorHandlePosition defines model for CarouselParams.AuthorHandlePosition.
+type CarouselParamsAuthorHandlePosition string
+
+// CarouselParamsBorderStyle defines model for CarouselParams.BorderStyle.
+type CarouselParamsBorderStyle string
+
+// CarouselParamsFont defines model for CarouselParams.Font.
+type CarouselParamsFont string
+
+// CarouselParamsSlideNumberPosition defines model for CarouselParams.SlideNumberPosition.
+type CarouselParamsSlideNumberPosition string
+
+// CarouselSlideParams defines model for CarouselSlideParams.
+type CarouselSlideParams struct {
+	// BackgroundColor Slide background color override. If omitted, uses deck backgroundColor.
+	BackgroundColor *string `json:"backgroundColor,omitempty"`
+
+	// ListItems Optional bulleted or numbered list items
+	ListItems *[]string `json:"listItems,omitempty"`
+
+	// Subtitle Optional paragraph or subtitle commentary
+	Subtitle  *string                       `json:"subtitle,omitempty"`
+	TextAlign *CarouselSlideParamsTextAlign `json:"textAlign,omitempty"`
+
+	// TextColor Slide text color override. If omitted, uses deck textColor.
+	TextColor     *string                           `json:"textColor,omitempty"`
+	Title         string                            `json:"title"`
+	VerticalAlign *CarouselSlideParamsVerticalAlign `json:"verticalAlign,omitempty"`
+}
+
+// CarouselSlideParamsTextAlign defines model for CarouselSlideParams.TextAlign.
+type CarouselSlideParamsTextAlign string
+
+// CarouselSlideParamsVerticalAlign defines model for CarouselSlideParams.VerticalAlign.
+type CarouselSlideParamsVerticalAlign string
 
 // ErrorResponse defines model for ErrorResponse.
 type ErrorResponse struct {
@@ -186,6 +284,9 @@ type PostGenerateImagesJSONBody = []ImageParams
 type GetGetJobStatusParams struct {
 	JobId string `form:"jobId" json:"jobId"`
 }
+
+// PostGenerateCarouselJSONRequestBody defines body for PostGenerateCarousel for application/json ContentType.
+type PostGenerateCarouselJSONRequestBody = CarouselParams
 
 // PostGenerateGifJSONRequestBody defines body for PostGenerateGif for application/json ContentType.
 type PostGenerateGifJSONRequestBody = GifParams
