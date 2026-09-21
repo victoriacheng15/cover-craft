@@ -22,6 +22,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/klauspost/compress v1.20.0 // indirect
 	github.com/montanaflynn/stats v0.12.5 // indirect
+	github.com/phpdave11/gofpdf v1.4.3 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.2.0 // indirect
