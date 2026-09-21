@@ -5,6 +5,7 @@ import {
 	handleApiError,
 	type ImageParams,
 	proxyAnalytics,
+	proxyGenerateCarousel,
 	proxyGenerateGif,
 	proxyGenerateImage,
 	proxyGenerateImages,
@@ -191,6 +192,43 @@ describe("apiUtils", () => {
 
 			await expect(proxyGenerateImages([])).rejects.toThrow(
 				"Azure Functions API URL is missing for batch generation.",
+			);
+			expect(fetchMock).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("proxyGenerateCarousel", () => {
+		it("forwards carousel payload to backend API", async () => {
+			const body = {
+				title: "Carousel Title",
+				slides: [{ title: "Slide 1" }],
+			};
+
+			const fakeResponse = { ok: true, status: 501 };
+			// @ts-expect-error
+			fetchMock.mockResolvedValueOnce(fakeResponse);
+
+			const response = await proxyGenerateCarousel(body);
+
+			expect(fetchMock).toHaveBeenCalledWith(
+				"http://mock-api/generateCarousel",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"x-functions-key": "test-key",
+					},
+					body: JSON.stringify(body),
+				},
+			);
+			expect(response).toBe(fakeResponse);
+		});
+
+		it("throws when API URL is missing", async () => {
+			delete process.env.AZURE_FUNCTION_URL;
+
+			await expect(proxyGenerateCarousel({})).rejects.toThrow(
+				"Azure Functions API URL is missing for carousel generation.",
 			);
 			expect(fetchMock).not.toHaveBeenCalled();
 		});
