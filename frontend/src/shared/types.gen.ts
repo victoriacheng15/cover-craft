@@ -309,6 +309,61 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	"/generateCarousel": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Submit a LinkedIn carousel generation job
+		 * @description Enqueues a carousel deck to be rendered into a multi-page PDF and PNG archive asynchronously.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["CarouselParams"];
+				};
+			};
+			responses: {
+				/** @description Carousel job accepted */
+				202: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							/** @description The unique Job ID for status polling. */
+							id: string;
+						};
+					};
+				};
+				/** @description Carousel validation failed */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["ValidationErrorResponse"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	"/getJobStatus": {
 		parameters: {
 			query?: never;
@@ -442,10 +497,101 @@ export interface components {
 			/** @example slideshow */
 			filename?: string;
 		};
+		CarouselSlideParams: {
+			/** @example Building Scalable Systems */
+			title: string;
+			/**
+			 * @description Optional paragraph or subtitle commentary
+			 * @example Architectural principles for high-throughput distributed systems.
+			 */
+			subtitle?: string;
+			/**
+			 * @description Optional bulleted or numbered list items
+			 * @example [
+			 *       "Design for horizontal scalability",
+			 *       "Decouple compute from storage",
+			 *       "Enforce strict API contracts"
+			 *     ]
+			 */
+			listItems?: string[];
+			/**
+			 * @default left
+			 * @example left
+			 * @enum {string}
+			 */
+			textAlign: "left" | "center" | "right";
+			/**
+			 * @default top
+			 * @example top
+			 * @enum {string}
+			 */
+			verticalAlign: "top" | "center" | "bottom";
+			/**
+			 * @description Slide background color override. If omitted, uses deck backgroundColor.
+			 * @example #1E293B
+			 */
+			backgroundColor?: string;
+			/**
+			 * @description Slide text color override. If omitted, uses deck textColor.
+			 * @example #F8FAFC
+			 */
+			textColor?: string;
+		};
+		CarouselParams: {
+			/** @example 1080 */
+			width: number;
+			/** @example 1350 */
+			height: number;
+			/** @example #0F172A */
+			backgroundColor: string;
+			/** @example #F8FAFC */
+			textColor: string;
+			/**
+			 * @example Montserrat
+			 * @enum {string}
+			 */
+			font: "Montserrat" | "Roboto" | "Lato" | "Playfair Display" | "Open Sans";
+			/**
+			 * @default none
+			 * @example single
+			 * @enum {string}
+			 */
+			borderStyle: "none" | "single" | "double";
+			/** @example @username */
+			authorHandle?: string;
+			/**
+			 * @default bottom-left
+			 * @example bottom-left
+			 * @enum {string}
+			 */
+			authorHandlePosition:
+				| "bottom-left"
+				| "bottom-right"
+				| "top-left"
+				| "top-right";
+			/**
+			 * @default true
+			 * @example true
+			 */
+			showSlideNumbers: boolean;
+			/**
+			 * @default top-right
+			 * @example top-right
+			 * @enum {string}
+			 */
+			slideNumberPosition:
+				| "top-right"
+				| "bottom-right"
+				| "top-left"
+				| "bottom-left";
+			slides: components["schemas"]["CarouselSlideParams"][];
+			/** @example carousel */
+			filename?: string;
+		};
 		ValidationError: {
 			/** @example width */
 			field: string;
-			/** @example Width must be between 1 and 1200 */
+			/** @example Width must be between 1 and 1400 */
 			message: string;
 		};
 		ValidationErrorResponse: {

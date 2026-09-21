@@ -227,11 +227,24 @@ export const SUBTITLE_LENGTH_THRESHOLDS = {
 	LONG_MAX: Math.floor(MAX_SUBTITLE_LENGTH * LENGTH_DISTRIBUTION.LONG_PERCENT),
 } as const;
 
-export const SIZE_RANGE = { min: 1, max: 1200 };
+export const SIZE_RANGE = { min: 1, max: 1400 };
 export const SIZE_PRESETS = [
 	{ label: "Post (1200 × 627)", width: 1200, height: 627 },
 	{ label: "Square (1080 × 1080)", width: 1080, height: 1080 },
+	{ label: "Portrait (1080 × 1350)", width: 1080, height: 1350 },
 ];
+
+export const CAROUSEL_LIMITS = {
+	MIN_SLIDES: 2,
+	MAX_SLIDES: 10,
+	MAX_TITLE_LENGTH: 50,
+	MAX_SUBTITLE_LENGTH: 120,
+	MIN_LIST_ITEMS: 2,
+	MAX_LIST_ITEMS: 5,
+	MAX_LIST_ITEM_LENGTH: 70,
+	MAX_AUTHOR_HANDLE_LENGTH: 30,
+	MAX_FILENAME_LENGTH: 50,
+} as const;
 
 export const FONT_OPTIONS = [
 	"Montserrat",
@@ -258,6 +271,8 @@ export const DEFAULT_GIF_DELAY: GifDelayPreset = 1500;
 export type ImageParams = components["schemas"]["ImageParams"];
 export type GifParams = components["schemas"]["GifParams"];
 export type GifSlideParams = components["schemas"]["GifSlideParams"];
+export type CarouselParams = components["schemas"]["CarouselParams"];
+export type CarouselSlideParams = components["schemas"]["CarouselSlideParams"];
 export type ValidationError = components["schemas"]["ValidationError"];
 
 // ===================================================================================
