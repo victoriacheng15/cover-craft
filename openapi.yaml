@@ -513,6 +513,8 @@ components:
           type: string
         hasBorder:
           type: boolean
+        borderStyle:
+          type: string
         titleLength:
           type: integer
         subtitleLength:
@@ -527,6 +529,10 @@ components:
         clientDuration:
           type: integer
         slideCount:
+          type: integer
+        compileDuration:
+          type: integer
+        fileSizeBytes:
           type: integer
       required:
         - event

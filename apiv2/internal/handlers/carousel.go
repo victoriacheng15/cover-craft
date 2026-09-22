@@ -41,6 +41,24 @@ func GenerateCarouselHandler(w http.ResponseWriter, r *http.Request) {
 	if len(validationErrors) > 0 {
 		slog.WarnContext(r.Context(), "Carousel validation failed", slog.Int("error_count", len(validationErrors)))
 
+		slideCount := len(params.Slides)
+		borderStyleStr := "none"
+		if params.BorderStyle != nil {
+			borderStyleStr = string(*params.BorderStyle)
+		}
+		hasBorder := borderStyleStr != "none"
+		storeMetric(db.Metric{
+			Event:        EventCarouselGenerated,
+			Timestamp:    time.Now().UTC(),
+			Status:       "validation_error",
+			ErrorMessage: "Validation failed",
+			Size:         &db.SizePreset{Width: params.Width, Height: params.Height},
+			Font:         string(params.Font),
+			HasBorder:    &hasBorder,
+			BorderStyle:  borderStyleStr,
+			SlideCount:   &slideCount,
+		})
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(map[string]interface{}{

@@ -243,14 +243,17 @@ type JobStatusResponseStatus string
 
 // MetricPayload defines model for MetricPayload.
 type MetricPayload struct {
-	ClientDuration *int     `json:"clientDuration,omitempty"`
-	ContrastRatio  *float32 `json:"contrastRatio,omitempty"`
-	Duration       *int     `json:"duration,omitempty"`
-	ErrorMessage   *string  `json:"errorMessage,omitempty"`
-	Event          string   `json:"event"`
-	Font           *string  `json:"font,omitempty"`
-	HasBorder      *bool    `json:"hasBorder,omitempty"`
-	Size           *struct {
+	BorderStyle     *string  `json:"borderStyle,omitempty"`
+	ClientDuration  *int     `json:"clientDuration,omitempty"`
+	CompileDuration *int     `json:"compileDuration,omitempty"`
+	ContrastRatio   *float32 `json:"contrastRatio,omitempty"`
+	Duration        *int     `json:"duration,omitempty"`
+	ErrorMessage    *string  `json:"errorMessage,omitempty"`
+	Event           string   `json:"event"`
+	FileSizeBytes   *int     `json:"fileSizeBytes,omitempty"`
+	Font            *string  `json:"font,omitempty"`
+	HasBorder       *bool    `json:"hasBorder,omitempty"`
+	Size            *struct {
 		Height int `json:"height"`
 		Width  int `json:"width"`
 	} `json:"size,omitempty"`
