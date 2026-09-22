@@ -164,8 +164,16 @@ func ProcessJobsHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// processJobExecution performs the sequential rendering of batch requests
+// processJobExecution routes execution based on job type
 func processJobExecution(ctx context.Context, objID primitive.ObjectID, job db.Job) error {
+	if job.Type == "carousel" || job.Carousel != nil {
+		return processCarouselJobExecution(ctx, objID, job)
+	}
+	return processBatchJobExecution(ctx, objID, job)
+}
+
+// processBatchJobExecution performs the sequential rendering of batch requests
+func processBatchJobExecution(ctx context.Context, objID primitive.ObjectID, job db.Job) error {
 	collection := db.MongoClient.Database("cover-craft").Collection("jobs")
 	resultDetails := make(map[string]db.JobResult)
 	if job.ResultDetails != nil {
@@ -364,6 +372,202 @@ func processJobExecution(ctx context.Context, objID primitive.ObjectID, job db.J
 	slog.InfoContext(ctx, "Batch job finalized",
 		slog.String("job_id", objID.Hex()),
 		slog.Int("processed_count", processedCount),
+		slog.String("status", finalStatus),
+	)
+	return nil
+}
+
+// processCarouselJobExecution performs sequential slide rendering and PDF compilation for carousel jobs
+func processCarouselJobExecution(ctx context.Context, objID primitive.ObjectID, job db.Job) error {
+	collection := db.MongoClient.Database("cover-craft").Collection("jobs")
+
+	var carousel services.CarouselParams
+	if job.Carousel != nil {
+		if cp, ok := job.Carousel.(services.CarouselParams); ok {
+			carousel = cp
+		} else if cpp, ok := job.Carousel.(*services.CarouselParams); ok && cpp != nil {
+			carousel = *cpp
+		} else {
+			bsonBytes, err := bson.Marshal(job.Carousel)
+			if err != nil {
+				return fmt.Errorf("failed to marshal carousel payload: %w", err)
+			}
+			if err := bson.Unmarshal(bsonBytes, &carousel); err != nil {
+				return fmt.Errorf("failed to unmarshal carousel parameters: %w", err)
+			}
+		}
+	} else if len(job.Requests) > 0 {
+		bsonBytes, err := bson.Marshal(job.Requests[0])
+		if err != nil {
+			return fmt.Errorf("failed to marshal carousel request: %w", err)
+		}
+		if err := bson.Unmarshal(bsonBytes, &carousel); err != nil {
+			return fmt.Errorf("failed to parse carousel parameters: %w", err)
+		}
+	} else {
+		return fmt.Errorf("job %s contains no carousel parameters", objID.Hex())
+	}
+
+	resultDetails := make(map[string]db.JobResult)
+	if job.ResultDetails != nil {
+		for k, v := range job.ResultDetails {
+			resultDetails[k] = v
+		}
+	}
+
+	slidePNGs := make([][]byte, len(carousel.Slides))
+
+	for i := 0; i < len(carousel.Slides); i++ {
+		idxStr := fmt.Sprintf("%d", i)
+
+		// Check if already rendered and succeeded
+		if det, exists := resultDetails[idxStr]; exists && det.Status == "success" {
+			slog.InfoContext(ctx, "Re-rendering cached slide to extract buffer for PDF", slog.String("job_id", objID.Hex()), slog.Int("index", i))
+			pngBytes, err := services.GenerateCarouselSlidePNG(carousel, i)
+			if err == nil {
+				slidePNGs[i] = pngBytes
+			}
+			continue
+		}
+
+		var lastError error
+		var detail *db.JobResult
+
+		for attempt := 1; attempt <= 3; attempt++ {
+			pngBytes, err := services.GenerateCarouselSlidePNG(carousel, i)
+			if err == nil {
+				slidePNGs[i] = pngBytes
+				base64Data := fmt.Sprintf("data:image/png;base64,%s", base64.StdEncoding.EncodeToString(pngBytes))
+				detail = &db.JobResult{
+					Index:     i,
+					Status:    "success",
+					DataURL:   base64Data,
+					Attempts:  attempt,
+					UpdatedAt: time.Now().UTC(),
+				}
+				break
+			} else {
+				lastError = err
+				slog.WarnContext(ctx, "Carousel slide render attempt failed",
+					slog.Int("attempt", attempt),
+					slog.String("job_id", objID.Hex()),
+					slog.Int("index", i),
+					slog.Any("error", err),
+				)
+				if attempt < 3 {
+					delay := 250 * (1 << uint(attempt-1))
+					jitter := rand.Intn(101)
+					time.Sleep(time.Duration(delay+jitter) * time.Millisecond)
+				}
+			}
+		}
+
+		if detail == nil {
+			errMsg := "Failed to render carousel slide"
+			if lastError != nil {
+				errMsg = lastError.Error()
+			}
+			detail = &db.JobResult{
+				Index:     i,
+				Status:    "error",
+				Error:     errMsg,
+				Attempts:  3,
+				UpdatedAt: time.Now().UTC(),
+			}
+		}
+
+		resultDetails[idxStr] = *detail
+
+		updateField := fmt.Sprintf("resultDetails.%s", idxStr)
+		resultsField := fmt.Sprintf("results.%d", i)
+		pubResult := publicResultFromDetail(*detail)
+
+		updateQuery := bson.M{
+			"$set": bson.M{
+				updateField:  *detail,
+				resultsField: pubResult,
+			},
+		}
+		if detail.Status == "error" {
+			updateQuery["$set"].(bson.M)["lastError"] = detail.Error
+		}
+
+		saveCtx, saveCancel := context.WithTimeout(ctx, 5*time.Second)
+		_, err := collection.UpdateOne(saveCtx, bson.M{"_id": objID}, updateQuery)
+		saveCancel()
+		if err != nil {
+			return fmt.Errorf("failed to save intermediate carousel slide result at index %d: %w", i, err)
+		}
+	}
+
+	// Verify all slides rendered successfully
+	allSlidesSuccess := true
+	for j := 0; j < len(carousel.Slides); j++ {
+		idxStr := fmt.Sprintf("%d", j)
+		if det, ok := resultDetails[idxStr]; !ok || det.Status != "success" || len(slidePNGs[j]) == 0 {
+			allSlidesSuccess = false
+			break
+		}
+	}
+
+	var pdfDataURL string
+	var pdfCompileErr error
+
+	if allSlidesSuccess {
+		pdfBytes, err := services.CompilePDF(carousel.Width, carousel.Height, slidePNGs)
+		if err != nil {
+			pdfCompileErr = fmt.Errorf("failed to compile carousel PDF: %w", err)
+			slog.ErrorContext(ctx, "Failed to compile carousel PDF",
+				slog.String("job_id", objID.Hex()),
+				slog.Any("error", err),
+			)
+		} else {
+			pdfDataURL = fmt.Sprintf("data:application/pdf;base64,%s", base64.StdEncoding.EncodeToString(pdfBytes))
+		}
+	}
+
+	var finalStatus string
+	if allSlidesSuccess && pdfCompileErr == nil {
+		finalStatus = "completed"
+	} else {
+		finalStatus = "failed"
+	}
+
+	updateFinal := bson.M{
+		"$set": bson.M{
+			"status":  finalStatus,
+			"results": getFinalResultsMap(resultDetails, len(carousel.Slides)),
+		},
+	}
+
+	if pdfDataURL != "" {
+		updateFinal["$set"].(bson.M)["pdfUrl"] = pdfDataURL
+	}
+
+	unsetFields := bson.M{"processingStartedAt": ""}
+	if finalStatus == "completed" {
+		unsetFields["error"] = ""
+		unsetFields["lastError"] = ""
+	} else {
+		finalError := "One or more carousel slides failed to render."
+		if pdfCompileErr != nil {
+			finalError = pdfCompileErr.Error()
+		}
+		updateFinal["$set"].(bson.M)["error"] = finalError
+		updateFinal["$set"].(bson.M)["lastError"] = finalError
+	}
+	updateFinal["$unset"] = unsetFields
+
+	finalCtx, finalCancel := context.WithTimeout(ctx, 5*time.Second)
+	_, err := collection.UpdateOne(finalCtx, bson.M{"_id": objID}, updateFinal)
+	finalCancel()
+	if err != nil {
+		return fmt.Errorf("failed to finalize carousel job document: %w", err)
+	}
+
+	slog.InfoContext(ctx, "Carousel job finalized",
+		slog.String("job_id", objID.Hex()),
+		slog.Int("total_slides", len(carousel.Slides)),
 		slog.String("status", finalStatus),
 	)
 	return nil

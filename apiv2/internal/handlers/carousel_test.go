@@ -6,22 +6,74 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/victoriacheng15/cover-craft/apiv2/internal/db"
+	"github.com/victoriacheng15/cover-craft/apiv2/internal/queue"
 )
 
 func TestGenerateCarouselHandler(t *testing.T) {
+	origMongo := db.MongoClient
+	origQueue := queue.QueueClientService
+	db.MongoClient = nil
+	queue.QueueClientService = nil
+	defer func() {
+		db.MongoClient = origMongo
+		queue.QueueClientService = origQueue
+	}()
+
+	sub1 := "Intro"
+	sub2 := "Details"
+	validCarouselJSON := `{
+		"width": 1080,
+		"height": 1080,
+		"backgroundColor": "#000000",
+		"textColor": "#ffffff",
+		"font": "Montserrat",
+		"slides": [
+			{"title": "Slide 1", "subtitle": "` + sub1 + `"},
+			{"title": "Slide 2", "subtitle": "` + sub2 + `"}
+		]
+	}`
+
+	invalidValidationJSON := `{
+		"width": 1080,
+		"height": 1080,
+		"backgroundColor": "#ffffff",
+		"textColor": "#ffffff",
+		"font": "Montserrat",
+		"slides": [
+			{"title": "Slide 1"}
+		]
+	}`
+
 	tests := []struct {
 		name           string
 		method         string
 		body           string
 		wantStatusCode int
 		wantErrorMsg   string
+		checkAccepted  bool
 	}{
 		{
-			name:           "POST request returns 501 Not Implemented",
+			name:           "Valid carousel request returns 202 Accepted",
 			method:         http.MethodPost,
-			body:           `{"title":"Test Carousel"}`,
-			wantStatusCode: http.StatusNotImplemented,
-			wantErrorMsg:   "Carousel generation endpoint is not yet implemented",
+			body:           validCarouselJSON,
+			wantStatusCode: http.StatusAccepted,
+			checkAccepted:  true,
+		},
+		{
+			name:           "Validation failure returns 400 Bad Request",
+			method:         http.MethodPost,
+			body:           invalidValidationJSON,
+			wantStatusCode: http.StatusBadRequest,
+			wantErrorMsg:   "Validation failed",
+		},
+		{
+			name:           "Malformed JSON returns 400 Bad Request",
+			method:         http.MethodPost,
+			body:           "not-json",
+			wantStatusCode: http.StatusBadRequest,
+			wantErrorMsg:   "Payload must be a valid carousel configuration.",
 		},
 		{
 			name:           "GET request returns 405 Method Not Allowed",
@@ -69,13 +121,25 @@ func TestGenerateCarouselHandler(t *testing.T) {
 				t.Errorf("GenerateCarouselHandler() Content-Type = %q, want application/json", contentType)
 			}
 
-			var resp ErrorResponse
-			if err := json.NewDecoder(rr.Body).Decode(&resp); err != nil {
-				t.Fatalf("Failed to decode response body as JSON: %v", err)
-			}
-
-			if resp.Error != tt.wantErrorMsg {
-				t.Errorf("GenerateCarouselHandler() error message = %q, want %q", resp.Error, tt.wantErrorMsg)
+			if tt.checkAccepted {
+				var resp map[string]interface{}
+				if err := json.NewDecoder(rr.Body).Decode(&resp); err != nil {
+					t.Fatalf("Failed to decode response body as JSON: %v", err)
+				}
+				if resp["message"] != "Carousel job accepted for processing." {
+					t.Errorf("unexpected message: %v", resp["message"])
+				}
+				if resp["id"] == nil || resp["jobId"] == nil {
+					t.Errorf("expected id and jobId in response, got %v", resp)
+				}
+			} else if tt.wantErrorMsg != "" {
+				var resp map[string]interface{}
+				if err := json.NewDecoder(rr.Body).Decode(&resp); err != nil {
+					t.Fatalf("Failed to decode response body as JSON: %v", err)
+				}
+				if resp["error"] != tt.wantErrorMsg {
+					t.Errorf("GenerateCarouselHandler() error = %v, want %q", resp["error"], tt.wantErrorMsg)
+				}
 			}
 		})
 	}

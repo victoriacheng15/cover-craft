@@ -303,3 +303,92 @@ func TestGetJobStatusIntegration(t *testing.T) {
 		t.Errorf("expected status 200 for 8-char lookup, got %d. Body: %s", rr.Code, rr.Body.String())
 	}
 }
+
+func TestGetJobStatusHandler_CarouselJob(t *testing.T) {
+	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
+		t.Skip("skipping GetJobStatus integration test: MONGODB_URI not set")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		t.Skip("skipping GetJobStatus integration test: failed to connect to MongoDB:", err)
+	}
+	defer client.Disconnect(ctx)
+
+	db.MongoClient = client
+	defer func() { db.MongoClient = nil }()
+
+	collection := client.Database("cover-craft").Collection("jobs")
+
+	jobId := primitive.NewObjectID()
+	now := time.Now().UTC()
+	sub1 := "Slide 1 Sub"
+	sub2 := "Slide 2 Sub"
+	carouselParams := services.CarouselParams{
+		Width:           1080,
+		Height:          1080,
+		BackgroundColor: "#000000",
+		TextColor:       "#ffffff",
+		Font:            "Montserrat",
+		Slides: []services.CarouselSlideParams{
+			{Title: "Slide 1", Subtitle: &sub1},
+			{Title: "Slide 2", Subtitle: &sub2},
+		},
+	}
+
+	job := db.Job{
+		ID:          jobId,
+		Type:        "carousel",
+		Status:      "completed",
+		Carousel:    carouselParams,
+		Results:     []string{"data:image/png;base64,slide1", "data:image/png;base64,slide2"},
+		PDFURL:      "data:application/pdf;base64,mockpdf",
+		Attempts:    1,
+		MaxAttempts: 3,
+		ResultDetails: map[string]db.JobResult{
+			"0": {Index: 0, Status: "success", DataURL: "data:image/png;base64,slide1", Attempts: 1},
+			"1": {Index: 1, Status: "success", DataURL: "data:image/png;base64,slide2", Attempts: 1},
+		},
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	_, err = collection.InsertOne(ctx, job)
+	if err != nil {
+		t.Fatalf("failed to insert test carousel job: %v", err)
+	}
+	defer func() {
+		ctxDel, cancelDel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancelDel()
+		_, _ = collection.DeleteOne(ctxDel, bson.M{"_id": jobId})
+	}()
+
+	req, _ := http.NewRequest(http.MethodGet, "/api/getJobStatus?jobId="+jobId.Hex(), nil)
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(GetJobStatusHandler)
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d. Body: %s", rr.Code, rr.Body.String())
+	}
+
+	var resp map[string]interface{}
+	if err := json.NewDecoder(rr.Body).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+
+	if resp["total"] != float64(2) {
+		t.Errorf("expected total 2, got %v", resp["total"])
+	}
+	if resp["progress"] != float64(2) {
+		t.Errorf("expected progress 2, got %v", resp["progress"])
+	}
+	if resp["pdfUrl"] != "data:application/pdf;base64,mockpdf" {
+		t.Errorf("expected pdfUrl 'data:application/pdf;base64,mockpdf', got %v", resp["pdfUrl"])
+	}
+}
+

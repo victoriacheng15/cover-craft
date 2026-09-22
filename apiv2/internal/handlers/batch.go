@@ -245,14 +245,32 @@ func GetJobStatusHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
+	total := len(job.Requests)
+	if job.Type == "carousel" && job.Carousel != nil {
+		if c, ok := job.Carousel.(*services.CarouselParams); ok && c != nil {
+			total = len(c.Slides)
+		} else {
+			bsonBytes, bErr := bson.Marshal(job.Carousel)
+			if bErr == nil {
+				var cp services.CarouselParams
+				if uErr := bson.Unmarshal(bsonBytes, &cp); uErr == nil {
+					total = len(cp.Slides)
+				}
+			}
+		}
+	}
+
 	response := map[string]interface{}{
 		"id":        job.ID.Hex(),
 		"status":    job.Status,
 		"progress":  len(results),
-		"total":     len(job.Requests),
+		"total":     total,
 		"results":   results,
 		"createdAt": job.CreatedAt,
 		"updatedAt": job.UpdatedAt,
+	}
+	if job.PDFURL != "" {
+		response["pdfUrl"] = job.PDFURL
 	}
 	if job.Error != "" {
 		response["error"] = job.Error
