@@ -379,6 +379,7 @@ func processBatchJobExecution(ctx context.Context, objID primitive.ObjectID, job
 
 // processCarouselJobExecution performs sequential slide rendering and PDF compilation for carousel jobs
 func processCarouselJobExecution(ctx context.Context, objID primitive.ObjectID, job db.Job) error {
+	startTime := time.Now()
 	collection := db.MongoClient.Database("cover-craft").Collection("jobs")
 
 	var carousel services.CarouselParams
@@ -512,9 +513,15 @@ func processCarouselJobExecution(ctx context.Context, objID primitive.ObjectID, 
 
 	var pdfDataURL string
 	var pdfCompileErr error
+	var compileDurationMs *int
+	var fileSizeBytes *int
 
 	if allSlidesSuccess {
+		compileStart := time.Now()
 		pdfBytes, err := services.CompilePDF(carousel.Width, carousel.Height, slidePNGs)
+		compileDur := int(time.Since(compileStart).Milliseconds())
+		compileDurationMs = &compileDur
+
 		if err != nil {
 			pdfCompileErr = fmt.Errorf("failed to compile carousel PDF: %w", err)
 			slog.ErrorContext(ctx, "Failed to compile carousel PDF",
@@ -522,6 +529,8 @@ func processCarouselJobExecution(ctx context.Context, objID primitive.ObjectID, 
 				slog.Any("error", err),
 			)
 		} else {
+			sizeBytes := len(pdfBytes)
+			fileSizeBytes = &sizeBytes
 			pdfDataURL = fmt.Sprintf("data:application/pdf;base64,%s", base64.StdEncoding.EncodeToString(pdfBytes))
 		}
 	}
@@ -545,11 +554,12 @@ func processCarouselJobExecution(ctx context.Context, objID primitive.ObjectID, 
 	}
 
 	unsetFields := bson.M{"processingStartedAt": ""}
+	finalError := ""
 	if finalStatus == "completed" {
 		unsetFields["error"] = ""
 		unsetFields["lastError"] = ""
 	} else {
-		finalError := "One or more carousel slides failed to render."
+		finalError = "One or more carousel slides failed to render."
 		if pdfCompileErr != nil {
 			finalError = pdfCompileErr.Error()
 		}
@@ -564,6 +574,34 @@ func processCarouselJobExecution(ctx context.Context, objID primitive.ObjectID, 
 	if err != nil {
 		return fmt.Errorf("failed to finalize carousel job document: %w", err)
 	}
+
+	// Dispatch telemetry metric to in-memory buffer
+	totalDurationMs := int(time.Since(startTime).Milliseconds())
+	slideCount := len(carousel.Slides)
+	borderStyleStr := "none"
+	if carousel.BorderStyle != nil {
+		borderStyleStr = string(*carousel.BorderStyle)
+	}
+	hasBorder := borderStyleStr != "none"
+
+	metric := db.Metric{
+		Event:           EventCarouselGenerated,
+		Timestamp:       time.Now().UTC(),
+		Status:          finalStatus,
+		Size:            &db.SizePreset{Width: carousel.Width, Height: carousel.Height},
+		Font:            string(carousel.Font),
+		HasBorder:       &hasBorder,
+		BorderStyle:     borderStyleStr,
+		SlideCount:      &slideCount,
+		Duration:        &totalDurationMs,
+		CompileDuration: compileDurationMs,
+		FileSizeBytes:   fileSizeBytes,
+	}
+	if finalStatus != "completed" {
+		metric.Status = "error"
+		metric.ErrorMessage = finalError
+	}
+	storeMetric(metric)
 
 	slog.InfoContext(ctx, "Carousel job finalized",
 		slog.String("job_id", objID.Hex()),

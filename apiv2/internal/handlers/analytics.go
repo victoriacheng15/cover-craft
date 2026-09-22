@@ -15,9 +15,12 @@ const (
 	EventGenerateClick    = "generate_click"
 	EventDownloadClick    = "download_click"
 	EventImageGenerated   = "image_generated"
-	EventGenerateGifClick = "generate_gif_click"
-	EventDownloadGifClick = "download_gif_click"
-	EventGifGenerated     = "gif_generated"
+	EventGenerateGifClick      = "generate_gif_click"
+	EventDownloadGifClick      = "download_gif_click"
+	EventGifGenerated          = "gif_generated"
+	EventGenerateCarouselClick = "generate_carousel_click"
+	EventDownloadCarouselClick = "download_carousel_click"
+	EventCarouselGenerated     = "carousel_generated"
 )
 
 // ===================================================================================

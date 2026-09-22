@@ -617,6 +617,7 @@ export interface components {
 			};
 			font?: string;
 			hasBorder?: boolean;
+			borderStyle?: string;
 			titleLength?: number;
 			subtitleLength?: number;
 			contrastRatio?: number;
@@ -625,6 +626,8 @@ export interface components {
 			duration?: number;
 			clientDuration?: number;
 			slideCount?: number;
+			compileDuration?: number;
+			fileSizeBytes?: number;
 		};
 		JobStatusResponse: {
 			id: string;

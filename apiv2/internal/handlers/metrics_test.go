@@ -165,3 +165,89 @@ func TestMetricsBuffer_BatchFlush(t *testing.T) {
 
 	_, _ = coll.DeleteMany(ctx, bson.M{"event": testPrefix + "event"})
 }
+
+func TestMetricsHandler_CarouselMetric(t *testing.T) {
+	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
+		t.Skip("skipping metrics integration test: MONGODB_URI not set")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		t.Skip("skipping metrics integration test: failed to connect to MongoDB:", err)
+	}
+	defer client.Disconnect(ctx)
+
+	db.MongoClient = client
+	defer func() { db.MongoClient = nil }()
+
+	collection := client.Database("cover-craft").Collection("metrics")
+
+	testEventName := "unit_test_carousel_metric_" + time.Now().Format("20060102150405")
+	payload := map[string]interface{}{
+		"event":           testEventName,
+		"timestamp":       time.Now().UTC(),
+		"status":          "success",
+		"compileDuration": 125,
+		"fileSizeBytes":   45200,
+		"borderStyle":     "double",
+		"slideCount":      4,
+		"duration":        350,
+		"font":            "Montserrat",
+		"size": map[string]int{
+			"width":  1080,
+			"height": 1080,
+		},
+	}
+	bodyBytes, _ := json.Marshal(payload)
+	req, _ := http.NewRequest(http.MethodPost, "/api/metrics", bytes.NewBuffer(bodyBytes))
+	rr := httptest.NewRecorder()
+	MetricsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d. Body: %s", rr.Code, rr.Body.String())
+	}
+
+	var resp MetricsResponse
+	if err := json.NewDecoder(rr.Body).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+
+	if resp.Data.Received.CompileDuration == nil || *resp.Data.Received.CompileDuration != 125 {
+		t.Errorf("expected compileDuration 125, got %v", resp.Data.Received.CompileDuration)
+	}
+	if resp.Data.Received.FileSizeBytes == nil || *resp.Data.Received.FileSizeBytes != 45200 {
+		t.Errorf("expected fileSizeBytes 45200, got %v", resp.Data.Received.FileSizeBytes)
+	}
+	if resp.Data.Received.BorderStyle != "double" {
+		t.Errorf("expected borderStyle 'double', got %q", resp.Data.Received.BorderStyle)
+	}
+	if resp.Data.Received.SlideCount == nil || *resp.Data.Received.SlideCount != 4 {
+		t.Errorf("expected slideCount 4, got %v", resp.Data.Received.SlideCount)
+	}
+
+	// Verify persistence in MongoDB
+	var doc db.Metric
+	findCtx, findCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer findCancel()
+	err = collection.FindOne(findCtx, bson.M{"event": testEventName}).Decode(&doc)
+	if err != nil {
+		t.Fatalf("failed to find metric document in MongoDB: %v", err)
+	}
+	if doc.CompileDuration == nil || *doc.CompileDuration != 125 {
+		t.Errorf("persisted compileDuration mismatch: %v", doc.CompileDuration)
+	}
+	if doc.FileSizeBytes == nil || *doc.FileSizeBytes != 45200 {
+		t.Errorf("persisted fileSizeBytes mismatch: %v", doc.FileSizeBytes)
+	}
+	if doc.BorderStyle != "double" {
+		t.Errorf("persisted borderStyle mismatch: %v", doc.BorderStyle)
+	}
+
+	// Clean up
+	_, _ = collection.DeleteMany(ctx, bson.M{"event": testEventName})
+}
+
