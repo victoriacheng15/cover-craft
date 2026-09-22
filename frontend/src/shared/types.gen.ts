@@ -633,6 +633,8 @@ export interface components {
 			progress: number;
 			total: number;
 			results: string[];
+			/** @description Base64 data URL or storage URL for the compiled carousel PDF document */
+			pdfUrl?: string;
 			error?: string;
 			/** Format: date-time */
 			createdAt: string;

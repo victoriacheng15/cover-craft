@@ -25,8 +25,11 @@ type JobResult struct {
 
 type Job struct {
 	ID                  primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
+	Type                string               `bson:"type,omitempty" json:"type,omitempty"`
 	Status              string               `bson:"status" json:"status"`
-	Requests            []interface{}        `bson:"requests" json:"requests"`
+	Requests            []interface{}        `bson:"requests,omitempty" json:"requests,omitempty"`
+	Carousel            interface{}          `bson:"carousel,omitempty" json:"carousel,omitempty"`
+	PDFURL              string               `bson:"pdfUrl,omitempty" json:"pdfUrl,omitempty"`
 	Results             []string             `bson:"results" json:"results"`
 	Error               string               `bson:"error,omitempty" json:"error,omitempty"`
 	Attempts            int                  `bson:"attempts" json:"attempts"`

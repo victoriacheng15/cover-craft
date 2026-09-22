@@ -22,6 +22,7 @@ import (
 )
 
 func TestProcessJobsHandler(t *testing.T) {
+	defer func() { db.MongoClient = nil }()
 	tests := []struct {
 		name       string
 		method     string
@@ -445,5 +446,106 @@ func TestProcessJobsHandler_WithCorrelationPayload(t *testing.T) {
 
 	if updatedJob.Status != "failed" {
 		t.Errorf("expected status 'failed', got %q", updatedJob.Status)
+	}
+}
+
+func TestProcessCarouselJobExecution(t *testing.T) {
+	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
+		t.Skip("skipping integration test: MONGODB_URI not set")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		t.Skip("skipping integration test: failed to connect to MongoDB:", err)
+	}
+	defer client.Disconnect(ctx)
+
+	db.MongoClient = client
+	defer func() { db.MongoClient = nil }()
+	queue.QueueClientService = nil
+
+	collection := client.Database("cover-craft").Collection("jobs")
+
+	jobId := primitive.NewObjectID()
+	now := time.Now().UTC()
+	sub1 := "Intro to distributed systems"
+	sub2 := "Consensus algorithms"
+	carouselParams := services.CarouselParams{
+		Width:           1080,
+		Height:          1080,
+		BackgroundColor: "#000000",
+		TextColor:       "#ffffff",
+		Font:            "Montserrat",
+		Slides: []services.CarouselSlideParams{
+			{Title: "Slide 1", Subtitle: &sub1},
+			{Title: "Slide 2", Subtitle: &sub2},
+		},
+	}
+
+	job := db.Job{
+		ID:            jobId,
+		Type:          "carousel",
+		Status:        "pending",
+		Carousel:      carouselParams,
+		Results:       []string{},
+		Attempts:      0,
+		MaxAttempts:   3,
+		ResultDetails: make(map[string]db.JobResult),
+		CreatedAt:     now,
+		UpdatedAt:     now,
+	}
+
+	_, err = collection.InsertOne(ctx, job)
+	if err != nil {
+		t.Fatalf("failed to insert test carousel job: %v", err)
+	}
+	defer func() {
+		ctxDel, cancelDel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancelDel()
+		_, _ = collection.DeleteOne(ctxDel, bson.M{"_id": jobId})
+	}()
+
+	body := map[string]interface{}{
+		"Data": map[string]interface{}{
+			"myQueueItem": jobId.Hex(),
+		},
+	}
+	jsonBytes, _ := json.Marshal(body)
+	req, _ := http.NewRequest(http.MethodPost, "/processJobs", bytes.NewBuffer(jsonBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(ProcessJobsHandler)
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status 200, got %d. Body: %s", rr.Code, rr.Body.String())
+	}
+
+	var updatedJob db.Job
+	ctxVerify, cancelVerify := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelVerify()
+	err = collection.FindOne(ctxVerify, bson.M{"_id": jobId}).Decode(&updatedJob)
+	if err != nil {
+		t.Fatalf("failed to find updated job: %v", err)
+	}
+
+	if updatedJob.Status != "completed" {
+		t.Errorf("expected status 'completed', got %q (error: %q)", updatedJob.Status, updatedJob.Error)
+	}
+	if len(updatedJob.Results) != 2 {
+		t.Errorf("expected 2 results, got %d", len(updatedJob.Results))
+	}
+	for i, res := range updatedJob.Results {
+		if len(res) < 30 || res[:22] != "data:image/png;base64," {
+			t.Errorf("result %d is not a valid PNG data URL: %s", i, res)
+		}
+	}
+	if len(updatedJob.PDFURL) < 30 || updatedJob.PDFURL[:28] != "data:application/pdf;base64," {
+		t.Errorf("expected valid PDF data URL, got %s", updatedJob.PDFURL)
 	}
 }

@@ -225,9 +225,12 @@ type ImageParamsFont string
 
 // JobStatusResponse defines model for JobStatusResponse.
 type JobStatusResponse struct {
-	CreatedAt time.Time               `json:"createdAt"`
-	Error     *string                 `json:"error,omitempty"`
-	Id        string                  `json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	Error     *string   `json:"error,omitempty"`
+	Id        string    `json:"id"`
+
+	// PdfUrl Base64 data URL or storage URL for the compiled carousel PDF document
+	PdfUrl    *string                 `json:"pdfUrl,omitempty"`
 	Progress  int                     `json:"progress"`
 	Results   []string                `json:"results"`
 	Status    JobStatusResponseStatus `json:"status"`

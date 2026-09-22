@@ -549,6 +549,9 @@ components:
           type: array
           items:
             type: string
+        pdfUrl:
+          type: string
+          description: Base64 data URL or storage URL for the compiled carousel PDF document
         error:
           type: string
         createdAt:
