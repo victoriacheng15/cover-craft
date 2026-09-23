@@ -1,4 +1,7 @@
 export { BatchFormControls } from "./BatchFormControls";
+export { CarouselForm } from "./CarouselForm";
+export { CarouselFormControls } from "./CarouselFormControls";
+export { CarouselPreviewDisplay } from "./CarouselPreviewDisplay";
 export { CoverForm } from "./CoverForm";
 export { CoverFormControls } from "./CoverFormControls";
 export { CoverPreviewDisplay } from "./CoverPreviewDisplay";

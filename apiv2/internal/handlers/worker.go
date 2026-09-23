@@ -46,7 +46,14 @@ func ProcessJobsHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
-	rawQueueItem = strings.Trim(rawQueueItem, "\"")
+	// The Azure Functions host may deliver the queue item as a JSON-encoded
+	// string (double-encoded), so try to unmarshal it first to unescape.
+	var unescaped string
+	if err := json.Unmarshal([]byte(rawQueueItem), &unescaped); err == nil {
+		rawQueueItem = unescaped
+	} else {
+		rawQueueItem = strings.Trim(rawQueueItem, "\"")
+	}
 
 	if rawQueueItem == "" {
 		slog.WarnContext(r.Context(), "myQueueItem missing from trigger payload")

@@ -250,4 +250,3 @@ func TestMetricsHandler_CarouselMetric(t *testing.T) {
 	// Clean up
 	_, _ = collection.DeleteMany(ctx, bson.M{"event": testEventName})
 }
-
