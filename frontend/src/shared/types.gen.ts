@@ -264,7 +264,7 @@ export interface paths {
 		get?: never;
 		put?: never;
 		/**
-		 * Submit a LinkedIn carousel generation job
+		 * Submit a carousel generation job
 		 * @description Enqueues a carousel deck to be rendered into a multi-page PDF and PNG archive asynchronously.
 		 */
 		post: {

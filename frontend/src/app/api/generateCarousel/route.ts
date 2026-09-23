@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import { handleApiError, proxyGenerateCarousel } from "@/_utils";
 
 /**
- * BFF proxy route for LinkedIn carousel generation (POST /api/generateCarousel).
+ * BFF proxy route for carousel generation (POST /api/generateCarousel).
  *
  * Forwards client requests to the Azure Functions serverless backend.
- * Returns HTTP 501 (Not Implemented) during early scaffolding, and will return
- * HTTP 202 (Accepted) with the async job ID once the background worker is wired.
+ * Returns HTTP 202 (Accepted) with the async job ID once accepted.
  */
 export async function POST(request: Request) {
 	try {
