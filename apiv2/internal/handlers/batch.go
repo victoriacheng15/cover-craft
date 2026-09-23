@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"regexp"
 	"sort"
-	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,8 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/db"
-	"github.com/victoriacheng15/cover-craft/apiv2/internal/middleware"
-	"github.com/victoriacheng15/cover-craft/apiv2/internal/queue"
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/services"
 )
 
@@ -26,148 +23,6 @@ import (
 type QueueJobMessage struct {
 	JobID         string `json:"jobId"`
 	CorrelationID string `json:"correlationId,omitempty"`
-}
-
-// GenerateImagesHandler handles bulk image generation job creation (POST /api/generateImages)
-func GenerateImagesHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeJSONError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var requests []services.ImageParams
-	err := json.NewDecoder(r.Body).Decode(&requests)
-	if err != nil {
-		writeJSONError(w, "Payload must be a JSON array of image configurations.", http.StatusBadRequest)
-		return
-	}
-
-	// 1. Perform bulk validation checks
-	validationErrors := services.ValidateBatchRequest(requests)
-	if len(validationErrors) > 0 {
-		slog.WarnContext(r.Context(), "Batch validation failed", slog.Int("error_count", len(validationErrors)))
-
-		// Capture individual validation metrics into bounded in-memory buffer
-		for i, item := range requests {
-			contrastRatio, _ := services.GetContrastRatio(item.BackgroundColor, item.TextColor)
-			wcagLevel := services.GetWCAGLevel(contrastRatio)
-
-			var itemErrors []string
-			prefix := fmt.Sprintf("requests[%d].", i)
-			for _, e := range validationErrors {
-				if strings.HasPrefix(e.Field, prefix) {
-					itemErrors = append(itemErrors, e.Message)
-				}
-			}
-
-			errMsg := "Validation failed"
-			if len(itemErrors) > 0 {
-				errMsg = strings.Join(itemErrors, "; ")
-			}
-			if len(errMsg) > 1000 {
-				errMsg = errMsg[:1000]
-			}
-
-			var subLen int
-			if item.Subtitle != nil {
-				subLen = len(*item.Subtitle)
-			}
-
-			storeMetric(db.Metric{
-				Event:          EventImageGenerated,
-				Timestamp:      time.Now().UTC(),
-				Status:         "validation_error",
-				ErrorMessage:   errMsg,
-				Size:           &db.SizePreset{Width: item.Width, Height: item.Height},
-				Font:           string(item.Font),
-				HasBorder:      item.HasBorder,
-				TitleLength:    intPtr(len(item.Title)),
-				SubtitleLength: intPtr(subLen),
-				ContrastRatio:  floatPtr(contrastRatio),
-				WcagLevel:      wcagLevel,
-			})
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{
-			"error":   "Validation failed",
-			"details": validationErrors,
-		})
-		return
-	}
-
-	// 2. Provision Pending Job in MongoDB
-	jobId := primitive.NewObjectID()
-	now := time.Now().UTC()
-
-	requestsInterfaces := make([]interface{}, len(requests))
-	for i, r := range requests {
-		requestsInterfaces[i] = r
-	}
-
-	job := db.Job{
-		ID:            jobId,
-		Status:        "pending",
-		Requests:      requestsInterfaces,
-		Results:       []string{},
-		Attempts:      0,
-		MaxAttempts:   3,
-		ResultDetails: make(map[string]db.JobResult),
-		CreatedAt:     now,
-		UpdatedAt:     now,
-	}
-
-	if db.MongoClient != nil {
-		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
-		_, err = db.MongoClient.Database("cover-craft").Collection("jobs").InsertOne(ctx, job)
-		cancel()
-		if err != nil {
-			slog.ErrorContext(r.Context(), "Failed to insert job into MongoDB",
-				slog.Any("error", err),
-				slog.String("job_id", jobId.Hex()),
-			)
-			writeJSONError(w, "Failed to provision batch job", http.StatusInternalServerError)
-			return
-		}
-	} else {
-		slog.WarnContext(r.Context(), "MongoDB client not configured. Proceeding without database.")
-	}
-
-	// 3. Connect to Azure Queue Storage and publish Job ID and correlation ID
-	if queue.QueueClientService != nil {
-		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
-		corrID := middleware.GetCorrelationID(r.Context())
-		msgBytes, _ := json.Marshal(QueueJobMessage{
-			JobID:         jobId.Hex(),
-			CorrelationID: corrID,
-		})
-		err = queue.QueueClientService.EnqueueJob(ctx, string(msgBytes))
-		cancel()
-		if err != nil {
-			slog.ErrorContext(r.Context(), "Failed to enqueue job message in Queue",
-				slog.Any("error", err),
-				slog.String("job_id", jobId.Hex()),
-			)
-			writeJSONError(w, "Failed to enqueue batch job task", http.StatusInternalServerError)
-			return
-		}
-	} else {
-		slog.WarnContext(r.Context(), "Queue service not configured. Proceeding without enqueuing task.")
-	}
-
-	slog.InfoContext(r.Context(), "Batch job accepted for processing",
-		slog.String("job_id", jobId.Hex()),
-		slog.Int("total_requests", len(requests)),
-	)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-	_ = json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "Batch job accepted for processing.",
-		"id":      jobId.Hex(),
-		"jobId":   jobId.Hex(),
-	})
 }
 
 // GetJobStatusHandler handles polling for job progress (GET /api/getJobStatus)

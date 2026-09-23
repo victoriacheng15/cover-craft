@@ -1,4 +1,3 @@
-export { BatchFormControls } from "./BatchFormControls";
 export { CarouselForm } from "./CarouselForm";
 export { CarouselFormControls } from "./CarouselFormControls";
 export { CarouselPreviewDisplay } from "./CarouselPreviewDisplay";

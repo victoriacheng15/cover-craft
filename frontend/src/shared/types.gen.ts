@@ -254,61 +254,6 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
-	"/generateImages": {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		/**
-		 * Submit a bulk cover image generation batch
-		 * @description Enqueues a batch of image parameters to be processed asynchronously by the background worker.
-		 */
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody: {
-				content: {
-					"application/json": components["schemas"]["ImageParams"][];
-				};
-			};
-			responses: {
-				/** @description Batch job accepted */
-				202: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						"application/json": {
-							/** @description The unique Job ID for status polling. */
-							id: string;
-						};
-					};
-				};
-				/** @description Batch validation failed (e.g. empty batch or exceeds limit of 5) */
-				400: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						"application/json": components["schemas"]["ValidationErrorResponse"];
-					};
-				};
-			};
-		};
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
 	"/generateCarousel": {
 		parameters: {
 			query?: never;

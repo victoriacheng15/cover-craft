@@ -1,5 +1,4 @@
 import { useAnalytics } from "./useAnalytics";
-import { useBatchForm } from "./useBatchForm";
 import {
 	type CarouselDeckSettings,
 	type CarouselSlideItem,
@@ -17,7 +16,6 @@ export {
 	type GifFormData,
 	type SlideItem,
 	useAnalytics,
-	useBatchForm,
 	useCarouselForm,
 	useContrastCheck,
 	useForm,
