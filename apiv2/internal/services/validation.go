@@ -213,35 +213,6 @@ func ValidateImageParams(params ImageParams) []ValidationError {
 	return errors
 }
 
-// ValidateBatchRequest checks multiple ImageParams constraints for bulk validation
-func ValidateBatchRequest(requests []ImageParams) []ValidationError {
-	var errors []ValidationError
-	if len(requests) == 0 {
-		errors = append(errors, ValidationError{
-			Field:   "requests",
-			Message: "Batch request must contain at least one configuration",
-		})
-		return errors
-	}
-	if len(requests) > 5 {
-		errors = append(errors, ValidationError{
-			Field:   "requests",
-			Message: "Batch size exceeds the maximum limit of 5",
-		})
-		return errors
-	}
-	for i, req := range requests {
-		subErrors := ValidateImageParams(req)
-		for _, err := range subErrors {
-			errors = append(errors, ValidationError{
-				Field:   fmt.Sprintf("requests[%d].%s", i, err.Field),
-				Message: err.Message,
-			})
-		}
-	}
-	return errors
-}
-
 var compliantCandidateColors = []string{
 	"#FFFFFF", "#000000", "#F9FAFB", "#111827", "#3B82F6",
 	"#1D4ED8", "#10B981", "#047857", "#F59E0B", "#B45309",

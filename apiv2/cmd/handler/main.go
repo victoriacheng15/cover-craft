@@ -72,7 +72,6 @@ func main() {
 	mux.HandleFunc("/api/metrics", handlers.MetricsHandler)
 	mux.HandleFunc("/api/generateImage", handlers.GenerateImageHandler)
 	mux.HandleFunc("/api/generateGif", handlers.GenerateGifHandler)
-	mux.HandleFunc("/api/generateImages", handlers.GenerateImagesHandler)
 	mux.HandleFunc("/api/generateCarousel", handlers.GenerateCarouselHandler)
 	mux.HandleFunc("/api/getJobStatus", handlers.GetJobStatusHandler)
 	mux.HandleFunc("/processJobs", handlers.ProcessJobsHandler)

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export interface GenerationNavProps {
-	activeMode: "single" | "carousel" | "bulk" | "gif";
+	activeMode: "single" | "carousel" | "gif";
 	className?: string;
 }
 
@@ -11,7 +11,6 @@ export function GenerationNav({
 }: GenerationNavProps) {
 	const modes = [
 		{ id: "single", label: "Single Cover", href: "/generate" },
-		{ id: "bulk", label: "Bulk Batch", href: "/generate/batch" },
 		{ id: "carousel", label: "Carousel Builder", href: "/generate/carousel" },
 		{ id: "gif", label: "GIF Slideshow", href: "/generate/slideshow" },
 	] as const;

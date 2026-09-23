@@ -113,37 +113,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /generateImages:
-    post:
-      summary: Submit a bulk cover image generation batch
-      description: Enqueues a batch of image parameters to be processed asynchronously by the background worker.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/ImageParams'
-      responses:
-        '202':
-          description: Batch job accepted
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    description: The unique Job ID for status polling.
-                required:
-                  - id
-        '400':
-          description: Batch validation failed (e.g. empty batch or exceeds limit of 5)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
 
   /generateCarousel:
     post:

@@ -162,33 +162,6 @@ export async function generateGif(
 }
 
 /**
- * Submit a batch generation job
- */
-export async function generateBatchImages(
-	params: ImageParams[],
-): Promise<{ jobId: string }> {
-	const response = await fetch("/api/generateImages", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify(params),
-	});
-
-	if (!response.ok) {
-		let errorBody: ApiErrorResponse | null = null;
-		try {
-			errorBody = await response.json();
-		} catch (_err) {
-			/* ignore */
-		}
-		throw new Error(errorBody?.error ?? "Failed to submit batch job");
-	}
-
-	return await response.json();
-}
-
-/**
  * Submit a LinkedIn Carousel generation job
  */
 export async function generateCarousel(
@@ -216,9 +189,9 @@ export async function generateCarousel(
 }
 
 /**
- * Poll for batch job status
+ * Poll for carousel job status
  */
-export async function getBatchJobStatus(
+export async function getCarouselJobStatus(
 	jobId: string,
 ): Promise<JobStatusResponse> {
 	const response = await fetch(`/api/jobStatus?jobId=${jobId}`);
@@ -228,15 +201,6 @@ export async function getBatchJobStatus(
 	}
 
 	return await response.json();
-}
-
-/**
- * Poll for carousel job status
- */
-export async function getCarouselJobStatus(
-	jobId: string,
-): Promise<JobStatusResponse> {
-	return getBatchJobStatus(jobId);
 }
 
 /**
