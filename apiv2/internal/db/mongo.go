@@ -42,12 +42,12 @@ type Job struct {
 }
 
 type Metric struct {
-	Event          string      `bson:"event" json:"event"`
-	Timestamp      time.Time   `bson:"timestamp" json:"timestamp"`
-	Status         string      `bson:"status" json:"status"`
-	ErrorMessage   string      `bson:"errorMessage,omitempty" json:"errorMessage,omitempty"`
-	Size           *SizePreset `bson:"size,omitempty" json:"size,omitempty"`
-	Font           string      `bson:"font,omitempty" json:"font,omitempty"`
+	Event           string      `bson:"event" json:"event"`
+	Timestamp       time.Time   `bson:"timestamp" json:"timestamp"`
+	Status          string      `bson:"status" json:"status"`
+	ErrorMessage    string      `bson:"errorMessage,omitempty" json:"errorMessage,omitempty"`
+	Size            *SizePreset `bson:"size,omitempty" json:"size,omitempty"`
+	Font            string      `bson:"font,omitempty" json:"font,omitempty"`
 	HasBorder       *bool       `bson:"hasBorder,omitempty" json:"hasBorder,omitempty"`
 	BorderStyle     string      `bson:"borderStyle,omitempty" json:"borderStyle,omitempty"`
 	TitleLength     *int        `bson:"titleLength,omitempty" json:"titleLength,omitempty"`

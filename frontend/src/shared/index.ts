@@ -277,7 +277,9 @@ export type ValidationError = components["schemas"]["ValidationError"];
 
 // ===================================================================================
 // Validation Functions (Color & Contrast)
-// ===================================================================================
+export function isValidHexColor(hex: string): boolean {
+	return typeof hex === "string" && HEX_COLOR_REGEX.test(hex);
+}
 
 export function hexToRgb(
 	hex: string,

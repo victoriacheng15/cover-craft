@@ -2,16 +2,19 @@ import type { MetricPayload } from "@cover-craft/shared";
 import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	type CarouselParams,
 	DOWNLOAD_CLICK_EVENT,
 	DOWNLOAD_GIF_CLICK_EVENT,
 	GENERATE_CLICK_EVENT,
 	GENERATE_GIF_CLICK_EVENT,
 	type GifParams,
 	generateBatchImages,
+	generateCarousel,
 	generateGif,
 	generateImage,
 	getAnalytics,
 	getBatchJobStatus,
+	getCarouselJobStatus,
 	health,
 	type ImageParams,
 	sendDownloadEvent,
@@ -404,6 +407,109 @@ describe("API Service Wrapper", () => {
 			await expect(getBatchJobStatus("invalid-id")).rejects.toThrow(
 				"Failed to fetch job status",
 			);
+		});
+	});
+
+	describe("generateCarousel", () => {
+		it("submits carousel request and returns jobId", async () => {
+			const params: CarouselParams = {
+				width: 1080,
+				height: 1080,
+				backgroundColor: "#0F172A",
+				textColor: "#F8FAFC",
+				font: "Montserrat",
+				borderStyle: "none",
+				authorHandlePosition: "bottom-left",
+				showSlideNumbers: true,
+				slideNumberPosition: "top-right",
+				slides: [
+					{
+						title: "Slide 1",
+						subtitle: "Intro",
+						textAlign: "left",
+						verticalAlign: "top",
+					},
+					{
+						title: "Slide 2",
+						subtitle: "Details",
+						textAlign: "left",
+						verticalAlign: "top",
+					},
+				],
+			};
+
+			fetchMock.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					id: "carousel-123",
+					jobId: "carousel-123",
+					message: "Job accepted",
+				}),
+			} as unknown as Response);
+
+			const result = await generateCarousel(params);
+
+			expect(fetchMock).toHaveBeenCalledWith("/api/generateCarousel", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(params),
+			});
+			expect(result.jobId).toBe("carousel-123");
+		});
+
+		it("throws error when carousel submission fails", async () => {
+			fetchMock.mockResolvedValueOnce({
+				ok: false,
+				json: async () => ({ error: "Validation failed" }),
+			} as unknown as Response);
+
+			await expect(
+				generateCarousel({
+					width: 1080,
+					height: 1080,
+					backgroundColor: "#0F172A",
+					textColor: "#F8FAFC",
+					font: "Montserrat",
+					borderStyle: "none",
+					authorHandlePosition: "bottom-left",
+					showSlideNumbers: true,
+					slideNumberPosition: "top-right",
+					slides: [],
+				}),
+			).rejects.toThrow("Validation failed");
+		});
+	});
+
+	describe("getCarouselJobStatus", () => {
+		it("fetches carousel job status correctly with pdfUrl", async () => {
+			const mockResponse = {
+				id: "job-carousel-123",
+				status: "completed",
+				progress: 2,
+				total: 2,
+				results: [
+					"data:image/png;base64,slide1",
+					"data:image/png;base64,slide2",
+				],
+				pdfUrl: "data:application/pdf;base64,pdfdata",
+				createdAt: "2024-01-01T00:00:00Z",
+				updatedAt: "2024-01-01T00:00:01Z",
+			};
+
+			fetchMock.mockResolvedValueOnce({
+				ok: true,
+				json: async () => mockResponse,
+			} as unknown as Response);
+
+			const result = await getCarouselJobStatus("job-carousel-123");
+
+			expect(fetchMock).toHaveBeenCalledWith(
+				"/api/jobStatus?jobId=job-carousel-123",
+			);
+			expect(result).toEqual(mockResponse);
+			expect(result.pdfUrl).toBe("data:application/pdf;base64,pdfdata");
 		});
 	});
 

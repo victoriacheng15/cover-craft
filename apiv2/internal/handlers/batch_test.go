@@ -391,4 +391,3 @@ func TestGetJobStatusHandler_CarouselJob(t *testing.T) {
 		t.Errorf("expected pdfUrl 'data:application/pdf;base64,mockpdf', got %v", resp["pdfUrl"])
 	}
 }
-

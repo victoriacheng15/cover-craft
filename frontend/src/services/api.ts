@@ -1,4 +1,6 @@
 import {
+	type CarouselParams,
+	type CarouselSlideParams,
 	DOWNLOAD_CLICK_EVENT,
 	DOWNLOAD_GIF_CLICK_EVENT,
 	type EventType,
@@ -16,6 +18,8 @@ import {
 
 // Re-export type contracts
 export {
+	type CarouselParams,
+	type CarouselSlideParams,
 	DOWNLOAD_CLICK_EVENT,
 	DOWNLOAD_GIF_CLICK_EVENT,
 	type EventType,
@@ -41,6 +45,7 @@ export type JobStatusResponse = {
 	progress: number;
 	total: number;
 	results: string[];
+	pdfUrl?: string;
 	error?: string;
 	createdAt: string;
 	updatedAt: string;
@@ -184,6 +189,33 @@ export async function generateBatchImages(
 }
 
 /**
+ * Submit a LinkedIn Carousel generation job
+ */
+export async function generateCarousel(
+	params: CarouselParams,
+): Promise<{ id: string; jobId: string; message: string }> {
+	const response = await fetch("/api/generateCarousel", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(params),
+	});
+
+	if (!response.ok) {
+		let errorBody: ApiErrorResponse | null = null;
+		try {
+			errorBody = await response.json();
+		} catch (_err) {
+			/* ignore */
+		}
+		throw new Error(errorBody?.error ?? "Failed to submit carousel job");
+	}
+
+	return await response.json();
+}
+
+/**
  * Poll for batch job status
  */
 export async function getBatchJobStatus(
@@ -196,6 +228,15 @@ export async function getBatchJobStatus(
 	}
 
 	return await response.json();
+}
+
+/**
+ * Poll for carousel job status
+ */
+export async function getCarouselJobStatus(
+	jobId: string,
+): Promise<JobStatusResponse> {
+	return getBatchJobStatus(jobId);
 }
 
 /**

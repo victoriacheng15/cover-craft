@@ -186,17 +186,19 @@ func RenderCarouselSlideFrame(deck CarouselParams, slideIndex int) (image.Image,
 		dc.SetHexColor(textColor)
 		switch *deck.BorderStyle {
 		case Single:
+			inset := 18.0
 			dc.SetLineWidth(BorderWidth)
-			dc.DrawRectangle(BorderInset, BorderInset, float64(deck.Width)-2*BorderInset, float64(deck.Height)-2*BorderInset)
+			dc.DrawRectangle(inset, inset, float64(deck.Width)-2*inset, float64(deck.Height)-2*inset)
 			dc.Stroke()
 		case Double:
 			// Outer border
+			outerInset := 18.0
 			dc.SetLineWidth(BorderWidth)
-			dc.DrawRectangle(BorderInset, BorderInset, float64(deck.Width)-2*BorderInset, float64(deck.Height)-2*BorderInset)
+			dc.DrawRectangle(outerInset, outerInset, float64(deck.Width)-2*outerInset, float64(deck.Height)-2*outerInset)
 			dc.Stroke()
-			// Inner border: 8px gap from outer border
-			innerInset := BorderInset + 8.0
-			dc.SetLineWidth(2.0)
+			// Inner border: 10px gap from outer border (28px total)
+			innerInset := 28.0
+			dc.SetLineWidth(BorderWidth)
 			dc.DrawRectangle(innerInset, innerInset, float64(deck.Width)-2*innerInset, float64(deck.Height)-2*innerInset)
 			dc.Stroke()
 		}
@@ -261,9 +263,9 @@ func RenderCarouselSlideFrame(deck CarouselParams, slideIndex int) (image.Image,
 	}
 
 	// Calculate content boundary box
-	contentMargin := Padding + BorderInset
-	topBound := 90.0
-	bottomBound := float64(deck.Height) - 90.0
+	contentMargin := 150.0
+	topBound := 150.0
+	bottomBound := float64(deck.Height) - 150.0
 	boxHeight := bottomBound - topBound
 	boxWidth := float64(deck.Width) - 2*contentMargin
 
@@ -298,7 +300,7 @@ func RenderCarouselSlideFrame(deck CarouselParams, slideIndex int) (image.Image,
 	hasListItems := slide.ListItems != nil && len(*slide.ListItems) > 0
 	hasSubtitle := slide.Subtitle != nil && strings.TrimSpace(*slide.Subtitle) != ""
 
-	gap := headingFontSize * 0.75
+	gap := headingFontSize * 1.25
 	bodyLineHeight := bodyFontSize * 1.35
 	itemSpacing := bodyFontSize * 0.55
 
@@ -416,4 +418,3 @@ func getCornerCoordinates(width, height int, position string, margin float64) (x
 		return margin, float64(height) - margin, 0.0, 1.0
 	}
 }
-

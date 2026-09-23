@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	EventGenerateClick    = "generate_click"
-	EventDownloadClick    = "download_click"
-	EventImageGenerated   = "image_generated"
+	EventGenerateClick         = "generate_click"
+	EventDownloadClick         = "download_click"
+	EventImageGenerated        = "image_generated"
 	EventGenerateGifClick      = "generate_gif_click"
 	EventDownloadGifClick      = "download_gif_click"
 	EventGifGenerated          = "gif_generated"
