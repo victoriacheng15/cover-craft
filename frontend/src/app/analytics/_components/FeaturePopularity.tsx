@@ -50,6 +50,9 @@ export function FeaturePopularitySkeleton() {
 	);
 }
 
+const renderPercentLabel = ({ percent }: { percent?: number }) =>
+	percent && percent > 0 ? `${(percent * 100).toFixed(0)}%` : "";
+
 export function FeaturePopularity({
 	featurePopularity,
 	COLORS,
@@ -77,7 +80,7 @@ export function FeaturePopularity({
 								cx="50%"
 								cy="50%"
 								outerRadius={100}
-								label
+								label={renderPercentLabel}
 							/>
 							<Tooltip />
 							<Legend />
@@ -102,7 +105,7 @@ export function FeaturePopularity({
 								cx="50%"
 								cy="50%"
 								outerRadius={100}
-								label
+								label={renderPercentLabel}
 							/>
 							<Tooltip />
 							<Legend />
@@ -125,6 +128,7 @@ export function FeaturePopularity({
 									featurePopularity.formatDistribution || [
 										{ format: "Image Cover", count: 0 },
 										{ format: "GIF Slideshow", count: 0 },
+										{ format: "Carousel Deck", count: 0 },
 									]
 								).map((entry, idx) => ({
 									...entry,
@@ -135,7 +139,7 @@ export function FeaturePopularity({
 								cx="50%"
 								cy="50%"
 								outerRadius={100}
-								label
+								label={renderPercentLabel}
 							/>
 							<Tooltip />
 							<Legend />
@@ -148,7 +152,7 @@ export function FeaturePopularity({
 					<SectionTitle as="h4" size="sm" className="mb-4">
 						Border Adoption
 					</SectionTitle>
-					<ResponsiveContainer width="100%" height={230}>
+					<ResponsiveContainer width="100%" height={300}>
 						<PieChart>
 							<Pie
 								data={[
@@ -166,27 +170,19 @@ export function FeaturePopularity({
 									},
 								].map((item, idx) => ({
 									...item,
-									fill: COLORS[(idx + 2) % COLORS.length],
+									fill: COLORS[idx % COLORS.length],
 								}))}
 								dataKey="value"
 								nameKey="name"
 								cx="50%"
 								cy="50%"
-								outerRadius={80}
-								label
+								outerRadius={100}
+								label={renderPercentLabel}
 							/>
 							<Tooltip />
 							<Legend />
 						</PieChart>
 					</ResponsiveContainer>
-					<div className="p-3 bg-white rounded-xl border border-gray-100 mt-2">
-						<p className="text-sm">
-							<span className="font-semibold text-emerald-600">
-								{(featurePopularity.borderUsagePercent || 0).toFixed(1)}%
-							</span>{" "}
-							of generated outputs include a border
-						</p>
-					</div>
 				</Card>
 			</div>
 
@@ -208,14 +204,14 @@ export function FeaturePopularity({
 									]
 								).map((entry, idx) => ({
 									...entry,
-									fill: COLORS[(idx + 4) % COLORS.length],
+									fill: COLORS[idx % COLORS.length],
 								}))}
 								dataKey="count"
 								nameKey="range"
 								cx="50%"
 								cy="50%"
 								outerRadius={100}
-								label
+								label={renderPercentLabel}
 							/>
 							<Tooltip />
 							<Legend />
@@ -231,7 +227,7 @@ export function FeaturePopularity({
 						</SectionTitle>
 						<div className="grid grid-cols-1 gap-4 mb-4">
 							<KPICard
-								title="Average Slides per GIF"
+								title="Average Slides per Multi-Slide"
 								value={Number(
 									(featurePopularity.avgSlideCount || 0).toFixed(1),
 								)}
@@ -279,7 +275,7 @@ export function FeaturePopularity({
 								cx="50%"
 								cy="50%"
 								outerRadius={100}
-								label
+								label={renderPercentLabel}
 							/>
 							<Tooltip />
 							<Legend />
@@ -321,7 +317,7 @@ export function FeaturePopularity({
 								cx="50%"
 								cy="50%"
 								outerRadius={100}
-								label
+								label={renderPercentLabel}
 							/>
 							<Tooltip />
 							<Legend />
