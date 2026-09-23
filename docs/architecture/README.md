@@ -5,7 +5,7 @@ This directory documents the main system architecture for Cover Craft across the
 | Area | Document | Scope |
 | :--- | :--- | :--- |
 | Frontend | [Frontend Architecture](./frontend.md) | Next.js App Router, BFF proxy layer, hooks, UI structure, and accessibility validation. |
-| Backend | [Backend Architecture](./backend.md) | Azure Functions, image rendering, batch jobs, MongoDB persistence, and analytics APIs. |
+| Backend | [Backend Architecture](./backend.md) | Azure Functions, image rendering, carousel jobs, MongoDB persistence, and analytics APIs. |
 
 ## System View
 
@@ -17,7 +17,7 @@ Cover Craft is split into a Next.js frontend and a Go Azure Functions backend. A
 └──────────────────────────────────────────────────────────────────┘
                                  │
                                  │ POST /api/generateImage (Single)
-                                 │ POST /api/generateImages (Batch)
+                                 │ POST /api/generateCarousel (Carousel)
                                  │ POST /api/generateGif (GIF Slideshow)
                                  │ GET /api/jobStatus (Poll Status)
                                  ▼
@@ -25,28 +25,35 @@ Cover Craft is split into a Next.js frontend and a Go Azure Functions backend. A
 │                        Next.js BFF Server                        │
 └──────────────────────────────────────────────────────────────────┘
          │                       │                       │
-         │ /generateImage,       │ /generateImages       │ /getJobStatus
-         │ /generateGif          ▼                       ▼
-         ▼              ┌──────────────────┐    ┌──────────────────┐
-┌──────────────────┐    │   Go Function    │    │   Go Function    │
-│   Go Functions   │    │ (QueueProducer)  │    │  (GetJobStatus)  │
-│(Image/GifRender) │    └──────────────────┘    └──────────────────┘
-└──────────────────┘             │                       │
+         │ /generateImage,       │ /generateCarousel     │ /getJobStatus
+         │ /generateGif          │                       │
+         ▼                       ▼                       ▼
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│    Image/GIF     │    │Carousel Generator│    │    Job Status    │
+│    Generator     │    │  (Asynchronous)  │    │ (Polling Check)  │
+└──────────────────┘    └──────────────────┘    └──────────────────┘
+         │                       │                       │
          │                       │ Enqueues              │ Reads
          │ Uses                  ▼                       │ Status
          ▼              ┌──────────────────┐             │
 ┌──────────────────┐    │   Azure Queue    │             │
-│  Go 2D Graphics  │    │     Storage      │             │
-│  & GIF Encoder   │    └──────────────────┘             │
+│   2D Graphics    │    │     Storage      │             │
+│   & GIF Engine   │    └──────────────────┘             │
 └──────────────────┘             │                       │
-         ▲                       │ Triggers              │
-         │                       ▼                       │
-         │              ┌──────────────────┐             │
-         │              │   Go Function    │             │
-         │              │  (QueueWorker)   │             │
-         │              └──────────────────┘             │
-         │                       │                       │
-         └───────────────────────┤                       │
+                                 │ Triggers              │
+                                 ▼                       │
+                        ┌──────────────────┐             │
+                        │   Go Function    │             │
+                        │  (QueueWorker)   │             │
+                        └──────────────────┘             │
+                                 │                       │
+                                 │ Uses                  │
+                                 ▼                       │
+                        ┌──────────────────┐             │
+                        │    PNG & PDF     │             │
+                        │     Compiler     │             │
+                        └──────────────────┘             │
+                                 │                       │
                                  │ Updates               │
                                  ▼                       ▼
                         ┌──────────────────────────────────┐

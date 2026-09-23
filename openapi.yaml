@@ -116,7 +116,7 @@ paths:
 
   /generateCarousel:
     post:
-      summary: Submit a LinkedIn carousel generation job
+      summary: Submit a carousel generation job
       description: Enqueues a carousel deck to be rendered into a multi-page PDF and PNG archive asynchronously.
       requestBody:
         required: true

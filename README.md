@@ -1,8 +1,8 @@
 # Cover Craft
 
-Cover Craft is a serverless cover image and animated GIF slideshow generator built with React, Next.js, Go, Azure Functions, Azure Queue Storage, MongoDB, and Terraform.
+Cover Craft is a serverless cover image, multi-slide carousel, and animated GIF generator built with React, Next.js, Go, Azure Functions, Azure Queue Storage, MongoDB, and Terraform.
 
-It supports single-cover generation, multi-frame animated GIF slideshows, and queued batch processing, with shared validation, accessibility checks, and automated Azure deployment built into the workflow.
+It supports single-cover generation, multi-slide carousel generation (PDF and PNG exports), and multi-frame animated GIF slideshows, with shared validation, accessibility checks, and automated Azure deployment built into the workflow.
 
 [Live Project](https://cover-craft-ui.azurewebsites.net/) | [Full Documentation](./docs/README.md)
 
@@ -69,8 +69,8 @@ The platform provides three runtime generation paths:
 | Path | Use case | Flow |
 | :--- | :--- | :--- |
 | Image covers | Fast interactive cover generation | User request -> Go Function -> Go 2D graphics library -> PNG response |
+| Carousel decks | Multi-slide carousels (PDF and PNG) | User request -> HTTP 202 -> Azure Queue Storage -> Go Function worker (renderer & PDF compiler) -> MongoDB job status |
 | Animated GIF slideshow | Multi-slide animated social clips | User request -> Go Function -> Go 2D graphics & GIF encoder -> animated GIF response |
-| Batch covers | Asynchronous bulk workloads | User request -> HTTP 202 -> Azure Queue Storage -> Go Function worker -> MongoDB job status |
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
@@ -78,7 +78,7 @@ The platform provides three runtime generation paths:
 └──────────────────────────────────────────────────────────────────┘
                                  │
                                  │ POST /api/generateImage (Cover)
-                                 │ POST /api/generateImages (Batch)
+                                 │ POST /api/generateCarousel (Carousel)
                                  │ POST /api/generateGif (Slideshow)
                                  │ GET /api/jobStatus (Poll Status)
                                  ▼
@@ -86,28 +86,35 @@ The platform provides three runtime generation paths:
 │                        Next.js BFF Server                        │
 └──────────────────────────────────────────────────────────────────┘
          │                       │                       │
-         │ /generateImage,       │ /generateImages       │ /getJobStatus
-         │ /generateGif          ▼                       ▼
-         ▼              ┌──────────────────┐    ┌──────────────────┐
-┌──────────────────┐    │   Go Function    │    │   Go Function    │
-│   Go Functions   │    │ (QueueProducer)  │    │  (GetJobStatus)  │
-│(Image/GifRender) │    └──────────────────┘    └──────────────────┘
-└──────────────────┘             │                       │
+         │ /generateImage,       │ /generateCarousel     │ /getJobStatus
+         │ /generateGif          │                       │
+         ▼                       ▼                       ▼
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│    Image/GIF     │    │Carousel Generator│    │    Job Status    │
+│    Generator     │    │  (Asynchronous)  │    │ (Polling Check)  │
+└──────────────────┘    └──────────────────┘    └──────────────────┘
+         │                       │                       │
          │                       │ Enqueues              │ Reads
          │ Uses                  ▼                       │ Status
          ▼              ┌──────────────────┐             │
 ┌──────────────────┐    │   Azure Queue    │             │
-│  Go 2D Graphics  │    │     Storage      │             │
-│  & GIF Encoder   │    └──────────────────┘             │
+│   2D Graphics    │    │     Storage      │             │
+│   & GIF Engine   │    └──────────────────┘             │
 └──────────────────┘             │                       │
-         ▲                       │ Triggers              │
-         │                       ▼                       │
-         │              ┌──────────────────┐             │
-         │              │   Go Function    │             │
-         │              │  (QueueWorker)   │             │
-         │              └──────────────────┘             │
-         │                       │                       │
-         └───────────────────────┤                       │
+                                 │ Triggers              │
+                                 ▼                       │
+                        ┌──────────────────┐             │
+                        │   Go Function    │             │
+                        │  (QueueWorker)   │             │
+                        └──────────────────┘             │
+                                 │                       │
+                                 │ Uses                  │
+                                 ▼                       │
+                        ┌──────────────────┐             │
+                        │    PNG & PDF     │             │
+                        │     Compiler     │             │
+                        └──────────────────┘             │
+                                 │                       │
                                  │ Updates               │
                                  ▼                       ▼
                         ┌──────────────────────────────────┐
@@ -123,7 +130,7 @@ The platform provides three runtime generation paths:
 | Layer | Tools |
 | :--- | :--- |
 | Language | Go, TypeScript, React, Tailwind CSS |
-| Graphics & Animation | Pure-Go 2D graphics (gg), standard library image/gif |
+| Graphics & Document Rendering | 2D graphics (gg), PDF compiler (gofpdf), and animated GIF encoder (image/gif) |
 | Infrastructure | Azure Functions, Azure Queue Storage, Azure App Service, Terraform |
 | Data stores | MongoDB for job state and metrics |
 | Testing | Vitest, Go testing (Unit & BDD) |
@@ -138,9 +145,9 @@ The API follows a contract-first design with `openapi.yaml` as the canonical spe
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `POST` | `/generateImage` | Synchronous cover image generation (PNG) |
+| `POST` | `/generateCarousel` | Asynchronous carousel generation (multi-page PDF and PNGs) |
 | `POST` | `/generateGif` | Synchronous animated slideshow cover generation (GIF) |
-| `POST` | `/generateImages` | Asynchronous batch cover generation (enqueues up to 5 covers) |
-| `GET` | `/jobStatus` | Poll status and download URLs for batch generation jobs |
+| `GET` | `/jobStatus` | Poll status and download URLs for carousel generation jobs |
 | `GET` | `/analytics` | System telemetry, format distribution, and user engagement metrics |
 | `POST` | `/metrics` | Buffered ingestion of client telemetry events |
 | `GET` | `/health` | Service health check |

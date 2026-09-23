@@ -4,10 +4,10 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Project Overview
 
-Cover Craft is a serverless cover image and animated GIF generator. It consists of two main components:
+Cover Craft is a serverless cover image, multi-slide carousel, and animated GIF generator. It consists of two main components:
 
 1. **Next.js Frontend**: A standalone React application (located in `frontend/`) providing interactive controls and a Backend-for-Frontend (BFF) proxy.
-2. **Go Azure Functions Backend**: A serverless API (located in `apiv2/`) running as a Go Custom Handler to render 2D graphics, generate animated GIF slideshows, and process queue-backed generation jobs.
+2. **Go Azure Functions Backend**: A serverless API (located in `apiv2/`) running as a Go Custom Handler to render 2D graphics, compile multi-page PDF carousels, generate animated GIF slideshows, and process queue-backed generation jobs.
 
 ## Development Commands
 
@@ -66,9 +66,11 @@ make cov-go       # Run Go coverage analysis (requires MONGODB_URI)
 - The API is contract-first with `openapi.yaml` as the single source of truth.
 - Types in `frontend/src/types/api.ts` and structs in `apiv2/internal/types/` are generated automatically. Do not edit them manually.
 
-### Graphics Rendering
+### Graphics & Document Rendering
 
-- Image and animated GIF generation uses the pure-Go 2D graphics library `github.com/fogleman/gg` and Go standard library `image/gif`.
+- Single cover image generation uses the Go 2D graphics library `github.com/fogleman/gg`.
+- Carousel multi-page PDF compilation uses the library `github.com/phpdave11/gofpdf`.
+- Animated GIF slideshow generation uses Go standard library `image/gif`.
 - Do not introduce C++ native dependencies or external CLI tools (like Cairo, node-canvas, or FFmpeg) which break the serverless deployment and dev containers.
 
 ### Key Directories

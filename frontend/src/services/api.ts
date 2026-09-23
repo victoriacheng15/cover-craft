@@ -162,7 +162,7 @@ export async function generateGif(
 }
 
 /**
- * Submit a LinkedIn Carousel generation job
+ * Submit a Carousel generation job
  */
 export async function generateCarousel(
 	params: CarouselParams,

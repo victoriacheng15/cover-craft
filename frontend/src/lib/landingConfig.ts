@@ -58,7 +58,7 @@ export const landingConfig: LandingConfig = {
 	},
 	llms: {
 		objective:
-			"Generate clean, readable cover images and animated GIF slideshows via interactive controls and queued batch processing without manual design-tool setup.",
+			"Generate clean, readable cover images, multi-slide carousels, and animated GIF slideshows via interactive controls and asynchronous queued processing without manual design-tool setup.",
 		stack:
 			"React, Next.js (App Router), TypeScript, Azure Functions (Go Custom Handler), Azure Queue Storage, MongoDB, Terraform, Biome, Vitest",
 		pattern:
@@ -66,7 +66,7 @@ export const landingConfig: LandingConfig = {
 		entry_point:
 			"frontend/src/app/page.tsx (client views), apiv2/ (Go Azure Functions handlers)",
 		persistence_strategy:
-			"MongoDB for batch job state persistence, Azure Queue Storage for queue-based task management",
+			"MongoDB for job state and telemetry persistence, Azure Queue Storage for queue-based task management",
 		observability:
 			"Structured JSON logger, custom metrics, and telemetry dashboarding",
 	},
@@ -76,7 +76,7 @@ export const landingConfig: LandingConfig = {
 └──────────────────────────────────────────────────────────────────┘
                                  │
                                  │ POST /api/generateImage (Cover)
-                                 │ POST /api/generateImages (Batch)
+                                 │ POST /api/generateCarousel (Carousel)
                                  │ POST /api/generateGif (Slideshow)
                                  │ GET /api/jobStatus (Poll Status)
                                  ▼
@@ -84,28 +84,35 @@ export const landingConfig: LandingConfig = {
 │                        Next.js BFF Server                        │
 └──────────────────────────────────────────────────────────────────┘
          │                       │                       │
-         │ /generateImage,       │ /generateImages       │ /getJobStatus
-         │ /generateGif          ▼                       ▼
-         ▼              ┌──────────────────┐    ┌──────────────────┐
-┌──────────────────┐    │   Go Function    │    │   Go Function    │
-│   Go Functions   │    │ (QueueProducer)  │    │  (GetJobStatus)  │
-│(Image/GifRender) │    └──────────────────┘    └──────────────────┘
-└──────────────────┘             │                       │
+         │ /generateImage,       │ /generateCarousel     │ /getJobStatus
+         │ /generateGif          │                       │
+         ▼                       ▼                       ▼
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│    Image/GIF     │    │Carousel Generator│    │    Job Status    │
+│    Generator     │    │  (Asynchronous)  │    │ (Polling Check)  │
+└──────────────────┘    └──────────────────┘    └──────────────────┘
+         │                       │                       │
          │                       │ Enqueues              │ Reads
          │ Uses                  ▼                       │ Status
          ▼              ┌──────────────────┐             │
 ┌──────────────────┐    │   Azure Queue    │             │
-│  Go 2D Graphics  │    │     Storage      │             │
-│  & GIF Encoder   │    └──────────────────┘             │
+│   2D Graphics    │    │     Storage      │             │
+│   & GIF Engine   │    └──────────────────┘             │
 └──────────────────┘             │                       │
-         ▲                       │ Triggers              │
-         │                       ▼                       │
-         │              ┌──────────────────┐             │
-         │              │   Go Function    │             │
-         │              │  (QueueWorker)   │             │
-         │              └──────────────────┘             │
-         │                       │                       │
-         └───────────────────────┤                       │
+                                 │ Triggers              │
+                                 ▼                       │
+                        ┌──────────────────┐             │
+                        │   Go Function    │             │
+                        │  (QueueWorker)   │             │
+                        └──────────────────┘             │
+                                 │                       │
+                                 │ Uses                  │
+                                 ▼                       │
+                        ┌──────────────────┐             │
+                        │    PNG & PDF     │             │
+                        │     Compiler     │             │
+                        └──────────────────┘             │
+                                 │                       │
                                  │ Updates               │
                                  ▼                       ▼
                         ┌──────────────────────────────────┐
@@ -155,14 +162,14 @@ export const landingConfig: LandingConfig = {
 				"Go 2D graphics library running inside a Go Custom Handler Function App to draw typography, colors, and layout styles into consistent PNG images without C++ runtime dependencies.",
 		},
 		{
-			title: "Pure-Go Animated GIF Engine",
+			title: "Queue-backed Carousel & PDF Processor",
 			description:
-				"Multi-frame GIF generation engine using Go standard library image/gif and palette quantization to assemble accessible animated cover slideshows without external C++ or FFmpeg dependencies.",
+				"Asynchronous queue-backed generation pipeline using gofpdf to compile multi-slide carousels into high-resolution multi-page PDF documents, coordinated via Azure Queue Storage and tracked in MongoDB.",
 		},
 		{
-			title: "Queue-backed Batch Processor",
+			title: "Animated GIF Engine",
 			description:
-				"Queue-backed batch processor with a retry-aware serverless worker that coordinates bulk generation requests asynchronously via Azure Queue Storage and tracks progress in MongoDB.",
+				"Multi-frame GIF generation engine using Go standard library image/gif and palette quantization to assemble accessible animated cover slideshows without external C++ or FFmpeg dependencies.",
 		},
 		{
 			title: "Accessible Client Portal",
@@ -202,7 +209,7 @@ export const landingConfig: LandingConfig = {
 		],
 		objective_clarity: {
 			description:
-				"Supports rendering custom text and layout templates for PNG outputs up to 1200x630, and animated GIF slideshows with 2 to 10 slides and configurable frame delays (1000ms to 3000ms). Batch jobs are limited to a maximum of 5 images per request to prevent API timeout constraints.",
+				"Supports rendering custom text and layout templates for single PNG cover outputs up to 1200x630, multi-slide carousels with 2 to 10 slides compiled into multi-page PDF documents via queue-backed background processing, and animated GIF slideshows with 2 to 10 slides and configurable frame delays (1000ms to 3000ms).",
 		},
 		verifiable_outputs: [
 			{
@@ -215,10 +222,11 @@ export const landingConfig: LandingConfig = {
  ✓ src/lib/utils.test.ts (7 tests)
  ✓ src/services/api.test.ts (32 tests)
  ✓ src/app/api/_utils/index.test.ts (16 tests)
- ✓ src/hooks/useBatchForm.test.ts (9 tests)
+ ✓ src/hooks/useCarouselForm.test.ts (11 tests)
  ✓ src/hooks/useGifForm.test.ts (11 tests)
  ✓ src/hooks/useForm.test.ts (31 tests)
  ✓ src/components/GenerationNav.test.tsx (2 tests)
+ ✓ src/components/form/CarouselPreviewDisplay.test.tsx (2 tests)
  ✓ src/components/form/GifPreviewDisplay.test.tsx (2 tests)
  ✓ src/components/form/GifSettingsControls.test.tsx (1 test)
  ✓ src/components/ui.test.tsx (37 tests)
@@ -244,21 +252,21 @@ total:											(statements)			74.3%`,
 				terminal_output: `make test-bdd
 cd apiv2 && go test -v ./e2e/... && cd ..
 
+Feature: Cover Craft REST API
+  Scenario: Generate image with inset border enabled             # features/generate.feature:12
+    When I send a "POST" request to "/api/generateImage" with body
+    Then the response status code should be 200
+
+Feature: Carousel Generation API
+  Scenario: Submit carousel generation request                  # features/carousel.feature:30
+    When I send a "POST" request to "/api/generateCarousel" with body
+    Then the response status code should be 202
+
 Feature: Animated GIF Generation API
   Scenario: Generate animated GIF with valid parameters          # features/gif.feature:6
     When I send a "POST" request to "/api/generateGif" with body
     Then the response status code should be 200
     And the response content type should be "image/gif"
-
-Feature: Batch Image Generation API
-  Scenario: Submit batch generation request with inset border    # features/batch.feature:18
-    When I send a "POST" request to "/api/generateImages" with body
-    Then the response status code should be 202
-
-Feature: Cover Craft REST API
-  Scenario: Generate image with inset border enabled             # features/generate.feature:12
-    When I send a "POST" request to "/api/generateImage" with body
-    Then the response status code should be 200
   ...
 
 25 scenarios (25 passed)

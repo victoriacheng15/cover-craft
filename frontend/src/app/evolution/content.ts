@@ -216,4 +216,27 @@ export const chapters: Chapter[] = [
 			},
 		],
 	},
+	{
+		title: "Carousel Builder & PDF Compilation Engine",
+		intro:
+			"Evolved batch generation into an interactive multi-slide carousel builder with PDF document compilation. Replaced raw JSON batch payloads with a visual deck editor, live HTML5 canvas previews, and asynchronous queue-backed PDF rendering.",
+		timeline: [
+			{
+				date: "2026-09-21",
+				title: "PDF Compilation & Async Carousel Pipeline",
+				description:
+					"Implemented a PDF compilation engine using gofpdf alongside the Go 2D graphics library. Asynchronous queue workers process multi-slide decks, render individual frames, assemble multi-page PDF documents, and deliver download URLs via Azure Blob Storage.",
+				lessonLearned:
+					"Compiling multi-page PDFs directly in the Go serverless handler eliminates external CLI utilities like ImageMagick or FFmpeg, preserving lightweight container images and fast cold starts.",
+			},
+			{
+				date: "2026-09-22",
+				title: "Interactive Carousel Builder & Batch Decommissioning",
+				description:
+					"Delivered the Next.js visual carousel builder featuring drag-and-drop slide management, list-based layouts, and real-time canvas preview parity. Fully decommissioned the legacy raw JSON batch endpoint to establish a unified carousel workflow.",
+				lessonLearned:
+					"Replacing complex JSON schemas with an interactive slide builder and client-side canvas preview eliminated form submission errors and improved end-to-end user satisfaction.",
+			},
+		],
+	},
 ];

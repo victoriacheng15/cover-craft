@@ -1,4 +1,4 @@
-Feature: LinkedIn Carousel Generation API
+Feature: Carousel Generation API
   As a client
   I want to submit carousel generation jobs
   So that multi-slide PDF documents and PNG frames can be created asynchronously
