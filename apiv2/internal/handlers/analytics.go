@@ -409,7 +409,7 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 
 	// Top Fonts
 	fontPipe := mongo.Pipeline{
-		{{Key: "$match", Value: bson.M{"event": EventImageGenerated, "status": "success"}}},
+		{{Key: "$match", Value: bson.M{"event": bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}}, "status": "success"}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":   "$font",
 			"count": bson.M{"$sum": 1},
@@ -434,7 +434,7 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 
 	// Top Sizes
 	sizePipe := mongo.Pipeline{
-		{{Key: "$match", Value: bson.M{"event": bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated}}, "status": "success"}}},
+		{{Key: "$match", Value: bson.M{"event": bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}}, "status": "success"}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":   bson.M{"width": "$size.width", "height": "$size.height"},
 			"count": bson.M{"$sum": 1},
@@ -446,6 +446,9 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 	if err == nil {
 		defer sizeCursor.Close(ctx)
 		data.TopSizes = []SizeItem{}
+		sizeCounts := make(map[string]int)
+		var sizeOrder []string
+
 		for sizeCursor.Next(ctx) {
 			var res struct {
 				ID struct {
@@ -455,14 +458,24 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 				Count int `bson:"count"`
 			}
 			if err := sizeCursor.Decode(&res); err == nil {
-				label := "others"
+				label := "Others"
 				if res.ID.Width == 1200 && res.ID.Height == 627 {
 					label = "Post (1200 × 627)"
 				} else if res.ID.Width == 1080 && res.ID.Height == 1080 {
 					label = "Square (1080 × 1080)"
+				} else if res.ID.Width == 1080 && res.ID.Height == 1350 {
+					label = "Portrait (1080 × 1350)"
 				}
-				data.TopSizes = append(data.TopSizes, SizeItem{Size: label, Count: res.Count})
+
+				if _, exists := sizeCounts[label]; !exists {
+					sizeOrder = append(sizeOrder, label)
+				}
+				sizeCounts[label] += res.Count
 			}
+		}
+
+		for _, label := range sizeOrder {
+			data.TopSizes = append(data.TopSizes, SizeItem{Size: label, Count: sizeCounts[label]})
 		}
 	}
 
@@ -610,18 +623,20 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 		}
 	}
 
-	// Format Distribution (Image Cover vs GIF Slideshow)
+	// Format Distribution (Image Cover vs GIF Slideshow vs Carousel Deck)
 	coverCount, _ := coll.CountDocuments(ctx, bson.M{"event": EventImageGenerated, "status": "success"})
 	gifCount, _ := coll.CountDocuments(ctx, bson.M{"event": EventGifGenerated, "status": "success"})
+	carouselCount, _ := coll.CountDocuments(ctx, bson.M{"event": EventCarouselGenerated, "status": "success"})
 	data.FormatDistribution = []FormatItem{
 		{Format: "Image Cover", Count: int(coverCount)},
 		{Format: "GIF Slideshow", Count: int(gifCount)},
+		{Format: "Carousel Deck", Count: int(carouselCount)},
 	}
 
 	// Border Usage across all successful generations
 	borderPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
-			"event":  bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated}},
+			"event":  bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
 			"status": "success",
 		}}},
 		{{Key: "$group", Value: bson.M{
@@ -652,10 +667,10 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 		}
 	}
 
-	// Slide Count Stats for GIFs
+	// Slide Count Stats for GIFs and Carousels
 	slideStatsPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
-			"event":      EventGifGenerated,
+			"event":      bson.M{"$in": bson.A{EventGifGenerated, EventCarouselGenerated}},
 			"status":     "success",
 			"slideCount": bson.M{"$exists": true, "$ne": nil},
 		}}},
@@ -680,7 +695,7 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 	// Slide Count Distribution (2 slides, 3-4 slides, 5+ slides)
 	slideDistPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
-			"event":      EventGifGenerated,
+			"event":      bson.M{"$in": bson.A{EventGifGenerated, EventCarouselGenerated}},
 			"status":     "success",
 			"slideCount": bson.M{"$exists": true, "$ne": nil},
 		}}},
