@@ -409,12 +409,12 @@ func GenerateCarouselSlidePNG(deck CarouselParams, slideIndex int) ([]byte, erro
 func getCornerCoordinates(width, height int, position string, margin float64) (x, y, ax, ay float64) {
 	switch position {
 	case "top-left":
-		return margin, margin, 0.0, 0.0
+		return margin, margin, 0.0, 1.0
 	case "top-right":
-		return float64(width) - margin, margin, 1.0, 0.0
+		return float64(width) - margin, margin, 1.0, 1.0
 	case "bottom-right":
-		return float64(width) - margin, float64(height) - margin, 1.0, 1.0
+		return float64(width) - margin, float64(height) - margin, 1.0, 0.0
 	default: // bottom-left
-		return margin, float64(height) - margin, 0.0, 1.0
+		return margin, float64(height) - margin, 0.0, 0.0
 	}
 }

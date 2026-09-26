@@ -186,28 +186,38 @@ export function GifSettingsControls({
 
 			<FormError error={error} />
 
-			<div className="flex justify-center gap-3 pt-2">
-				<Button
-					onClick={handleGenerate}
-					disabled={isGenerating || !contrastCheck.meetsWCAG}
-					isLoading={isGenerating}
-					title={
-						!contrastCheck.meetsWCAG
-							? `Cannot generate: ${contrastCheck.message}`
-							: undefined
-					}
-					aria-label="Generate animated GIF slideshow"
-				>
-					{isGenerating ? "Generating..." : "Generate GIF"}
-				</Button>
-				<Button
-					variant="outline"
-					onClick={handleReset}
-					aria-label="Reset slideshow form"
-				>
-					Reset
-				</Button>
-			</div>
+			{(() => {
+				const hasEmptyTitle = formData.slides.some(
+					(s) => !s.title || s.title.trim() === "",
+				);
+				const isDisabled =
+					hasEmptyTitle || isGenerating || !contrastCheck.meetsWCAG;
+
+				return (
+					<div className="flex justify-center gap-3 pt-2">
+						<Button
+							onClick={handleGenerate}
+							disabled={isDisabled}
+							isLoading={isGenerating}
+							title={
+								!contrastCheck.meetsWCAG
+									? `Cannot generate: ${contrastCheck.message}`
+									: undefined
+							}
+							aria-label="Generate animated GIF slideshow"
+						>
+							{isGenerating ? "Generating..." : "Generate GIF"}
+						</Button>
+						<Button
+							variant="outline"
+							onClick={handleReset}
+							aria-label="Reset slideshow form"
+						>
+							Reset
+						</Button>
+					</div>
+				);
+			})()}
 		</Card>
 	);
 }

@@ -156,6 +156,7 @@ export async function proxyJobStatus(jobId: string) {
 		headers: {
 			"x-functions-key": API_KEY || "",
 		},
+		cache: "no-store",
 	});
 
 	return response;

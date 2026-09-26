@@ -93,7 +93,7 @@ export function CarouselFormControls({
 
 				{/* Filmstrip Tab Strip */}
 				<div
-					className="flex gap-2 overflow-x-auto pb-2 border-b border-gray-200"
+					className="flex flex-wrap gap-2 pb-2 border-b border-gray-200"
 					role="tablist"
 					aria-label="Carousel slide filmstrip"
 				>

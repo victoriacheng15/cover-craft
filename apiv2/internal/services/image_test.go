@@ -313,3 +313,101 @@ func TestGenerateCarouselSlidePNG(t *testing.T) {
 		}
 	}
 }
+
+func TestGetCornerCoordinates(t *testing.T) {
+	width, height := 1080, 1080
+	margin := 44.0
+
+	tests := []struct {
+		position string
+		wantX    float64
+		wantY    float64
+		wantAx   float64
+		wantAy   float64
+	}{
+		{
+			position: "top-left",
+			wantX:    44.0,
+			wantY:    44.0,
+			wantAx:   0.0,
+			wantAy:   1.0,
+		},
+		{
+			position: "top-right",
+			wantX:    1036.0,
+			wantY:    44.0,
+			wantAx:   1.0,
+			wantAy:   1.0,
+		},
+		{
+			position: "bottom-right",
+			wantX:    1036.0,
+			wantY:    1036.0,
+			wantAx:   1.0,
+			wantAy:   0.0,
+		},
+		{
+			position: "bottom-left",
+			wantX:    44.0,
+			wantY:    1036.0,
+			wantAx:   0.0,
+			wantAy:   0.0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.position, func(t *testing.T) {
+			x, y, ax, ay := getCornerCoordinates(width, height, tt.position, margin)
+			if x != tt.wantX || y != tt.wantY || ax != tt.wantAx || ay != tt.wantAy {
+				t.Errorf("getCornerCoordinates(%q) = (%v, %v, %v, %v), want (%v, %v, %v, %v)",
+					tt.position, x, y, ax, ay, tt.wantX, tt.wantY, tt.wantAx, tt.wantAy)
+			}
+		})
+	}
+}
+
+func TestRenderCarouselSlideFrame_CornerPositions(t *testing.T) {
+	positions := []struct {
+		authorPos CarouselParamsAuthorHandlePosition
+		slidePos  CarouselParamsSlideNumberPosition
+	}{
+		{CarouselParamsAuthorHandlePositionBottomLeft, CarouselParamsSlideNumberPositionTopRight},
+		{CarouselParamsAuthorHandlePositionTopLeft, CarouselParamsSlideNumberPositionBottomRight},
+		{CarouselParamsAuthorHandlePositionBottomRight, CarouselParamsSlideNumberPositionTopLeft},
+		{CarouselParamsAuthorHandlePositionTopRight, CarouselParamsSlideNumberPositionBottomLeft},
+	}
+
+	author := "@developer"
+	showSlideNums := true
+	borderStyle := Double
+
+	for _, pos := range positions {
+		t.Run(string(pos.authorPos)+"_"+string(pos.slidePos), func(t *testing.T) {
+			authorPosCopy := pos.authorPos
+			slidePosCopy := pos.slidePos
+			deck := CarouselParams{
+				Width:                1080,
+				Height:               1080,
+				BackgroundColor:      "#111827",
+				TextColor:            "#F9FAFB",
+				Font:                 CarouselParamsFontMontserrat,
+				BorderStyle:          &borderStyle,
+				AuthorHandle:         &author,
+				AuthorHandlePosition: &authorPosCopy,
+				ShowSlideNumbers:     &showSlideNums,
+				SlideNumberPosition:  &slidePosCopy,
+				Slides: []CarouselSlideParams{
+					{Title: "Testing Corner Positions"},
+				},
+			}
+
+			img, err := RenderCarouselSlideFrame(deck, 0)
+			if err != nil {
+				t.Fatalf("failed to render slide with corners: %v", err)
+			}
+			if img == nil {
+				t.Fatal("expected non-nil image")
+			}
+		})
+	}
+}

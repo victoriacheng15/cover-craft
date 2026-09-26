@@ -8,9 +8,11 @@ import {
 	SIZE_PRESETS,
 } from "@cover-craft/shared";
 import JSZip from "jszip";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { generateCarousel, getCarouselJobStatus } from "@/services/api";
 import { useContrastCheck } from "./useContrastCheck";
+
+const MAX_POLL_ATTEMPTS = 90;
 
 export interface CarouselSlideItem {
 	id: string;
@@ -99,6 +101,7 @@ export function useCarouselForm() {
 	const [isZipping, setIsZipping] = useState(false);
 
 	const pollingTimerRef = useRef<NodeJS.Timeout | null>(null);
+	const pollAttemptsRef = useRef(0);
 
 	// Contrast check for deck-level colors or active slide overrides
 	const activeSlide = slides[activeSlideIndex] ?? slides[0];
@@ -186,9 +189,25 @@ export function useCarouselForm() {
 		}
 	}, []);
 
+	// Clean up polling on unmount
+	useEffect(() => {
+		return () => {
+			stopPolling();
+		};
+	}, [stopPolling]);
+
 	// Poll job status
 	const pollStatus = useCallback(
 		async (id: string) => {
+			pollAttemptsRef.current += 1;
+			if (pollAttemptsRef.current > MAX_POLL_ATTEMPTS) {
+				setIsGenerating(false);
+				setStatus("failed");
+				setError("Carousel generation timed out. Please try again.");
+				stopPolling();
+				return;
+			}
+
 			try {
 				const res = await getCarouselJobStatus(id);
 				setStatus(res.status);
@@ -358,6 +377,7 @@ export function useCarouselForm() {
 			const newJobId = res.jobId || res.id;
 			setJobId(newJobId);
 			setStatus("processing");
+			pollAttemptsRef.current = 0;
 
 			// Start polling loop
 			pollingTimerRef.current = setInterval(() => {
@@ -483,6 +503,7 @@ export function useCarouselForm() {
 		setJobId(null);
 		setSlideResults([]);
 		setPdfUrl(null);
+		pollAttemptsRef.current = 0;
 		setError(null);
 	}, [stopPolling]);
 

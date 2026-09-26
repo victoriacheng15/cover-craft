@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { handleApiError, proxyJobStatus } from "@/_utils";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
 	try {
 		const { searchParams } = new URL(request.url);
@@ -26,17 +28,29 @@ export async function GET(request: NextRequest) {
 			if (errorBody && typeof errorBody === "object") {
 				return NextResponse.json(errorBody, {
 					status: response.status,
+					headers: {
+						"Cache-Control": "no-store, no-cache, must-revalidate",
+					},
 				});
 			}
 
 			return NextResponse.json(
 				{ error: response.statusText || "Failed to fetch job status" },
-				{ status: response.status },
+				{
+					status: response.status,
+					headers: {
+						"Cache-Control": "no-store, no-cache, must-revalidate",
+					},
+				},
 			);
 		}
 
 		const data = await response.json();
-		return NextResponse.json(data);
+		return NextResponse.json(data, {
+			headers: {
+				"Cache-Control": "no-store, no-cache, must-revalidate",
+			},
+		});
 	} catch (error) {
 		return handleApiError(error, "fetching job status");
 	}

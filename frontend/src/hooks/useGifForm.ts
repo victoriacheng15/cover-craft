@@ -36,8 +36,8 @@ export interface GifFormData {
 
 export const createDefaultSlide = (index: number): SlideItem => ({
 	id: `slide-${Date.now()}-${index}`,
-	title: index === 0 ? "Welcome to Cover Craft" : `Key Highlight ${index + 1}`,
-	subtitle: index === 0 ? "Create engaging covers in seconds" : "",
+	title: "",
+	subtitle: "",
 });
 
 export const initialGifFormData: GifFormData = {
@@ -57,6 +57,10 @@ export function useGifForm() {
 	const [error, setError] = useState<string | null>(null);
 	const [generatedGif, setGeneratedGif] = useState<Blob | null>(null);
 	const [generatedGifUrl, setGeneratedGifUrl] = useState<string | null>(null);
+
+	const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+
+	const activeSlide = formData.slides[activeSlideIndex] ?? formData.slides[0];
 
 	const contrastCheck = useContrastCheck(
 		formData.backgroundColor,
@@ -97,10 +101,12 @@ export function useGifForm() {
 
 	const addSlide = () => {
 		if (formData.slides.length >= 10) return;
+		const newIndex = formData.slides.length;
 		setFormData((prev) => ({
 			...prev,
-			slides: [...prev.slides, createDefaultSlide(prev.slides.length)],
+			slides: [...prev.slides, createDefaultSlide(newIndex)],
 		}));
+		setActiveSlideIndex(newIndex);
 	};
 
 	const removeSlide = (index: number) => {
@@ -109,6 +115,28 @@ export function useGifForm() {
 			...prev,
 			slides: prev.slides.filter((_, i) => i !== index),
 		}));
+		setActiveSlideIndex((prev) => {
+			if (prev >= index && prev > 0) {
+				return prev - 1;
+			}
+			return prev;
+		});
+	};
+
+	const moveSlide = (fromIndex: number, toIndex: number) => {
+		if (
+			toIndex < 0 ||
+			toIndex >= formData.slides.length ||
+			fromIndex === toIndex
+		)
+			return;
+		setFormData((prev) => {
+			const nextSlides = [...prev.slides];
+			const [moved] = nextSlides.splice(fromIndex, 1);
+			nextSlides.splice(toIndex, 0, moved);
+			return { ...prev, slides: nextSlides };
+		});
+		setActiveSlideIndex(toIndex);
 	};
 
 	const updateSlide = (index: number, updates: Partial<SlideItem>) => {
@@ -235,6 +263,7 @@ export function useGifForm() {
 
 	const handleReset = () => {
 		setFormData(initialGifFormData);
+		setActiveSlideIndex(0);
 		setGeneratedGif(null);
 		setGeneratedGifUrl(null);
 		setError(null);
@@ -243,6 +272,9 @@ export function useGifForm() {
 
 	return {
 		formData,
+		activeSlideIndex,
+		activeSlide,
+		setActiveSlideIndex,
 		isGenerating,
 		error,
 		generatedGifUrl,
@@ -256,6 +288,7 @@ export function useGifForm() {
 		setHasBorder,
 		addSlide,
 		removeSlide,
+		moveSlide,
 		updateSlide,
 		handleRandomizeColors,
 		getPreviewDimensions,

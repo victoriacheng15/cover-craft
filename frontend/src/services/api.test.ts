@@ -430,6 +430,9 @@ describe("API Service Wrapper", () => {
 
 			expect(fetchMock).toHaveBeenCalledWith(
 				"/api/jobStatus?jobId=job-carousel-123",
+				{
+					cache: "no-store",
+				},
 			);
 			expect(result).toEqual(mockResponse);
 			expect(result.pdfUrl).toBe("data:application/pdf;base64,pdfdata");
