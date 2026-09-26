@@ -1,14 +1,14 @@
 # Backend Architecture
 
-The backend is a serverless API built on Azure Functions (Go 1.24 Custom Handler), responsible for high-fidelity single cover generation, multi-slide carousel compilation, animated GIF slideshows, and system metrics collection. It leverages a dual-path execution model to balance immediate UI feedback with scalable bulk operations, hosted on the **Flex Consumption (`FC1`)** plan for optimal performance and regional stability.
+The backend is a serverless API built on Azure Functions (Go 1.26 Custom Handler), responsible for high-fidelity single cover generation, multi-slide carousel compilation, animated GIF slideshows, and system metrics collection. It leverages a dual-path execution model to balance immediate UI feedback with scalable bulk operations, hosted on the **Flex Consumption (`FC1`)** plan for optimal performance and regional stability.
 
 ## Core Tech Stack
 
-- **Runtime:** Azure Functions (Go 1.24 Custom Handler)
+- **Runtime:** Azure Functions (Go 1.26 Custom Handler)
 - **Hosting:** Azure Functions Flex Consumption (`FC1`) / Linux Plan
 - **Infrastructure:** OpenTofu / Terraform (IaC)
 - **Rendering:** Go 2D graphics (`github.com/fogleman/gg`), PDF document compilation (`github.com/phpdave11/gofpdf`), and animated GIF generation (`image/gif`)
-- **Database:** MongoDB (via official Go driver `go.mongodb.org/mongo-driver/v2`)
+- **Database:** MongoDB (via official Go driver `go.mongodb.org/mongo-driver`)
 - **Messaging:** Azure Queue Storage (for asynchronous job orchestration)
 - **Testing:** Go standard `testing` package and `github.com/cucumber/godog` (BDD)
 - **Contract Synchronization:** OpenAPI 3.1.0 (`openapi.yaml`) generating Go types via `make contract-sync`
@@ -27,7 +27,7 @@ The platform implements two distinct execution patterns optimized for different 
                     │  Next.js BFF Gateway   │
                     └────────────────────────┘
          ┌───────────────────────┼───────────────────────┐
-         │ /generateImage,       │ /generateCarousel     │ /jobStatus
+         │ /generateImage,       │ /generateCarousel     │ /getJobStatus
          │ /generateGif          │                       │
          ▼                       ▼                       ▼
 ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
@@ -100,7 +100,7 @@ Synchronous rendering path for multi-frame animated GIF slideshows (2 to 10 slid
 
 ### 4. Job Status Tracking
 
-**Endpoint:** `GET /api/jobStatus` (or `GET /api/getJobStatus?jobId={id}`)
+**Endpoint:** `GET /getJobStatus?jobId={id}` (proxied via BFF as `GET /api/getJobStatus` or `GET /api/jobStatus`)
 
 Allows the frontend to poll the current progress of an asynchronous generation operation.
 
