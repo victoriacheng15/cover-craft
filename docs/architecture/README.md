@@ -19,7 +19,7 @@ Cover Craft is split into a Next.js frontend and a Go Azure Functions backend. A
                                  │ POST /api/generateImage (Single)
                                  │ POST /api/generateCarousel (Carousel)
                                  │ POST /api/generateGif (GIF Slideshow)
-                                 │ GET /api/jobStatus (Poll Status)
+                                 │ GET /api/getJobStatus (Poll Status)
                                  ▼
 ┌──────────────────────────────────────────────────────────────────┐
 │                        Next.js BFF Server                        │

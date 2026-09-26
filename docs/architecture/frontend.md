@@ -4,10 +4,10 @@ The frontend is a **Next.js (App Router)** application that provides interactive
 
 ## Core Tech Stack
 
-- **Framework:** Next.js 15+ (App Router)
+- **Framework:** Next.js 16+ (App Router) with React 19
 - **Hosting:** Azure Web Apps (Linux)
 - **Infrastructure:** OpenTofu / Terraform (IaC)
-- **Styling:** Tailwind CSS + CSS Variables (for dynamic font injection)
+- **Styling:** Tailwind CSS v4 + CSS Variables (for dynamic font injection)
 - **State:** React Hooks (`useState`, `useMemo`, `useCallback`)
 - **Metrics:** Recharts (for analytics visualization)
 - **Contracts & Types:** OpenAPI 3.1.0 client types generated via `make contract-sync`
@@ -28,7 +28,7 @@ The frontend orchestrates three generation workflows: direct rendering for singl
 │            (Secures API keys and prevents CORS issues)           │
 └──────────────────────────────────────────────────────────────────┘
          │                      │                      │
-         │ /generateImage,      │ /generateCarousel    │ /jobStatus
+         │ /generateImage,      │ /generateCarousel    │ /getJobStatus
          │ /generateGif         ▼                      ▼
          ▼             ┌──────────────────┐   ┌──────────────────┐
 ┌──────────────────┐   │   Go Function    │   │   Go Function    │
