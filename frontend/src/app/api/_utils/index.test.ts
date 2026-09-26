@@ -237,6 +237,7 @@ describe("apiUtils", () => {
 					headers: {
 						"x-functions-key": "test-key",
 					},
+					cache: "no-store",
 				},
 			);
 			expect(response).toBe(fakeResponse);

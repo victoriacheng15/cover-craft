@@ -87,12 +87,35 @@ describe("useGifForm", () => {
 			result.current.addSlide();
 		});
 		expect(result.current.formData.slides).toHaveLength(3);
+		expect(result.current.activeSlideIndex).toBe(2);
 
 		// Remove 2nd slide
 		act(() => {
 			result.current.removeSlide(1);
 		});
 		expect(result.current.formData.slides).toHaveLength(2);
+		expect(result.current.activeSlideIndex).toBe(1);
+	});
+
+	it("reorders slides with moveSlide", () => {
+		const { result } = renderHook(() => useGifForm());
+
+		act(() => {
+			result.current.updateSlide(0, { title: "Slide A" });
+			result.current.updateSlide(1, { title: "Slide B" });
+			result.current.addSlide();
+			result.current.updateSlide(2, { title: "Slide C" });
+		});
+		expect(result.current.formData.slides).toHaveLength(3);
+
+		act(() => {
+			result.current.moveSlide(0, 1);
+		});
+
+		expect(result.current.formData.slides[0].title).toBe("Slide B");
+		expect(result.current.formData.slides[1].title).toBe("Slide A");
+		expect(result.current.formData.slides[2].title).toBe("Slide C");
+		expect(result.current.activeSlideIndex).toBe(1);
 	});
 
 	it("updates a specific slide correctly", () => {
@@ -120,6 +143,8 @@ describe("useGifForm", () => {
 		const { result } = renderHook(() => useGifForm());
 
 		act(() => {
+			result.current.updateSlide(0, { title: "Slide 1" });
+			result.current.updateSlide(1, { title: "Slide 2" });
 			result.current.setFont("Playfair Display");
 			result.current.setHasBorder(true);
 		});
@@ -226,6 +251,11 @@ describe("useGifForm", () => {
 		});
 
 		const { result } = renderHook(() => useGifForm());
+
+		act(() => {
+			result.current.updateSlide(0, { title: "Slide 1" });
+			result.current.updateSlide(1, { title: "Slide 2" });
+		});
 
 		await act(async () => {
 			await result.current.handleGenerate();

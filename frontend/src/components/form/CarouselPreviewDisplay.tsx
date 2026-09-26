@@ -334,6 +334,73 @@ export function CarouselPreviewDisplay({
 			className="w-full flex flex-col items-center gap-6"
 			aria-label="Live carousel preview and download controls"
 		>
+			{/* Generation Progress */}
+			{isGenerating && (
+				<div
+					className="w-full p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-2"
+					role="status"
+					aria-live="polite"
+				>
+					<div className="flex justify-between text-sm font-semibold text-emerald-800">
+						<span>
+							{status === "pending"
+								? "Queuing generation..."
+								: `Rendering slides (${progress}/${total})...`}
+						</span>
+						<span>{total > 0 ? Math.round((progress / total) * 100) : 0}%</span>
+					</div>
+					<div className="w-full bg-emerald-200 rounded-full h-2.5 overflow-hidden">
+						<div
+							className="bg-emerald-600 h-2.5 rounded-full transition-all duration-300"
+							style={{
+								width: `${total > 0 ? (progress / total) * 100 : 0}%`,
+							}}
+						/>
+					</div>
+				</div>
+			)}
+
+			{/* Download Actions (Above Preview Section) */}
+			{hasResults && (
+				<div className="w-full flex flex-col gap-3 pb-6 border-b border-gray-200">
+					<SectionTitle size="md">Generated Carousel Deck</SectionTitle>
+					<div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+						{pdfUrl && (
+							<Button
+								type="button"
+								variant="primary"
+								onClick={handleDownloadPDF}
+								aria-label="Download compiled PDF carousel"
+							>
+								Download PDF
+							</Button>
+						)}
+						{slideResults[activeSlideIndex] && (
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => handleDownloadSlide(activeSlideIndex)}
+								aria-label={`Download slide ${activeSlideIndex + 1} PNG`}
+							>
+								Slide {activeSlideIndex + 1} PNG
+							</Button>
+						)}
+						{slideResults.length > 0 && (
+							<Button
+								type="button"
+								variant="outline"
+								onClick={handleDownloadZip}
+								isLoading={isZipping}
+								disabled={isZipping}
+								aria-label="Download all slides and PDF as ZIP package"
+							>
+								All (ZIP)
+							</Button>
+						)}
+					</div>
+				</div>
+			)}
+
 			<div className="w-full flex justify-between items-center border-b border-gray-200 pb-3">
 				<SectionTitle size="md">Slide Preview</SectionTitle>
 				<span className="text-sm font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
@@ -396,75 +463,6 @@ export function CarouselPreviewDisplay({
 					Next ▶
 				</Button>
 			</div>
-
-			{/* Generation Progress */}
-			{isGenerating && (
-				<div
-					className="w-full p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col gap-2"
-					role="status"
-					aria-live="polite"
-				>
-					<div className="flex justify-between text-sm font-semibold text-emerald-800">
-						<span>
-							{status === "pending"
-								? "Queuing generation..."
-								: `Rendering slides (${progress}/${total})...`}
-						</span>
-						<span>{total > 0 ? Math.round((progress / total) * 100) : 0}%</span>
-					</div>
-					<div className="w-full bg-emerald-200 rounded-full h-2.5 overflow-hidden">
-						<div
-							className="bg-emerald-600 h-2.5 rounded-full transition-all duration-300"
-							style={{
-								width: `${total > 0 ? (progress / total) * 100 : 0}%`,
-							}}
-						/>
-					</div>
-				</div>
-			)}
-
-			{/* Download Actions */}
-			{hasResults && (
-				<div className="w-full flex flex-col gap-3 pt-2 border-t border-gray-200">
-					<span className="text-xs font-bold uppercase tracking-wider text-gray-500 text-center">
-						Export Deck
-					</span>
-					<div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-						{pdfUrl && (
-							<Button
-								type="button"
-								variant="primary"
-								onClick={handleDownloadPDF}
-								aria-label="Download compiled PDF carousel"
-							>
-								Download PDF
-							</Button>
-						)}
-						{slideResults[activeSlideIndex] && (
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => handleDownloadSlide(activeSlideIndex)}
-								aria-label={`Download slide ${activeSlideIndex + 1} PNG`}
-							>
-								Slide {activeSlideIndex + 1} PNG
-							</Button>
-						)}
-						{slideResults.length > 0 && (
-							<Button
-								type="button"
-								variant="outline"
-								onClick={handleDownloadZip}
-								isLoading={isZipping}
-								disabled={isZipping}
-								aria-label="Download all slides and PDF as ZIP package"
-							>
-								All (ZIP)
-							</Button>
-						)}
-					</div>
-				</div>
-			)}
 		</Card>
 	);
 }

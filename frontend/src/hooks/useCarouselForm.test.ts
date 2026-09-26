@@ -293,4 +293,114 @@ describe("useCarouselForm", () => {
 		expect(result.current.deckSettings.textColor).toMatch(/^#[0-9a-f]{6}$/i);
 		expect(result.current.contrastCheck.meetsWCAG).toBe(true);
 	});
+
+	it("times out if polling exceeds max attempts", async () => {
+		vi.useFakeTimers();
+		const { result } = renderHook(() => useCarouselForm());
+
+		act(() => {
+			result.current.updateSlide(0, { title: "Slide 1" });
+			result.current.updateSlide(1, { title: "Slide 2" });
+		});
+
+		generateCarouselMock.mockResolvedValueOnce({
+			id: "job-timeout",
+			jobId: "job-timeout",
+			message: "Accepted",
+		});
+
+		getCarouselJobStatusMock.mockResolvedValue({
+			id: "job-timeout",
+			status: "pending",
+			progress: 0,
+			total: 2,
+			results: [],
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		});
+
+		await act(async () => {
+			await result.current.handleGenerate();
+		});
+
+		expect(result.current.isGenerating).toBe(true);
+
+		// Advance past 90 poll attempts
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(95 * 1000);
+		});
+
+		expect(result.current.isGenerating).toBe(false);
+		expect(result.current.status).toBe("failed");
+		expect(result.current.error).toBe(
+			"Carousel generation timed out. Please try again.",
+		);
+
+		vi.useRealTimers();
+	});
+
+	it("allows regenerating after successful completion", async () => {
+		vi.useFakeTimers();
+		const { result } = renderHook(() => useCarouselForm());
+
+		act(() => {
+			result.current.updateSlide(0, { title: "Slide 1" });
+			result.current.updateSlide(1, { title: "Slide 2" });
+		});
+
+		generateCarouselMock.mockResolvedValueOnce({
+			id: "job-1",
+			jobId: "job-1",
+			message: "Accepted",
+		});
+
+		getCarouselJobStatusMock.mockResolvedValueOnce({
+			id: "job-1",
+			status: "completed",
+			progress: 2,
+			total: 2,
+			results: ["slide1", "slide2"],
+			pdfUrl: "data:pdf1",
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		});
+
+		// First generation
+		await act(async () => {
+			await result.current.handleGenerate();
+		});
+
+		expect(result.current.isGenerating).toBe(false);
+		expect(result.current.status).toBe("completed");
+		expect(result.current.pdfUrl).toBe("data:pdf1");
+
+		// Second generation (regenerate without resetting inputs)
+		generateCarouselMock.mockResolvedValueOnce({
+			id: "job-2",
+			jobId: "job-2",
+			message: "Accepted",
+		});
+
+		getCarouselJobStatusMock.mockResolvedValueOnce({
+			id: "job-2",
+			status: "completed",
+			progress: 2,
+			total: 2,
+			results: ["slide1-v2", "slide2-v2"],
+			pdfUrl: "data:pdf2",
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		});
+
+		await act(async () => {
+			await result.current.handleGenerate();
+		});
+
+		expect(result.current.isGenerating).toBe(false);
+		expect(result.current.status).toBe("completed");
+		expect(result.current.pdfUrl).toBe("data:pdf2");
+		expect(result.current.slideResults).toEqual(["slide1-v2", "slide2-v2"]);
+
+		vi.useRealTimers();
+	});
 });

@@ -194,7 +194,9 @@ export async function generateCarousel(
 export async function getCarouselJobStatus(
 	jobId: string,
 ): Promise<JobStatusResponse> {
-	const response = await fetch(`/api/jobStatus?jobId=${jobId}`);
+	const response = await fetch(`/api/jobStatus?jobId=${jobId}`, {
+		cache: "no-store",
+	});
 
 	if (!response.ok) {
 		throw new Error("Failed to fetch job status");

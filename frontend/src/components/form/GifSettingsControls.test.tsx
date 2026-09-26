@@ -12,7 +12,7 @@ describe("GifSettingsControls", () => {
 		delayMs: 1500,
 		font: "Montserrat",
 		hasBorder: false,
-		slides: [],
+		slides: [{ id: "slide-1", title: "Slide 1", subtitle: "" }],
 	};
 
 	const mockSetSize = vi.fn();
@@ -95,5 +95,22 @@ describe("GifSettingsControls", () => {
 		});
 		fireEvent.click(resetBtn);
 		expect(mockHandleReset).toHaveBeenCalled();
+	});
+
+	it("disables Generate GIF button when a slide title is empty", () => {
+		render(
+			<GifSettingsControls
+				{...defaultProps}
+				formData={{
+					...mockFormData,
+					slides: [{ id: "slide-1", title: "   ", subtitle: "" }],
+				}}
+			/>,
+		);
+
+		const generateBtn = screen.getByRole("button", {
+			name: /generate animated gif slideshow/i,
+		});
+		expect(generateBtn).toBeDisabled();
 	});
 });

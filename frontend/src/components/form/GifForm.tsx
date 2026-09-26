@@ -26,8 +26,12 @@ export function GifForm() {
 		setFilename,
 		setFont,
 		setHasBorder,
+		activeSlideIndex,
+		activeSlide,
+		setActiveSlideIndex,
 		addSlide,
 		removeSlide,
+		moveSlide,
 		updateSlide,
 		handleRandomizeColors,
 		getPreviewDimensions,
@@ -62,8 +66,12 @@ export function GifForm() {
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 				<GifFormControls
 					formData={formData}
+					activeSlideIndex={activeSlideIndex}
+					activeSlide={activeSlide}
+					setActiveSlideIndex={setActiveSlideIndex}
 					addSlide={addSlide}
 					removeSlide={removeSlide}
+					moveSlide={moveSlide}
 					updateSlide={updateSlide}
 				/>
 
