@@ -1,4 +1,4 @@
-import { SIZE_PRESETS } from "@cover-craft/shared";
+import { getContrastRatio, SIZE_PRESETS } from "@cover-craft/shared";
 import {
 	Lato,
 	Montserrat,
@@ -67,6 +67,39 @@ export function calculatePreviewDimensions(sizeLabel: string) {
 		width: selectedSize.width * 0.5,
 		height: selectedSize.height * 0.5,
 	};
+}
+
+export function getRandomCompliantColorPair(minRatio = 6.0): {
+	backgroundColor: string;
+	textColor: string;
+} {
+	const randomColor = () =>
+		`#${Math.floor(Math.random() * 16777215)
+			.toString(16)
+			.padStart(6, "0")}`;
+
+	let backgroundColor: string;
+	let textColor: string;
+	let ratio: number | null = null;
+
+	do {
+		backgroundColor = randomColor();
+		textColor = randomColor();
+		ratio = getContrastRatio(backgroundColor, textColor);
+	} while (ratio === null || ratio < minRatio);
+
+	return { backgroundColor, textColor };
+}
+
+export function getTimestampedFilename(
+	base?: string,
+	ext = "png",
+	fallback = "cover",
+): string {
+	const cleanBase = base?.trim() ? base.trim() : fallback;
+	const cleanExt = ext.replace(/^\./, "");
+	const timestamp = Math.floor(Date.now() / 1000);
+	return `${cleanBase}-${timestamp}.${cleanExt}`;
 }
 
 // download.ts logic

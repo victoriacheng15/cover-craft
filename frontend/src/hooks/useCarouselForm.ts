@@ -9,6 +9,10 @@ import {
 } from "@cover-craft/shared";
 import JSZip from "jszip";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	getRandomCompliantColorPair,
+	getTimestampedFilename,
+} from "@/lib/utils";
 import { generateCarousel, getCarouselJobStatus } from "@/services/api";
 import { useContrastCheck } from "./useContrastCheck";
 
@@ -446,13 +450,12 @@ export function useCarouselForm() {
 				});
 			}
 
-			const timestamp = Math.floor(Date.now() / 1000);
 			const base = deckSettings.filename || "carousel";
 			const content = await zip.generateAsync({ type: "blob" });
 			const url = URL.createObjectURL(content);
 			const link = document.createElement("a");
 			link.href = url;
-			link.download = `${base}-deck-${timestamp}.zip`;
+			link.download = getTimestampedFilename(`${base}-deck`, "zip");
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
@@ -466,27 +469,11 @@ export function useCarouselForm() {
 
 	// Randomize colors with WCAG AA compliance
 	const handleRandomizeColors = useCallback(() => {
-		const randomColor = () =>
-			`#${Math.floor(Math.random() * 16777215)
-				.toString(16)
-				.padStart(6, "0")}`;
-
-		const RANDOMIZE_THRESHOLD = 6.0;
-
-		let bgColor: string;
-		let textColor: string;
-		let ratio: number | null = null;
-
-		do {
-			bgColor = randomColor();
-			textColor = randomColor();
-			ratio = getContrastRatio(bgColor, textColor);
-		} while (ratio === null || ratio < RANDOMIZE_THRESHOLD);
-
+		const { backgroundColor, textColor } = getRandomCompliantColorPair();
 		setDeckSettings((prev) => ({
 			...prev,
-			backgroundColor: bgColor,
-			textColor: textColor,
+			backgroundColor,
+			textColor,
 		}));
 	}, []);
 

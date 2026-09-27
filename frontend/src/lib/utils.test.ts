@@ -1,5 +1,12 @@
+import { getContrastRatio } from "@cover-craft/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { calculatePreviewDimensions, cn, downloadImage } from "./utils";
+import {
+	calculatePreviewDimensions,
+	cn,
+	downloadImage,
+	getRandomCompliantColorPair,
+	getTimestampedFilename,
+} from "./utils";
 
 type ShowSaveFilePicker = (options: {
 	suggestedName: string;
@@ -162,6 +169,57 @@ describe("utils library", () => {
 
 			await expect(downloadImage(blob, filename)).rejects.toThrow(
 				"Failed to save file: Permission denied",
+			);
+		});
+	});
+
+	describe("getRandomCompliantColorPair", () => {
+		it("generates valid hex colors with contrast ratio >= default threshold (6.0:1)", () => {
+			for (let i = 0; i < 5; i++) {
+				const { backgroundColor, textColor } = getRandomCompliantColorPair();
+				expect(backgroundColor).toMatch(/^#[0-9a-f]{6}$/i);
+				expect(textColor).toMatch(/^#[0-9a-f]{6}$/i);
+
+				const ratio = getContrastRatio(backgroundColor, textColor);
+				expect(ratio).not.toBeNull();
+				expect(ratio ?? 0).toBeGreaterThanOrEqual(6.0);
+			}
+		});
+
+		it("supports custom minimum contrast ratio threshold", () => {
+			const { backgroundColor, textColor } = getRandomCompliantColorPair(7.0);
+			const ratio = getContrastRatio(backgroundColor, textColor);
+			expect(ratio).not.toBeNull();
+			expect(ratio ?? 0).toBeGreaterThanOrEqual(7.0);
+		});
+	});
+
+	describe("getTimestampedFilename", () => {
+		beforeEach(() => {
+			vi.spyOn(Date, "now").mockReturnValue(1700000000000);
+		});
+
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
+		it("formats filenames consistently with base, timestamp, and extension", () => {
+			const filename = getTimestampedFilename("custom-cover", "png");
+			expect(filename).toBe("custom-cover-1700000000.png");
+		});
+
+		it("strips leading dots in extension", () => {
+			const filename = getTimestampedFilename("report", ".pdf");
+			expect(filename).toBe("report-1700000000.pdf");
+		});
+
+		it("uses fallback when base is empty or whitespace", () => {
+			expect(getTimestampedFilename("", "png", "fallback-base")).toBe(
+				"fallback-base-1700000000.png",
+			);
+			expect(getTimestampedFilename("   ", "png")).toBe("cover-1700000000.png");
+			expect(getTimestampedFilename(undefined, "png")).toBe(
+				"cover-1700000000.png",
 			);
 		});
 	});
