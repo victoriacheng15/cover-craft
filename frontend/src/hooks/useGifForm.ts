@@ -20,6 +20,7 @@ import {
 	sendGenerateGifEvent,
 } from "@/services/api";
 import { useContrastCheck } from "./useContrastCheck";
+import { useSlideDeck } from "./useSlideDeck";
 
 export interface SlideItem {
 	id: string;
@@ -55,16 +56,44 @@ export const initialGifFormData: GifFormData = {
 	slides: [createDefaultSlide(0), createDefaultSlide(1)],
 };
 
+const initialGifSettings = {
+	size: initialGifFormData.size,
+	filename: initialGifFormData.filename,
+	backgroundColor: initialGifFormData.backgroundColor,
+	textColor: initialGifFormData.textColor,
+	delayMs: initialGifFormData.delayMs,
+	font: initialGifFormData.font,
+	hasBorder: initialGifFormData.hasBorder,
+};
+
 export function useGifForm() {
-	const [formData, setFormData] = useState<GifFormData>(initialGifFormData);
+	const [settings, setSettings] = useState(initialGifSettings);
+	const {
+		slides,
+		activeSlideIndex,
+		activeSlide,
+		setActiveSlideIndex,
+		addSlide,
+		removeSlide,
+		moveSlide,
+		updateSlide,
+		resetSlides,
+	} = useSlideDeck<SlideItem>({
+		initialSlides: initialGifFormData.slides,
+		createSlide: createDefaultSlide,
+		minSlides: 2,
+		maxSlides: 10,
+	});
+
+	const formData: GifFormData = {
+		...settings,
+		slides,
+	};
+
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [generatedGif, setGeneratedGif] = useState<Blob | null>(null);
 	const [generatedGifUrl, setGeneratedGifUrl] = useState<string | null>(null);
-
-	const [activeSlideIndex, setActiveSlideIndex] = useState(0);
-
-	const activeSlide = formData.slides[activeSlideIndex] ?? formData.slides[0];
 
 	const contrastCheck = useContrastCheck(
 		formData.backgroundColor,
@@ -76,84 +105,36 @@ export function useGifForm() {
 	};
 
 	const setSize = (size: string) => {
-		setFormData((prev) => ({ ...prev, size }));
+		setSettings((prev) => ({ ...prev, size }));
 	};
 
 	const setBackgroundColor = (backgroundColor: string) => {
-		setFormData((prev) => ({ ...prev, backgroundColor }));
+		setSettings((prev) => ({ ...prev, backgroundColor }));
 	};
 
 	const setTextColor = (textColor: string) => {
-		setFormData((prev) => ({ ...prev, textColor }));
+		setSettings((prev) => ({ ...prev, textColor }));
 	};
 
 	const setDelayMs = (delayMs: GifDelayPreset) => {
-		setFormData((prev) => ({ ...prev, delayMs }));
+		setSettings((prev) => ({ ...prev, delayMs }));
 	};
 
 	const setFilename = (filename: string) => {
-		setFormData((prev) => ({ ...prev, filename }));
+		setSettings((prev) => ({ ...prev, filename }));
 	};
 
 	const setFont = (font: AllowedFont) => {
-		setFormData((prev) => ({ ...prev, font }));
+		setSettings((prev) => ({ ...prev, font }));
 	};
 
 	const setHasBorder = (hasBorder: boolean) => {
-		setFormData((prev) => ({ ...prev, hasBorder }));
-	};
-
-	const addSlide = () => {
-		if (formData.slides.length >= 10) return;
-		const newIndex = formData.slides.length;
-		setFormData((prev) => ({
-			...prev,
-			slides: [...prev.slides, createDefaultSlide(newIndex)],
-		}));
-		setActiveSlideIndex(newIndex);
-	};
-
-	const removeSlide = (index: number) => {
-		if (formData.slides.length <= 2) return;
-		setFormData((prev) => ({
-			...prev,
-			slides: prev.slides.filter((_, i) => i !== index),
-		}));
-		setActiveSlideIndex((prev) => {
-			if (prev >= index && prev > 0) {
-				return prev - 1;
-			}
-			return prev;
-		});
-	};
-
-	const moveSlide = (fromIndex: number, toIndex: number) => {
-		if (
-			toIndex < 0 ||
-			toIndex >= formData.slides.length ||
-			fromIndex === toIndex
-		)
-			return;
-		setFormData((prev) => {
-			const nextSlides = [...prev.slides];
-			const [moved] = nextSlides.splice(fromIndex, 1);
-			nextSlides.splice(toIndex, 0, moved);
-			return { ...prev, slides: nextSlides };
-		});
-		setActiveSlideIndex(toIndex);
-	};
-
-	const updateSlide = (index: number, updates: Partial<SlideItem>) => {
-		setFormData((prev) => {
-			const updated = [...prev.slides];
-			updated[index] = { ...updated[index], ...updates };
-			return { ...prev, slides: updated };
-		});
+		setSettings((prev) => ({ ...prev, hasBorder }));
 	};
 
 	const handleRandomizeColors = () => {
 		const { backgroundColor, textColor } = getRandomCompliantColorPair();
-		setFormData((prev) => ({
+		setSettings((prev) => ({
 			...prev,
 			backgroundColor,
 			textColor,
@@ -252,8 +233,8 @@ export function useGifForm() {
 	};
 
 	const handleReset = () => {
-		setFormData(initialGifFormData);
-		setActiveSlideIndex(0);
+		setSettings(initialGifSettings);
+		resetSlides();
 		setGeneratedGif(null);
 		setGeneratedGifUrl(null);
 		setError(null);
