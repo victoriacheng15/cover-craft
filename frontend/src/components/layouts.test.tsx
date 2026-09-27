@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { Footer, Header, MainLayout } from "./layouts";
+import { Footer, GenerationPageLayout, Header, MainLayout } from "./layouts";
 
 describe("Footer", () => {
 	it("renders copyright text", () => {
@@ -90,5 +90,66 @@ describe("MainLayout", () => {
 
 		const mainContainer = container.firstChild as HTMLElement;
 		expect(mainContainer).toHaveClass("bg-emerald-100", "text-gray-900");
+	});
+});
+
+describe("GenerationPageLayout", () => {
+	it("renders title, description, and children within semantic tags", () => {
+		const { container } = render(
+			<GenerationPageLayout
+				title="Test Generator Title"
+				description="Test generator description text."
+				activeMode="single"
+				ariaLabel="Test generation form"
+			>
+				<div>Form Content Here</div>
+			</GenerationPageLayout>,
+		);
+
+		const article = container.querySelector("article");
+		expect(article).toBeInTheDocument();
+		expect(article).toHaveClass("w-full");
+
+		const header = container.querySelector("header");
+		expect(header).toBeInTheDocument();
+
+		const titleElement = screen.getByRole("heading", {
+			level: 1,
+			name: "Test Generator Title",
+		});
+		expect(titleElement).toBeInTheDocument();
+
+		expect(
+			screen.getByText("Test generator description text."),
+		).toBeInTheDocument();
+
+		const section = screen.getByRole("region", {
+			name: "Test generation form",
+		});
+		expect(section).toBeInTheDocument();
+		expect(screen.getByText("Form Content Here")).toBeInTheDocument();
+	});
+
+	it("passes activeMode correctly to GenerationNav", () => {
+		render(
+			<GenerationPageLayout
+				title="Carousel Title"
+				description="Carousel description."
+				activeMode="carousel"
+				ariaLabel="Carousel generation form"
+			>
+				<div>Carousel Content</div>
+			</GenerationPageLayout>,
+		);
+
+		const carouselLink = screen.getByRole("link", {
+			name: /carousel builder/i,
+		});
+		expect(carouselLink).toHaveAttribute("aria-current", "page");
+
+		const singleLink = screen.getByRole("link", {
+			name: /single cover/i,
+		});
+		expect(singleLink).not.toHaveAttribute("aria-current");
 	});
 });

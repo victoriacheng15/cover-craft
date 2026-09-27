@@ -1,5 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import {
+	GenerationNav,
+	type GenerationNavProps,
+} from "@/components/GenerationNav";
 import { SectionTitle } from "@/components/ui";
 import { landingConfig } from "@/lib/landingConfig";
 
@@ -107,5 +111,37 @@ export function Footer() {
 				</nav>
 			</div>
 		</footer>
+	);
+}
+
+export interface GenerationPageLayoutProps {
+	title: string;
+	description: string;
+	activeMode: GenerationNavProps["activeMode"];
+	ariaLabel: string;
+	children: ReactNode;
+}
+
+export function GenerationPageLayout({
+	title,
+	description,
+	activeMode,
+	ariaLabel,
+	children,
+}: GenerationPageLayoutProps) {
+	return (
+		<MainLayout>
+			<article className="w-full">
+				<header className="mb-8 text-center">
+					<SectionTitle size="xl" as="h1">
+						{title}
+					</SectionTitle>
+					<p className="text-gray-600 mt-2 text-lg">{description}</p>
+					<GenerationNav activeMode={activeMode} className="mt-6" />
+				</header>
+
+				<section aria-label={ariaLabel}>{children}</section>
+			</article>
+		</MainLayout>
 	);
 }

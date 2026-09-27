@@ -1,27 +1,15 @@
 import { CoverForm } from "@/components/form";
-import { GenerationNav } from "@/components/GenerationNav";
-import { MainLayout } from "@/components/layouts";
-import { SectionTitle } from "@/components/ui";
+import { GenerationPageLayout } from "@/components/layouts";
 
 export default function GeneratePage() {
 	return (
-		<MainLayout>
-			<article className="w-full">
-				<header className="mb-8 text-center">
-					<SectionTitle size="xl" as="h1">
-						Generate Your Cover
-					</SectionTitle>
-					<p className="text-gray-600 mt-2 text-lg">
-						Customize your cover image with privacy-first tools.
-					</p>
-
-					<GenerationNav activeMode="single" className="mt-6" />
-				</header>
-
-				<section aria-label="Single image generation form">
-					<CoverForm />
-				</section>
-			</article>
-		</MainLayout>
+		<GenerationPageLayout
+			title="Generate Your Cover"
+			description="Customize your cover image with privacy-first tools."
+			activeMode="single"
+			ariaLabel="Single image generation form"
+		>
+			<CoverForm />
+		</GenerationPageLayout>
 	);
 }
