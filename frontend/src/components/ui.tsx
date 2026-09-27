@@ -233,3 +233,8 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
 		/>
 	);
 }
+
+export {
+	SlideNavigationStepper,
+	type SlideNavigationStepperProps,
+} from "./ui/SlideNavigationStepper";
