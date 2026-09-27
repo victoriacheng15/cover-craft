@@ -1,6 +1,6 @@
 # Cover Craft
 
-Cover Craft is a production-grade, serverless media generation engine built with Go, Next.js, and Azure, 100% codified via Terraform and containerized locally using rootless Podman Dev Containers.
+Cover Craft is a serverless media generation engine built with Go, Next.js, and Azure, provisioned with Terraform and containerized locally using rootless Podman Dev Containers.
 
 [Live Project](https://cover-craft-ui.azurewebsites.net/) | [Full Documentation](./docs/README.md)
 
@@ -8,7 +8,7 @@ Cover Craft is a production-grade, serverless media generation engine built with
 
 ## Platform & Infrastructure Highlights
 
-* **100% Infrastructure as Code (Terraform):** All compute, storage, and networking layers (Azure Functions, App Service, Queue Storage, Application Insights, and Blob Storage for `tfstate` locking) are declared declaratively with zero manual Azure Portal changes.
+* **Infrastructure as Code (Terraform):** All compute, storage, and networking layers (Azure Functions, App Service, Queue Storage, Application Insights, and Blob Storage for `tfstate` locking) are declared declaratively with zero manual Azure Portal changes.
 * **Deterministic CI/CD Automation:** Multi-stage GitHub Actions workflows enforce automated Terraform validation, plan generation, and deployment alongside discrete artifact packaging for Go binaries and Next.js standalone bundles.
 * **Containerized Local Dev Loop (Podman / Dev Containers):** Complete local parity running Next.js, the Go custom runtime host, and Azurite (Azure Storage emulator) orchestrating multi-service hot-reloading in isolated rootless Podman/Docker containers.
 * **Operational Maturity:** Documented Architecture Decision Records (ADRs) and blameless incident postmortems tracking monorepo packaging, authentication boundaries, and runtime plan migrations.
@@ -136,7 +136,7 @@ The platform provides three runtime generation paths:
 | :--- | :--- |
 | Language & Core | Go, TypeScript, React, Next.js, Tailwind CSS |
 | Media Processing | 2D graphics (`fogleman/gg`), PDF compiler (`jung-kurt/gofpdf`), animated GIF encoder (`image/gif`) |
-| Infrastructure (100% IaC) | Terraform on Azure (Functions Flex Consumption, App Service, Queue Storage, Application Insights, Blob Storage) |
+| Infrastructure (IaC) | Terraform on Azure (Functions Flex Consumption, App Service, Queue Storage, Application Insights, Blob Storage) |
 | Local Platform & Virtualization | Podman / Docker Dev Containers, Azurite emulator, GNU Make |
 | Data & State | Queue Storage (async buffering), MongoDB (job state & analytics), Blob Storage (`tfstate`) |
 | Quality & CI/CD | GitHub Actions, Vitest, Go test / BDD, contract validation via OpenAPI 3.0 |
