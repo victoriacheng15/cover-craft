@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Button, Card, SectionTitle } from "@/components/ui";
+import {
+	Button,
+	Card,
+	SectionTitle,
+	SlideNavigationStepper,
+} from "@/components/ui";
 import type {
 	CarouselDeckSettings,
 	CarouselSlideItem,
@@ -314,19 +319,6 @@ export function CarouselPreviewDisplay({
 	handleDownloadZip,
 }: CarouselPreviewDisplayProps) {
 	const activeSlide = slides[activeSlideIndex] ?? slides[0];
-
-	const handlePrev = () => {
-		if (activeSlideIndex > 0) {
-			setActiveSlideIndex(activeSlideIndex - 1);
-		}
-	};
-
-	const handleNext = () => {
-		if (activeSlideIndex < slides.length - 1) {
-			setActiveSlideIndex(activeSlideIndex + 1);
-		}
-	};
-
 	const hasResults = slideResults.length > 0 || pdfUrl !== null;
 
 	return (
@@ -420,49 +412,20 @@ export function CarouselPreviewDisplay({
 						slide={activeSlide}
 						slideIndex={activeSlideIndex}
 						totalSlides={slides.length}
-						className="w-full h-auto max-w-[500px]"
+						className="w-full h-auto max-w-125"
 					/>
 				)}
 			</div>
 
 			{/* Stepper Controls */}
-			<div className="flex items-center gap-4">
-				<Button
-					type="button"
-					variant="secondary"
-					onClick={handlePrev}
-					disabled={activeSlideIndex === 0}
-					aria-label="Previous slide preview"
-				>
-					◀ Previous
-				</Button>
-
-				<div className="flex gap-1.5">
-					{slides.map((s, idx) => (
-						<button
-							key={s.id}
-							type="button"
-							onClick={() => setActiveSlideIndex(idx)}
-							className={`w-3 h-3 rounded-full transition-all ${
-								idx === activeSlideIndex
-									? "bg-emerald-600 scale-125"
-									: "bg-gray-300 hover:bg-gray-400"
-							}`}
-							aria-label={`Jump to slide ${idx + 1}`}
-						/>
-					))}
-				</div>
-
-				<Button
-					type="button"
-					variant="secondary"
-					onClick={handleNext}
-					disabled={activeSlideIndex === slides.length - 1}
-					aria-label="Next slide preview"
-				>
-					Next ▶
-				</Button>
-			</div>
+			<SlideNavigationStepper
+				activeIndex={activeSlideIndex}
+				totalSlides={slides.length}
+				slideIds={slides.map((s) => s.id)}
+				onSelectIndex={setActiveSlideIndex}
+				prevAriaLabel="Previous slide preview"
+				nextAriaLabel="Next slide preview"
+			/>
 		</Card>
 	);
 }

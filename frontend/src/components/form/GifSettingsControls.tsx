@@ -1,7 +1,7 @@
 "use client";
 
 import {
-	FONT_OPTIONS,
+	type FONT_OPTIONS,
 	GIF_DELAY_PRESETS,
 	type GifDelayPreset,
 	SIZE_PRESETS,
@@ -9,14 +9,15 @@ import {
 import {
 	Button,
 	Card,
-	ColorPicker,
 	FormError,
 	Input,
 	SectionTitle,
 	Select,
 } from "@/components/ui";
 import type { ContrastCheckResult, GifFormData } from "@/hooks";
-import { ColorContrastMessage, FormField } from "./CoverFormControls";
+import { FormField } from "./CoverFormControls";
+import { FontSelect } from "./FontSelect";
+import { SharedColorControls } from "./SharedColorControls";
 
 export interface GifSettingsControlsProps {
 	formData: GifFormData;
@@ -71,22 +72,12 @@ export function GifSettingsControls({
 					</Select>
 				</FormField>
 
-				<FormField label="Font" htmlFor="gif-font">
-					<Select
-						id="gif-font"
-						value={formData.font}
-						onChange={(e) =>
-							setFont(e.target.value as (typeof FONT_OPTIONS)[number])
-						}
-						aria-label="Select font for all slides"
-					>
-						{FONT_OPTIONS.map((f) => (
-							<option key={f} value={f}>
-								{f}
-							</option>
-						))}
-					</Select>
-				</FormField>
+				<FontSelect
+					id="gif-font"
+					value={formData.font}
+					onChange={setFont}
+					ariaLabel="Select font for all slides"
+				/>
 
 				<FormField label="Filename" htmlFor="gif-filename">
 					<Input
@@ -100,48 +91,16 @@ export function GifSettingsControls({
 			</div>
 
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-				<div className="flex flex-col gap-4">
-					<ColorContrastMessage contrastCheck={contrastCheck} />
-
-					<div className="flex flex-col sm:flex-row gap-4 sm:items-end">
-						<div className="flex-1">
-							<FormField
-								label="Background Color"
-								htmlFor="gif-background-color"
-							>
-								<ColorPicker
-									id="gif-background-color"
-									value={formData.backgroundColor}
-									onChange={(e) => setBackgroundColor(e.target.value)}
-									title="Choose background color for your slideshow"
-									aria-label="Background color picker"
-								/>
-							</FormField>
-						</div>
-
-						<div className="flex-1">
-							<FormField label="Text Color" htmlFor="gif-text-color">
-								<ColorPicker
-									id="gif-text-color"
-									value={formData.textColor}
-									onChange={(e) => setTextColor(e.target.value)}
-									title="Choose text color for your slideshow"
-									aria-label="Text color picker"
-								/>
-							</FormField>
-						</div>
-
-						<Button
-							variant="outline"
-							onClick={handleRandomizeColors}
-							aria-label="Randomize background and text colors"
-							type="button"
-							className="shrink-0"
-						>
-							Randomize Colors
-						</Button>
-					</div>
-				</div>
+				<SharedColorControls
+					idPrefix="gif"
+					backgroundColor={formData.backgroundColor}
+					textColor={formData.textColor}
+					onBackgroundColorChange={setBackgroundColor}
+					onTextColorChange={setTextColor}
+					onRandomizeColors={handleRandomizeColors}
+					contrastCheck={contrastCheck}
+					titleContext="slideshow"
+				/>
 
 				<div className="flex flex-col gap-4">
 					<FormField label="Slide Delay (ms)">

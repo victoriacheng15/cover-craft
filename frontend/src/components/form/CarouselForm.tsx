@@ -1,10 +1,9 @@
 "use client";
 
-import { CAROUSEL_LIMITS, FONT_OPTIONS } from "@cover-craft/shared";
+import { CAROUSEL_LIMITS } from "@cover-craft/shared";
 import {
 	Button,
 	Card,
-	ColorPicker,
 	FormError,
 	Input,
 	SectionTitle,
@@ -20,7 +19,9 @@ import {
 } from "@/lib/utils";
 import { CarouselFormControls } from "./CarouselFormControls";
 import { CarouselPreviewDisplay } from "./CarouselPreviewDisplay";
-import { ColorContrastMessage, FormField } from "./CoverFormControls";
+import { FormField } from "./CoverFormControls";
+import { FontSelect } from "./FontSelect";
+import { SharedColorControls } from "./SharedColorControls";
 
 export function CarouselForm() {
 	const {
@@ -83,24 +84,12 @@ export function CarouselForm() {
 						</Select>
 					</FormField>
 
-					<FormField label="Font" htmlFor="deck-font">
-						<Select
-							id="deck-font"
-							value={deckSettings.font}
-							onChange={(e) =>
-								updateDeckSettings({
-									font: e.target.value as (typeof FONT_OPTIONS)[number],
-								})
-							}
-							aria-label="Select font for all slides"
-						>
-							{FONT_OPTIONS.map((f) => (
-								<option key={f} value={f}>
-									{f}
-								</option>
-							))}
-						</Select>
-					</FormField>
+					<FontSelect
+						id="deck-font"
+						value={deckSettings.font}
+						onChange={(font) => updateDeckSettings({ font })}
+						ariaLabel="Select font for all slides"
+					/>
 
 					<FormField label="Filename" htmlFor="deck-filename">
 						<Input
@@ -116,52 +105,20 @@ export function CarouselForm() {
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 					{/* Left: Global Colors & Contrast */}
-					<div className="flex flex-col gap-4">
-						<ColorContrastMessage contrastCheck={contrastCheck} />
-
-						<div className="flex flex-col sm:flex-row gap-4 sm:items-end">
-							<div className="flex-1">
-								<FormField
-									label="Background Color"
-									htmlFor="deck-background-color"
-								>
-									<ColorPicker
-										id="deck-background-color"
-										value={deckSettings.backgroundColor}
-										onChange={(e) =>
-											updateDeckSettings({ backgroundColor: e.target.value })
-										}
-										title="Choose background color for your carousel"
-										aria-label="Background color picker"
-									/>
-								</FormField>
-							</div>
-
-							<div className="flex-1">
-								<FormField label="Text Color" htmlFor="deck-text-color">
-									<ColorPicker
-										id="deck-text-color"
-										value={deckSettings.textColor}
-										onChange={(e) =>
-											updateDeckSettings({ textColor: e.target.value })
-										}
-										title="Choose text color for your carousel"
-										aria-label="Text color picker"
-									/>
-								</FormField>
-							</div>
-
-							<Button
-								variant="outline"
-								onClick={handleRandomizeColors}
-								aria-label="Randomize background and text colors"
-								type="button"
-								className="shrink-0"
-							>
-								Randomize Colors
-							</Button>
-						</div>
-					</div>
+					<SharedColorControls
+						idPrefix="deck"
+						backgroundColor={deckSettings.backgroundColor}
+						textColor={deckSettings.textColor}
+						onBackgroundColorChange={(color) =>
+							updateDeckSettings({ backgroundColor: color })
+						}
+						onTextColorChange={(color) =>
+							updateDeckSettings({ textColor: color })
+						}
+						onRandomizeColors={handleRandomizeColors}
+						contrastCheck={contrastCheck}
+						titleContext="carousel"
+					/>
 
 					{/* Right: Border & Corner Overlays */}
 					<div className="flex flex-col gap-4">

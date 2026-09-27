@@ -1,7 +1,6 @@
 "use client";
 
 import {
-	FONT_OPTIONS,
 	MAX_SUBTITLE_LENGTH,
 	MAX_TITLE_LENGTH,
 	SIZE_PRESETS,
@@ -9,7 +8,6 @@ import {
 import {
 	Button,
 	Card,
-	ColorPicker,
 	FormError,
 	Input,
 	SectionTitle,
@@ -17,6 +15,12 @@ import {
 } from "@/components/ui";
 import type { ContrastCheckResult, FormData } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { FontSelect } from "./FontSelect";
+import {
+	ColorContrastMessage,
+	type ColorContrastMessageProps,
+	SharedColorControls,
+} from "./SharedColorControls";
 
 interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
 	label: string;
@@ -54,101 +58,9 @@ export function FormField({
 	);
 }
 
-interface ColorContrastMessageProps {
-	contrastCheck: ContrastCheckResult;
-	stacked?: boolean;
-	className?: string;
-}
+export { ColorContrastMessage, type ColorContrastMessageProps };
 
-export function ColorContrastMessage({
-	contrastCheck,
-	stacked = false,
-	className = "",
-}: ColorContrastMessageProps) {
-	function getContrastColorClasses(status: "good" | "warning" | "poor") {
-		const colorMap: Record<
-			"good" | "warning" | "poor",
-			{ dot: string; text: string }
-		> = {
-			good: { dot: "bg-emerald-500", text: "text-emerald-700" },
-			warning: { dot: "bg-yellow-500", text: "text-yellow-700" },
-			poor: { dot: "bg-red-500", text: "text-red-700" },
-		};
-		return colorMap[status];
-	}
-
-	if (stacked) {
-		return (
-			<div
-				className={cn(
-					"p-2.5 bg-emerald-50 rounded-xl border border-emerald-100 flex flex-col items-center justify-center text-center min-h-16",
-					className,
-				)}
-			>
-				<p className="text-xs font-medium text-emerald-900">Color Contrast</p>
-				<output
-					className="flex items-center justify-center gap-1.5 mt-0.5"
-					aria-live="polite"
-					aria-atomic="true"
-				>
-					{contrastCheck.status && (
-						<>
-							<span
-								className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${getContrastColorClasses(contrastCheck.status).dot}`}
-								aria-hidden="true"
-							/>
-							<p
-								className={`text-xs font-semibold truncate ${getContrastColorClasses(contrastCheck.status).text}`}
-							>
-								{contrastCheck.message}
-							</p>
-							<span className="sr-only">
-								Contrast status is {contrastCheck.status}
-							</span>
-						</>
-					)}
-				</output>
-			</div>
-		);
-	}
-
-	return (
-		<div
-			className={cn(
-				"p-3 bg-emerald-50 rounded-xl border border-emerald-100",
-				className,
-			)}
-		>
-			<div className="flex items-center justify-between">
-				<p className="text-sm font-medium text-emerald-900">Color Contrast</p>
-				<output
-					className="flex items-center gap-2"
-					aria-live="polite"
-					aria-atomic="true"
-				>
-					{contrastCheck.status && (
-						<>
-							<span
-								className={`inline-block w-3 h-3 rounded-full ${getContrastColorClasses(contrastCheck.status).dot}`}
-								aria-hidden="true"
-							/>
-							<p
-								className={`text-sm font-semibold ${getContrastColorClasses(contrastCheck.status).text}`}
-							>
-								{contrastCheck.message}
-							</p>
-							<span className="sr-only">
-								Contrast status is {contrastCheck.status}
-							</span>
-						</>
-					)}
-				</output>
-			</div>
-		</div>
-	);
-}
-
-interface ColorControlsProps {
+export interface ColorControlsProps {
 	formData: FormData;
 	handleInputChange: (key: keyof FormData, value: string) => void;
 	handleRandomizeColors: () => void;
@@ -160,43 +72,17 @@ export function ColorControls({
 	handleRandomizeColors,
 }: ColorControlsProps) {
 	return (
-		<div className="flex gap-10 items-end">
-			<div className="flex-1">
-				<FormField label="Background Color" htmlFor="background-color">
-					<ColorPicker
-						id="background-color"
-						value={formData.backgroundColor}
-						onChange={(e) =>
-							handleInputChange("backgroundColor", e.target.value)
-						}
-						title="Choose background color for your cover"
-						aria-label="Background color picker"
-					/>
-				</FormField>
-			</div>
-
-			<div className="flex-1">
-				<FormField label="Text Color" htmlFor="text-color">
-					<ColorPicker
-						id="text-color"
-						value={formData.textColor}
-						onChange={(e) => handleInputChange("textColor", e.target.value)}
-						title="Choose text color for your cover"
-						aria-label="Text color picker"
-					/>
-				</FormField>
-			</div>
-
-			<Button
-				variant="outline"
-				onClick={handleRandomizeColors}
-				aria-label="Randomize background and text colors"
-				type="button"
-				className="shrink-0"
-			>
-				Randomize Colors
-			</Button>
-		</div>
+		<SharedColorControls
+			backgroundColor={formData.backgroundColor}
+			textColor={formData.textColor}
+			onBackgroundColorChange={(color) =>
+				handleInputChange("backgroundColor", color)
+			}
+			onTextColorChange={(color) => handleInputChange("textColor", color)}
+			onRandomizeColors={handleRandomizeColors}
+			titleContext="cover"
+			colorRowClassName="flex gap-10 items-end"
+		/>
 	);
 }
 
@@ -321,20 +207,12 @@ export function CoverFormControls({
 				handleRandomizeColors={handleRandomizeColors}
 			/>
 
-			<FormField label="Font" htmlFor="font">
-				<Select
-					id="font"
-					value={formData.font}
-					onChange={(e) => handleInputChange("font", e.target.value)}
-					aria-label="Select font for your cover text"
-				>
-					{FONT_OPTIONS.map((f) => (
-						<option key={f} value={f}>
-							{f}
-						</option>
-					))}
-				</Select>
-			</FormField>
+			<FontSelect
+				id="font"
+				value={formData.font}
+				onChange={(font) => handleInputChange("font", font)}
+				ariaLabel="Select font for your cover text"
+			/>
 
 			<div className="flex items-center gap-2 py-1">
 				<input

@@ -1,7 +1,13 @@
 "use client";
 
 import { MAX_SUBTITLE_LENGTH, MAX_TITLE_LENGTH } from "@cover-craft/shared";
-import { Button, Card, Input, SectionTitle } from "@/components/ui";
+import {
+	Button,
+	Card,
+	Input,
+	SectionTitle,
+	SlideNavigationStepper,
+} from "@/components/ui";
 import type { GifFormData, SlideItem } from "@/hooks";
 import { FormField } from "./CoverFormControls";
 
@@ -28,18 +34,6 @@ export function GifFormControls({
 }: GifFormControlsProps) {
 	const currentSlide =
 		activeSlide ?? formData.slides[activeSlideIndex] ?? formData.slides[0];
-
-	const handlePrev = () => {
-		if (activeSlideIndex > 0) {
-			setActiveSlideIndex(activeSlideIndex - 1);
-		}
-	};
-
-	const handleNext = () => {
-		if (activeSlideIndex < formData.slides.length - 1) {
-			setActiveSlideIndex(activeSlideIndex + 1);
-		}
-	};
 
 	return (
 		<div className="flex-1 flex flex-col gap-6">
@@ -177,45 +171,16 @@ export function GifFormControls({
 				</FormField>
 
 				{/* Stepper Navigation */}
-				<div className="flex justify-between items-center pt-2 border-t border-gray-200">
-					<Button
-						type="button"
-						variant="secondary"
-						className="h-8 px-3 text-xs"
-						onClick={handlePrev}
-						disabled={activeSlideIndex === 0}
-						aria-label="Previous slide"
-					>
-						◀ Previous
-					</Button>
-
-					<div className="flex gap-1.5">
-						{formData.slides.map((s, idx) => (
-							<button
-								key={s.id}
-								type="button"
-								onClick={() => setActiveSlideIndex(idx)}
-								className={`w-2.5 h-2.5 rounded-full transition-all ${
-									idx === activeSlideIndex
-										? "bg-emerald-600 scale-125"
-										: "bg-gray-300 hover:bg-gray-400"
-								}`}
-								aria-label={`Jump to slide ${idx + 1}`}
-							/>
-						))}
-					</div>
-
-					<Button
-						type="button"
-						variant="secondary"
-						className="h-8 px-3 text-xs"
-						onClick={handleNext}
-						disabled={activeSlideIndex === formData.slides.length - 1}
-						aria-label="Next slide"
-					>
-						Next ▶
-					</Button>
-				</div>
+				<SlideNavigationStepper
+					activeIndex={activeSlideIndex}
+					totalSlides={formData.slides.length}
+					slideIds={formData.slides.map((s) => s.id)}
+					onSelectIndex={setActiveSlideIndex}
+					prevAriaLabel="Previous slide"
+					nextAriaLabel="Next slide"
+					size="sm"
+					className="justify-between pt-2 border-t border-gray-200"
+				/>
 			</Card>
 		</div>
 	);
