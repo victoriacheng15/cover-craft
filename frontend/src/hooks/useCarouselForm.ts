@@ -15,6 +15,7 @@ import {
 } from "@/lib/utils";
 import { generateCarousel, getCarouselJobStatus } from "@/services/api";
 import { useContrastCheck } from "./useContrastCheck";
+import { useSlideDeck } from "./useSlideDeck";
 
 const MAX_POLL_ATTEMPTS = 90;
 
@@ -89,8 +90,22 @@ export const initialSlides: CarouselSlideItem[] = [
 export function useCarouselForm() {
 	const [deckSettings, setDeckSettings] =
 		useState<CarouselDeckSettings>(initialDeckSettings);
-	const [slides, setSlides] = useState<CarouselSlideItem[]>(initialSlides);
-	const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+	const {
+		slides,
+		activeSlideIndex,
+		activeSlide,
+		setActiveSlideIndex,
+		addSlide,
+		removeSlide,
+		moveSlide,
+		updateSlide,
+		resetSlides,
+	} = useSlideDeck<CarouselSlideItem>({
+		initialSlides,
+		createSlide: createDefaultSlide,
+		minSlides: CAROUSEL_LIMITS.MIN_SLIDES,
+		maxSlides: CAROUSEL_LIMITS.MAX_SLIDES,
+	});
 
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [status, setStatus] = useState<
@@ -108,7 +123,6 @@ export function useCarouselForm() {
 	const pollAttemptsRef = useRef(0);
 
 	// Contrast check for deck-level colors or active slide overrides
-	const activeSlide = slides[activeSlideIndex] ?? slides[0];
 	const effectiveBg =
 		activeSlide?.backgroundColor || deckSettings.backgroundColor;
 	const effectiveText = activeSlide?.textColor || deckSettings.textColor;
@@ -126,59 +140,6 @@ export function useCarouselForm() {
 						next.height = preset.height;
 					}
 				}
-				return next;
-			});
-		},
-		[],
-	);
-
-	// Add slide (up to max 10)
-	const addSlide = useCallback(() => {
-		if (slides.length >= CAROUSEL_LIMITS.MAX_SLIDES) return;
-		const newIndex = slides.length;
-		const newSlide = createDefaultSlide(newIndex);
-		setSlides((prev) => [...prev, newSlide]);
-		setActiveSlideIndex(newIndex);
-	}, [slides.length]);
-
-	// Remove slide (down to min 2)
-	const removeSlide = useCallback(
-		(index: number) => {
-			if (slides.length <= CAROUSEL_LIMITS.MIN_SLIDES) return;
-			setSlides((prev) => prev.filter((_, i) => i !== index));
-			setActiveSlideIndex((prev) => {
-				if (prev >= index && prev > 0) {
-					return prev - 1;
-				}
-				return prev;
-			});
-		},
-		[slides.length],
-	);
-
-	// Move slide in filmstrip
-	const moveSlide = useCallback(
-		(fromIndex: number, toIndex: number) => {
-			if (toIndex < 0 || toIndex >= slides.length || fromIndex === toIndex)
-				return;
-			setSlides((prev) => {
-				const next = [...prev];
-				const [moved] = next.splice(fromIndex, 1);
-				next.splice(toIndex, 0, moved);
-				return next;
-			});
-			setActiveSlideIndex(toIndex);
-		},
-		[slides.length],
-	);
-
-	// Update specific slide
-	const updateSlide = useCallback(
-		(index: number, partial: Partial<CarouselSlideItem>) => {
-			setSlides((prev) => {
-				const next = [...prev];
-				if (!next[index]) return prev;
-				next[index] = { ...next[index], ...partial };
 				return next;
 			});
 		},
@@ -481,8 +442,7 @@ export function useCarouselForm() {
 	const handleReset = useCallback(() => {
 		stopPolling();
 		setDeckSettings(initialDeckSettings);
-		setSlides(initialSlides);
-		setActiveSlideIndex(0);
+		resetSlides();
 		setIsGenerating(false);
 		setStatus("idle");
 		setProgress(0);
@@ -492,7 +452,7 @@ export function useCarouselForm() {
 		setPdfUrl(null);
 		pollAttemptsRef.current = 0;
 		setError(null);
-	}, [stopPolling]);
+	}, [stopPolling, resetSlides]);
 
 	return {
 		deckSettings,
