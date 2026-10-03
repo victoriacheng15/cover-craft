@@ -39,10 +39,10 @@ jobs:
             markdown:
               - '**/*.md'
 
-  lint-frontend:
+  lint:
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    if: ${{ needs.changes.outputs.frontend == 'true' || needs.changes.outputs.apiv2 == 'true' || needs.changes.outputs.markdown == 'true' }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -50,61 +50,31 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
-      - name: Run lint and typecheck
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: apiv2/go.sum
+
+      - name: Run frontend lint and typecheck
+        if: ${{ needs.changes.outputs.frontend == 'true' }}
         working-directory: frontend
         run: |
+          npm ci
           npm run lint
           npx tsc --noEmit
 
-  lint-apiv2:
-    runs-on: ubuntu-latest
-    needs: changes
-    if: ${{ needs.changes.outputs.apiv2 == 'true' }}
-    steps:
-      - uses: actions/checkout@v7
-      - name: Set up Go
-        uses: actions/setup-go@v7
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apiv2/go.sum
-      - name: Run Go Lint (Vet)
-        run: |
-          make lint-go
-
-  markdownlint:
-    runs-on: ubuntu-latest
-    needs: changes
-    if: ${{ needs.changes.outputs.markdown == 'true' }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
       - name: Run markdownlint
-        run: npx markdownlint-cli "**/*.md" --ignore "**/node_modules/**"
+        if: ${{ needs.changes.outputs.markdown == 'true' }}
+        run: make lint-md
 
-  test-apiv2:
-    runs-on: ubuntu-latest
-    needs: [changes, lint-apiv2]
-    if: ${{ needs.changes.outputs.apiv2 == 'true' }}
-    steps:
-      - uses: actions/checkout@v7
-      - name: Set up Go
-        uses: actions/setup-go@v7
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apiv2/go.sum
-      - name: Run Go Tests
-        run: |
-          make test-go
+      - name: Run Go Lint (Vet)
+        if: ${{ needs.changes.outputs.apiv2 == 'true' }}
+        run: make lint-go
 
-  test-bdd-apiv2:
+  test:
     runs-on: ubuntu-latest
-    needs: [changes, lint-apiv2]
-    if: ${{ needs.changes.outputs.apiv2 == 'true' }}
+    needs: [changes, lint]
+    if: ${{ needs.changes.outputs.frontend == 'true' || needs.changes.outputs.apiv2 == 'true' }}
     services:
       mongodb:
         image: mongo:6.0
@@ -114,29 +84,27 @@ jobs:
       MONGODB_URI: mongodb://localhost:27017
     steps:
       - uses: actions/checkout@v7
-      - name: Set up Go
-        uses: actions/setup-go@v7
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apiv2/go.sum
-      - name: Run Go BDD Tests
-        run: |
-          make test-bdd
-
-  test-frontend:
-    runs-on: ubuntu-latest
-    needs: [changes, lint-frontend]
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
-    steps:
-      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-      - name: Install dependencies
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: apiv2/go.sum
+
+      - name: Run frontend tests
+        if: ${{ needs.changes.outputs.frontend == 'true' }}
         working-directory: frontend
-        run: npm ci
-      - name: Run tests
-        working-directory: frontend
-        run: npm run test
+        run: |
+          npm ci
+          npm run test
+
+      - name: Run Go Tests
+        if: ${{ needs.changes.outputs.apiv2 == 'true' }}
+        run: make test-go
+
+      - name: Run Go BDD Tests
+        if: ${{ needs.changes.outputs.apiv2 == 'true' }}
+        run: make test-bdd
