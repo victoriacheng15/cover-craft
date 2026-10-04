@@ -104,11 +104,14 @@ export function useForm() {
 			// Send minimal payload (intent + client performance)
 			sendGenerateEvent({
 				clientDuration,
+				font: formData.font,
 				size: {
 					width: selectedSize.width,
 					height: selectedSize.height,
 				},
 				hasBorder: formData.hasBorder,
+				titleLength: formData.title.length,
+				subtitleLength: formData.subtitle?.length || 0,
 			});
 
 			setGeneratedImage(blob);

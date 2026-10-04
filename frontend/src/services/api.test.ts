@@ -3,8 +3,10 @@ import type { MockedFunction } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	type CarouselParams,
+	DOWNLOAD_CAROUSEL_CLICK_EVENT,
 	DOWNLOAD_CLICK_EVENT,
 	DOWNLOAD_GIF_CLICK_EVENT,
+	GENERATE_CAROUSEL_CLICK_EVENT,
 	GENERATE_CLICK_EVENT,
 	GENERATE_GIF_CLICK_EVENT,
 	type GifParams,
@@ -15,8 +17,10 @@ import {
 	getCarouselJobStatus,
 	health,
 	type ImageParams,
+	sendDownloadCarouselEvent,
 	sendDownloadEvent,
 	sendDownloadGifEvent,
+	sendGenerateCarouselEvent,
 	sendGenerateEvent,
 	sendGenerateGifEvent,
 	sendMetrics,
@@ -625,6 +629,69 @@ describe("API Service Wrapper", () => {
 		it("silently catches errors on fetch failure", async () => {
 			fetchMock.mockRejectedValueOnce(new Error("Network failure"));
 			await expect(sendDownloadGifEvent()).resolves.not.toThrow();
+		});
+	});
+
+	describe("sendGenerateCarouselEvent", () => {
+		it("sends generate carousel click event with parameters", async () => {
+			fetchMock.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ success: true }),
+			} as unknown as Response);
+
+			const payload: Partial<MetricPayload> = {
+				font: "Montserrat",
+				hasBorder: false,
+				slideCount: 4,
+			};
+
+			await sendGenerateCarouselEvent(payload);
+
+			expect(fetchMock).toHaveBeenCalledWith("/api/metrics", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: expect.stringContaining(
+					`"event":"${GENERATE_CAROUSEL_CLICK_EVENT}"`,
+				),
+			});
+			const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string);
+			expect(body.slideCount).toBe(4);
+			expect(body.font).toBe("Montserrat");
+		});
+
+		it("ignores call when payload is invalid", async () => {
+			// @ts-expect-error
+			await sendGenerateCarouselEvent({ event: 123 });
+			expect(fetchMock).not.toHaveBeenCalled();
+		});
+
+		it("silently catches errors on fetch failure", async () => {
+			fetchMock.mockRejectedValueOnce(new Error("Network failure"));
+			await expect(sendGenerateCarouselEvent({})).resolves.not.toThrow();
+		});
+	});
+
+	describe("sendDownloadCarouselEvent", () => {
+		it("sends download carousel click event", async () => {
+			fetchMock.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ success: true }),
+			} as unknown as Response);
+
+			await sendDownloadCarouselEvent();
+
+			expect(fetchMock).toHaveBeenCalledWith("/api/metrics", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: expect.stringContaining(
+					`"event":"${DOWNLOAD_CAROUSEL_CLICK_EVENT}"`,
+				),
+			});
+		});
+
+		it("silently catches errors on fetch failure", async () => {
+			fetchMock.mockRejectedValueOnce(new Error("Network failure"));
+			await expect(sendDownloadCarouselEvent()).resolves.not.toThrow();
 		});
 	});
 });

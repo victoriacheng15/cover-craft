@@ -6,6 +6,8 @@ import { useCarouselForm } from "./useCarouselForm";
 vi.mock("@/services/api", () => ({
 	generateCarousel: vi.fn(),
 	getCarouselJobStatus: vi.fn(),
+	sendGenerateCarouselEvent: vi.fn(),
+	sendDownloadCarouselEvent: vi.fn(),
 }));
 
 describe("useCarouselForm", () => {

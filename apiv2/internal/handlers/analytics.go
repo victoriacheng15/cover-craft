@@ -3,7 +3,9 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/victoriacheng15/cover-craft/apiv2/internal/db"
@@ -38,18 +40,12 @@ type HourlyTrendItem struct {
 }
 
 type UserEngagementData struct {
-	UiGenerationAttempts          int               `json:"uiGenerationAttempts"`
-	TotalDownloads                int               `json:"totalDownloads"`
-	DownloadRate                  float64           `json:"downloadRate"`
-	DailyTrend                    []DailyTrendItem  `json:"dailyTrend"`
-	TotalSuccessfulGenerations    int               `json:"totalSuccessfulGenerations"`
-	UiUsagePercent                float64           `json:"uiUsagePercent"`
-	ApiUsagePercent               float64           `json:"apiUsagePercent"`
-	HourlyTrend                   []HourlyTrendItem `json:"hourlyTrend"`
-	GifGenerationAttempts         int               `json:"gifGenerationAttempts"`
-	TotalSuccessfulGifGenerations int               `json:"totalSuccessfulGifGenerations"`
-	TotalGifDownloads             int               `json:"totalGifDownloads"`
-	GifDownloadRate               float64           `json:"gifDownloadRate"`
+	UiGenerationAttempts       int               `json:"uiGenerationAttempts"`
+	TotalDownloads             int               `json:"totalDownloads"`
+	DownloadRate               float64           `json:"downloadRate"`
+	DailyTrend                 []DailyTrendItem  `json:"dailyTrend"`
+	TotalSuccessfulGenerations int               `json:"totalSuccessfulGenerations"`
+	HourlyTrend                []HourlyTrendItem `json:"hourlyTrend"`
 }
 
 type FormatItem struct {
@@ -84,6 +80,13 @@ type TitleLengthStats struct {
 	MaxTitleLength int         `json:"maxTitleLength"`
 }
 
+type SubtitleLengthStats struct {
+	ID                interface{} `json:"_id"`
+	AvgSubtitleLength float64     `json:"avgSubtitleLength"`
+	MinSubtitleLength int         `json:"minSubtitleLength"`
+	MaxSubtitleLength int         `json:"maxSubtitleLength"`
+}
+
 type TitleDistribution struct {
 	Short  int `json:"short"`
 	Medium int `json:"medium"`
@@ -106,6 +109,7 @@ type FeaturePopularityData struct {
 	TopFonts                  []FontItem           `json:"topFonts"`
 	TopSizes                  []SizeItem           `json:"topSizes"`
 	TitleLengthStats          TitleLengthStats     `json:"titleLengthStats"`
+	SubtitleLengthStats       SubtitleLengthStats  `json:"subtitleLengthStats"`
 	TitleLengthDistribution   TitleDistribution    `json:"titleLengthDistribution"`
 	SubtitleUsagePercent      float64              `json:"subtitleUsagePercent"`
 	SubtitleUsageDistribution SubtitleDistribution `json:"subtitleUsageDistribution"`
@@ -150,14 +154,15 @@ type DurationTrendItem struct {
 }
 
 type BackendPerformance struct {
-	AvgBackendDuration    float64             `json:"avgBackendDuration"`
-	MinBackendDuration    float64             `json:"minBackendDuration"`
-	MaxBackendDuration    float64             `json:"maxBackendDuration"`
-	P50BackendDuration    float64             `json:"p50BackendDuration"`
-	P95BackendDuration    float64             `json:"p95BackendDuration"`
-	P99BackendDuration    float64             `json:"p99BackendDuration"`
-	BackendDurationTrend  []DurationTrendItem `json:"backendDurationTrend"`
-	AvgGifBackendDuration float64             `json:"avgGifBackendDuration,omitempty"`
+	AvgBackendDuration         float64             `json:"avgBackendDuration"`
+	MinBackendDuration         float64             `json:"minBackendDuration"`
+	MaxBackendDuration         float64             `json:"maxBackendDuration"`
+	P50BackendDuration         float64             `json:"p50BackendDuration"`
+	P95BackendDuration         float64             `json:"p95BackendDuration"`
+	P99BackendDuration         float64             `json:"p99BackendDuration"`
+	BackendDurationTrend       []DurationTrendItem `json:"backendDurationTrend"`
+	AvgGifBackendDuration      float64             `json:"avgGifBackendDuration,omitempty"`
+	AvgCarouselBackendDuration float64             `json:"avgCarouselBackendDuration,omitempty"`
 }
 
 type ClientPerformance struct {
@@ -277,68 +282,46 @@ func AnalyticsHandler(w http.ResponseWriter, r *http.Request) {
 func queryUserEngagement(ctx context.Context, coll *mongo.Collection, thirtyDaysAgo time.Time) (UserEngagementData, error) {
 	var data UserEngagementData
 
-	// GENERATE_CLICK attempts count
-	uiAttempts, err := coll.CountDocuments(ctx, bson.M{"event": EventGenerateClick})
+	// Total generation attempts across all formats (image, gif, carousel)
+	attempts, err := coll.CountDocuments(ctx, bson.M{
+		"event": bson.M{"$in": bson.A{EventGenerateClick, EventGenerateGifClick, EventGenerateCarouselClick}},
+	})
 	if err != nil {
 		return data, err
 	}
-	data.UiGenerationAttempts = int(uiAttempts)
+	data.UiGenerationAttempts = int(attempts)
 
-	// IMAGE_GENERATED success count
-	totalSuccess, err := coll.CountDocuments(ctx, bson.M{"event": EventImageGenerated, "status": "success"})
+	// Total successful generations across all formats (image, gif, carousel)
+	totalSuccess, err := coll.CountDocuments(ctx, bson.M{
+		"event":  bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+		"status": bson.M{"$in": bson.A{"success", "completed"}},
+	})
 	if err != nil {
 		return data, err
 	}
 	data.TotalSuccessfulGenerations = int(totalSuccess)
 
-	// DOWNLOAD_CLICK success count
-	totalDownloads, err := coll.CountDocuments(ctx, bson.M{"event": EventDownloadClick, "status": "success"})
+	// Total downloads across all formats (image, gif, carousel)
+	totalDownloads, err := coll.CountDocuments(ctx, bson.M{
+		"event":  bson.M{"$in": bson.A{EventDownloadClick, EventDownloadGifClick, EventDownloadCarouselClick}},
+		"status": "success",
+	})
 	if err != nil {
 		return data, err
 	}
 	data.TotalDownloads = int(totalDownloads)
 
-	// Rates & Usage share
+	// Rates
 	if data.UiGenerationAttempts > 0 {
 		data.DownloadRate = float64(data.TotalDownloads) / float64(data.UiGenerationAttempts) * 100
 	}
 
-	estimatedApi := data.TotalSuccessfulGenerations - data.UiGenerationAttempts
-	if estimatedApi < 0 {
-		estimatedApi = 0
-	}
-
-	if data.TotalSuccessfulGenerations > 0 {
-		data.ApiUsagePercent = float64(estimatedApi) / float64(data.TotalSuccessfulGenerations) * 100
-		data.UiUsagePercent = 100 - data.ApiUsagePercent
-	}
-
-	// GIF-specific engagement metrics
-	gifAttempts, err := coll.CountDocuments(ctx, bson.M{"event": EventGenerateGifClick})
-	if err == nil {
-		data.GifGenerationAttempts = int(gifAttempts)
-	}
-
-	totalGifSuccess, err := coll.CountDocuments(ctx, bson.M{"event": EventGifGenerated, "status": "success"})
-	if err == nil {
-		data.TotalSuccessfulGifGenerations = int(totalGifSuccess)
-	}
-
-	totalGifDownloads, err := coll.CountDocuments(ctx, bson.M{"event": EventDownloadGifClick, "status": "success"})
-	if err == nil {
-		data.TotalGifDownloads = int(totalGifDownloads)
-	}
-
-	if data.GifGenerationAttempts > 0 {
-		data.GifDownloadRate = float64(data.TotalGifDownloads) / float64(data.GifGenerationAttempts) * 100
-	}
-
-	// Daily trend (both IMAGE_GENERATED and GIF_GENERATED successes)
+	// Daily trend (IMAGE_GENERATED, GIF_GENERATED, and CAROUSEL_GENERATED successes)
 	dailyPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
 			"timestamp": bson.M{"$gte": thirtyDaysAgo},
-			"event":     bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated}},
-			"status":    "success",
+			"event":     bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+			"status":    bson.M{"$in": bson.A{"success", "completed"}},
 		}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":   bson.M{"$dateToString": bson.M{"format": "%Y-%m-%d", "date": "$timestamp"}},
@@ -363,12 +346,12 @@ func queryUserEngagement(ctx context.Context, coll *mongo.Collection, thirtyDays
 		}
 	}
 
-	// Hourly trend
+	// Hourly trend (IMAGE_GENERATED, GIF_GENERATED, and CAROUSEL_GENERATED successes)
 	hourlyPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
 			"timestamp": bson.M{"$gte": thirtyDaysAgo},
-			"event":     bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated}},
-			"status":    "success",
+			"event":     bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+			"status":    bson.M{"$in": bson.A{"success", "completed"}},
 		}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":   bson.M{"$hour": "$timestamp"},
@@ -399,17 +382,19 @@ func queryUserEngagement(ctx context.Context, coll *mongo.Collection, thirtyDays
 func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCoversGenerated int, thirtyDaysAgo time.Time) (FeaturePopularityData, error) {
 	var data FeaturePopularityData
 
-	// Common filter for valid/complete documents
+	// Common filter for title analysis across all formats
 	completeFilter := bson.M{
-		"status":        "success",
-		"titleLength":   bson.M{"$exists": true, "$ne": nil},
-		"contrastRatio": bson.M{"$exists": true, "$ne": nil},
-		"wcagLevel":     bson.M{"$in": []string{"AA", "AAA"}},
+		"event":       bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+		"status":      bson.M{"$in": bson.A{"success", "completed"}},
+		"titleLength": bson.M{"$exists": true, "$ne": nil},
 	}
 
-	// Top Fonts
+	// Top Fonts (pre-populate all available font presets with 0 counts)
 	fontPipe := mongo.Pipeline{
-		{{Key: "$match", Value: bson.M{"event": bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}}, "status": "success"}}},
+		{{Key: "$match", Value: bson.M{
+			"event":  bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+			"status": bson.M{"$in": bson.A{"success", "completed"}},
+		}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":   "$font",
 			"count": bson.M{"$sum": 1},
@@ -418,23 +403,43 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 		{{Key: "$limit", Value: 10}},
 	}
 	fontCursor, err := coll.Aggregate(ctx, fontPipe)
+	fontCounts := map[string]int{
+		"Montserrat":       0,
+		"Roboto":           0,
+		"Lato":             0,
+		"Playfair Display": 0,
+		"Open Sans":        0,
+	}
+	allFonts := []string{"Montserrat", "Roboto", "Lato", "Playfair Display", "Open Sans"}
 	if err == nil {
 		defer fontCursor.Close(ctx)
-		data.TopFonts = []FontItem{}
 		for fontCursor.Next(ctx) {
 			var res struct {
 				ID    string `bson:"_id"`
 				Count int    `bson:"count"`
 			}
 			if err := fontCursor.Decode(&res); err == nil && res.ID != "" {
-				data.TopFonts = append(data.TopFonts, FontItem{Font: res.ID, Count: res.Count})
+				if _, exists := fontCounts[res.ID]; !exists {
+					allFonts = append(allFonts, res.ID)
+				}
+				fontCounts[res.ID] = res.Count
 			}
 		}
 	}
+	sort.SliceStable(allFonts, func(i, j int) bool {
+		return fontCounts[allFonts[i]] > fontCounts[allFonts[j]]
+	})
+	data.TopFonts = make([]FontItem, 0, len(allFonts))
+	for _, f := range allFonts {
+		data.TopFonts = append(data.TopFonts, FontItem{Font: f, Count: fontCounts[f]})
+	}
 
-	// Top Sizes
+	// Top Sizes (pre-populate standard size presets with 0 counts)
 	sizePipe := mongo.Pipeline{
-		{{Key: "$match", Value: bson.M{"event": bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}}, "status": "success"}}},
+		{{Key: "$match", Value: bson.M{
+			"event":  bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+			"status": bson.M{"$in": bson.A{"success", "completed"}},
+		}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":   bson.M{"width": "$size.width", "height": "$size.height"},
 			"count": bson.M{"$sum": 1},
@@ -443,12 +448,14 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 		{{Key: "$limit", Value: 10}},
 	}
 	sizeCursor, err := coll.Aggregate(ctx, sizePipe)
+	sizeCounts := map[string]int{
+		"Square (1080 × 1080)":   0,
+		"Post (1200 × 627)":      0,
+		"Portrait (1080 × 1350)": 0,
+	}
+	allSizes := []string{"Square (1080 × 1080)", "Post (1200 × 627)", "Portrait (1080 × 1350)"}
 	if err == nil {
 		defer sizeCursor.Close(ctx)
-		data.TopSizes = []SizeItem{}
-		sizeCounts := make(map[string]int)
-		var sizeOrder []string
-
 		for sizeCursor.Next(ctx) {
 			var res struct {
 				ID struct {
@@ -468,15 +475,18 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 				}
 
 				if _, exists := sizeCounts[label]; !exists {
-					sizeOrder = append(sizeOrder, label)
+					allSizes = append(allSizes, label)
 				}
 				sizeCounts[label] += res.Count
 			}
 		}
-
-		for _, label := range sizeOrder {
-			data.TopSizes = append(data.TopSizes, SizeItem{Size: label, Count: sizeCounts[label]})
-		}
+	}
+	sort.SliceStable(allSizes, func(i, j int) bool {
+		return sizeCounts[allSizes[i]] > sizeCounts[allSizes[j]]
+	})
+	data.TopSizes = make([]SizeItem, 0, len(allSizes))
+	for _, s := range allSizes {
+		data.TopSizes = append(data.TopSizes, SizeItem{Size: s, Count: sizeCounts[s]})
 	}
 
 	// Title Stats
@@ -494,6 +504,28 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 		defer statsCursor.Close(ctx)
 		if statsCursor.Next(ctx) {
 			_ = statsCursor.Decode(&data.TitleLengthStats)
+		}
+	}
+
+	// Subtitle Stats (for documents with subtitleLength > 0)
+	subStatsPipe := mongo.Pipeline{
+		{{Key: "$match", Value: bson.M{
+			"event":          bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+			"status":         bson.M{"$in": bson.A{"success", "completed"}},
+			"subtitleLength": bson.M{"$gt": 0},
+		}}},
+		{{Key: "$group", Value: bson.M{
+			"_id":               nil,
+			"avgSubtitleLength": bson.M{"$avg": "$subtitleLength"},
+			"minSubtitleLength": bson.M{"$min": "$subtitleLength"},
+			"maxSubtitleLength": bson.M{"$max": "$subtitleLength"},
+		}}},
+	}
+	subStatsCursor, err := coll.Aggregate(ctx, subStatsPipe)
+	if err == nil {
+		defer subStatsCursor.Close(ctx)
+		if subStatsCursor.Next(ctx) {
+			_ = subStatsCursor.Decode(&data.SubtitleLengthStats)
 		}
 	}
 
@@ -535,8 +567,8 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 
 	// Subtitle usage
 	withSubtitle, _ := coll.CountDocuments(ctx, bson.M{
-		"event":          EventImageGenerated,
-		"status":         "success",
+		"event":          bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+		"status":         bson.M{"$in": bson.A{"success", "completed"}},
 		"subtitleLength": bson.M{"$gt": 0},
 	})
 	if totalCoversGenerated > 0 {
@@ -545,7 +577,11 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 
 	// Subtitle Distribution (none: 0, short <= 17, medium <= 43, long > 43)
 	subDistPipe := mongo.Pipeline{
-		{{Key: "$match", Value: completeFilter}},
+		{{Key: "$match", Value: bson.M{
+			"event":          bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+			"status":         bson.M{"$in": bson.A{"success", "completed"}},
+			"subtitleLength": bson.M{"$exists": true, "$ne": nil},
+		}}},
 		{{Key: "$group", Value: bson.M{
 			"_id": bson.M{"$cond": bson.A{
 				bson.M{"$eq": bson.A{"$subtitleLength", 0}},
@@ -589,8 +625,8 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 	weeklyPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
 			"timestamp": bson.M{"$gte": thirtyDaysAgo},
-			"event":     EventImageGenerated,
-			"status":    "success",
+			"event":     bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+			"status":    bson.M{"$in": bson.A{"success", "completed"}},
 		}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":        bson.M{"$dateToString": bson.M{"format": "%G-W%V", "date": "$timestamp"}},
@@ -626,7 +662,10 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 	// Format Distribution (Image Cover vs GIF Slideshow vs Carousel Deck)
 	coverCount, _ := coll.CountDocuments(ctx, bson.M{"event": EventImageGenerated, "status": "success"})
 	gifCount, _ := coll.CountDocuments(ctx, bson.M{"event": EventGifGenerated, "status": "success"})
-	carouselCount, _ := coll.CountDocuments(ctx, bson.M{"event": EventCarouselGenerated, "status": "success"})
+	carouselCount, _ := coll.CountDocuments(ctx, bson.M{
+		"event":  EventCarouselGenerated,
+		"status": bson.M{"$in": bson.A{"success", "completed"}},
+	})
 	data.FormatDistribution = []FormatItem{
 		{Format: "Image Cover", Count: int(coverCount)},
 		{Format: "GIF Slideshow", Count: int(gifCount)},
@@ -637,7 +676,7 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 	borderPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
 			"event":  bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
-			"status": "success",
+			"status": bson.M{"$in": bson.A{"success", "completed"}},
 		}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":   bson.M{"$ifNull": bson.A{"$hasBorder", false}},
@@ -671,7 +710,7 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 	slideStatsPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
 			"event":      bson.M{"$in": bson.A{EventGifGenerated, EventCarouselGenerated}},
-			"status":     "success",
+			"status":     bson.M{"$in": bson.A{"success", "completed"}},
 			"slideCount": bson.M{"$exists": true, "$ne": nil},
 		}}},
 		{{Key: "$group", Value: bson.M{
@@ -696,7 +735,7 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 	slideDistPipe := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
 			"event":      bson.M{"$in": bson.A{EventGifGenerated, EventCarouselGenerated}},
-			"status":     "success",
+			"status":     bson.M{"$in": bson.A{"success", "completed"}},
 			"slideCount": bson.M{"$exists": true, "$ne": nil},
 		}}},
 		{{Key: "$group", Value: bson.M{
@@ -742,10 +781,18 @@ func queryFeaturePopularity(ctx context.Context, coll *mongo.Collection, totalCo
 
 func queryAccessibilityCompliance(ctx context.Context, coll *mongo.Collection, thirtyDaysAgo time.Time) (AccessibilityComplianceData, error) {
 	var data AccessibilityComplianceData
+	data.WcagDistribution = []WcagDistributionItem{
+		{Level: "AAA", Count: 0},
+		{Level: "AA", Count: 0},
+	}
 
 	// WCAG distribution
 	wcagPipe := mongo.Pipeline{
-		{{Key: "$match", Value: bson.M{"event": EventImageGenerated, "status": "success", "wcagLevel": bson.M{"$in": []string{"AA", "AAA"}}}}},
+		{{Key: "$match", Value: bson.M{
+			"event":     bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+			"status":    bson.M{"$in": bson.A{"success", "completed"}},
+			"wcagLevel": bson.M{"$in": []string{"AA", "AAA"}},
+		}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":   "$wcagLevel",
 			"count": bson.M{"$sum": 1},
@@ -772,7 +819,11 @@ func queryAccessibilityCompliance(ctx context.Context, coll *mongo.Collection, t
 
 	// Contrast stats
 	contrastPipe := mongo.Pipeline{
-		{{Key: "$match", Value: bson.M{"event": EventImageGenerated, "status": "success", "contrastRatio": bson.M{"$exists": true}}}},
+		{{Key: "$match", Value: bson.M{
+			"event":         bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+			"status":        bson.M{"$in": bson.A{"success", "completed"}},
+			"contrastRatio": bson.M{"$exists": true},
+		}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":              nil,
 			"avgContrastRatio": bson.M{"$avg": "$contrastRatio"},
@@ -790,7 +841,12 @@ func queryAccessibilityCompliance(ctx context.Context, coll *mongo.Collection, t
 
 	// WCAG Trend over time
 	trendPipe := mongo.Pipeline{
-		{{Key: "$match", Value: bson.M{"timestamp": bson.M{"$gte": thirtyDaysAgo}, "event": EventImageGenerated, "status": "success", "wcagLevel": bson.M{"$in": []string{"AA", "AAA"}}}}},
+		{{Key: "$match", Value: bson.M{
+			"timestamp": bson.M{"$gte": thirtyDaysAgo},
+			"event":     bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+			"status":    bson.M{"$in": bson.A{"success", "completed"}},
+			"wcagLevel": bson.M{"$in": []string{"AA", "AAA"}},
+		}}},
 		{{Key: "$group", Value: bson.M{
 			"_id":   bson.M{"date": bson.M{"$dateToString": bson.M{"format": "%Y-%m-%d", "date": "$timestamp"}}, "wcagLevel": "$wcagLevel"},
 			"count": bson.M{"$sum": 1},
@@ -833,10 +889,10 @@ func queryAccessibilityCompliance(ctx context.Context, coll *mongo.Collection, t
 func queryPerformanceMetrics(ctx context.Context, coll *mongo.Collection, thirtyDaysAgo time.Time) (PerformanceMetricsData, error) {
 	var data PerformanceMetricsData
 
-	// Get all backend durations
+	// Get all backend durations across all 3 generation formats
 	backendCursor, err := coll.Find(ctx, bson.M{
-		"event":    EventImageGenerated,
-		"status":   "success",
+		"event":    bson.M{"$in": bson.A{EventImageGenerated, EventGifGenerated, EventCarouselGenerated}},
+		"status":   bson.M{"$in": bson.A{"success", "completed"}},
 		"duration": bson.M{"$exists": true, "$ne": nil},
 	})
 	if err == nil {
@@ -895,10 +951,163 @@ func queryPerformanceMetrics(ctx context.Context, coll *mongo.Collection, thirty
 		}
 	}
 
-	// Local stub daily trends for simplicity in initial PR (can aggregate or calculate percentiles per date group in memory)
+	// Get Carousel backend durations
+	carouselCursor, err := coll.Find(ctx, bson.M{
+		"event":    EventCarouselGenerated,
+		"status":   bson.M{"$in": bson.A{"success", "completed"}},
+		"duration": bson.M{"$exists": true, "$ne": nil},
+	})
+	if err == nil {
+		defer carouselCursor.Close(ctx)
+		carouselDurations := []float64{}
+		sumCarouselDur := 0.0
+		for carouselCursor.Next(ctx) {
+			var metric struct {
+				Duration *int `bson:"duration"`
+			}
+			if err := carouselCursor.Decode(&metric); err == nil && metric.Duration != nil {
+				val := float64(*metric.Duration)
+				carouselDurations = append(carouselDurations, val)
+				sumCarouselDur += val
+			}
+		}
+		if len(carouselDurations) > 0 {
+			data.BackendPerformance.AvgCarouselBackendDuration = sumCarouselDur / float64(len(carouselDurations))
+		}
+	}
+
+	// Get Client durations across client-tracked metrics
+	clientCursor, err := coll.Find(ctx, bson.M{
+		"clientDuration": bson.M{"$exists": true, "$ne": nil, "$gt": 0},
+	})
+	if err == nil {
+		defer clientCursor.Close(ctx)
+		clientDurations := []float64{}
+		minClient, maxClient := 999999.0, 0.0
+		sumClient := 0.0
+		for clientCursor.Next(ctx) {
+			var metric struct {
+				ClientDuration *int `bson:"clientDuration"`
+			}
+			if err := clientCursor.Decode(&metric); err == nil && metric.ClientDuration != nil {
+				val := float64(*metric.ClientDuration)
+				clientDurations = append(clientDurations, val)
+				sumClient += val
+				if val < minClient {
+					minClient = val
+				}
+				if val > maxClient {
+					maxClient = val
+				}
+			}
+		}
+		if len(clientDurations) > 0 {
+			data.ClientPerformance.AvgClientDuration = sumClient / float64(len(clientDurations))
+			data.ClientPerformance.MinClientDuration = minClient
+			data.ClientPerformance.MaxClientDuration = maxClient
+			data.ClientPerformance.P50ClientDuration = calculatePercentile(clientDurations, 0.50)
+			data.ClientPerformance.P95ClientDuration = calculatePercentile(clientDurations, 0.95)
+			data.ClientPerformance.P99ClientDuration = calculatePercentile(clientDurations, 0.99)
+		}
+	}
+
+	// Calculate network latency (difference between client duration and backend duration)
+	if data.ClientPerformance.AvgClientDuration > 0 && data.BackendPerformance.AvgBackendDuration > 0 {
+		diff := data.ClientPerformance.AvgClientDuration - data.BackendPerformance.AvgBackendDuration
+		if diff > 0 {
+			data.NetworkLatency.AvgNetworkLatency = diff
+		}
+	}
+
+	// Group and compute performance by image size preset
+	type sizePerfAgg struct {
+		backendDurations []float64
+		clientDurations  []float64
+	}
+	sizeMap := map[string]*sizePerfAgg{
+		"Square (1080 × 1080)":   {backendDurations: []float64{}, clientDurations: []float64{}},
+		"Post (1200 × 627)":      {backendDurations: []float64{}, clientDurations: []float64{}},
+		"Portrait (1080 × 1350)": {backendDurations: []float64{}, clientDurations: []float64{}},
+	}
+	presetOrder := []string{"Square (1080 × 1080)", "Post (1200 × 627)", "Portrait (1080 × 1350)"}
+
+	sizeCursor, err := coll.Find(ctx, bson.M{
+		"size": bson.M{"$exists": true, "$ne": nil},
+		"$or": bson.A{
+			bson.M{"duration": bson.M{"$exists": true, "$ne": nil}},
+			bson.M{"clientDuration": bson.M{"$exists": true, "$ne": nil}},
+		},
+	})
+	if err == nil {
+		defer sizeCursor.Close(ctx)
+		for sizeCursor.Next(ctx) {
+			var doc struct {
+				Size           *db.SizePreset `bson:"size"`
+				Duration       *int           `bson:"duration"`
+				ClientDuration *int           `bson:"clientDuration"`
+			}
+			if err := sizeCursor.Decode(&doc); err == nil && doc.Size != nil {
+				label := ""
+				if doc.Size.Width == 1080 && doc.Size.Height == 1080 {
+					label = "Square (1080 × 1080)"
+				} else if doc.Size.Width == 1200 && doc.Size.Height == 627 {
+					label = "Post (1200 × 627)"
+				} else if doc.Size.Width == 1080 && doc.Size.Height == 1350 {
+					label = "Portrait (1080 × 1350)"
+				} else if doc.Size.Width > 0 && doc.Size.Height > 0 {
+					label = fmt.Sprintf("Custom (%d × %d)", doc.Size.Width, doc.Size.Height)
+					if _, exists := sizeMap[label]; !exists {
+						sizeMap[label] = &sizePerfAgg{backendDurations: []float64{}, clientDurations: []float64{}}
+						presetOrder = append(presetOrder, label)
+					}
+				}
+				if label != "" {
+					agg := sizeMap[label]
+					if doc.Duration != nil {
+						agg.backendDurations = append(agg.backendDurations, float64(*doc.Duration))
+					}
+					if doc.ClientDuration != nil && *doc.ClientDuration > 0 {
+						agg.clientDurations = append(agg.clientDurations, float64(*doc.ClientDuration))
+					}
+				}
+			}
+		}
+
+		data.PerformanceBySize = []PerformanceBySize{}
+		for _, label := range presetOrder {
+			agg := sizeMap[label]
+			avgBackend := 0.0
+			p95Backend := 0.0
+			if len(agg.backendDurations) > 0 {
+				sum := 0.0
+				for _, d := range agg.backendDurations {
+					sum += d
+				}
+				avgBackend = sum / float64(len(agg.backendDurations))
+				p95Backend = calculatePercentile(agg.backendDurations, 0.95)
+			}
+			avgClient := 0.0
+			p95Client := 0.0
+			if len(agg.clientDurations) > 0 {
+				sum := 0.0
+				for _, d := range agg.clientDurations {
+					sum += d
+				}
+				avgClient = sum / float64(len(agg.clientDurations))
+				p95Client = calculatePercentile(agg.clientDurations, 0.95)
+			}
+			data.PerformanceBySize = append(data.PerformanceBySize, PerformanceBySize{
+				Size:               label,
+				AvgBackendDuration: avgBackend,
+				P95BackendDuration: p95Backend,
+				AvgClientDuration:  avgClient,
+				P95ClientDuration:  p95Client,
+			})
+		}
+	}
+
 	data.BackendPerformance.BackendDurationTrend = []DurationTrendItem{}
 	data.ClientPerformance.ClientDurationTrend = []DurationTrendItem{}
-	data.PerformanceBySize = []PerformanceBySize{}
 
 	return data, nil
 }
@@ -908,9 +1117,12 @@ func calculatePercentile(durations []float64, percentile float64) float64 {
 	if length == 0 {
 		return 0.0
 	}
+	sorted := make([]float64, length)
+	copy(sorted, durations)
+	sort.Float64s(sorted)
 	index := int(float64(length) * percentile)
 	if index >= length {
 		index = length - 1
 	}
-	return durations[index]
+	return sorted[index]
 }

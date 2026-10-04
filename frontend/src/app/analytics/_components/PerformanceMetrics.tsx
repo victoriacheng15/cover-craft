@@ -1,14 +1,4 @@
 import type { PerformanceMetrics as PerformanceMetricsType } from "@cover-craft/shared";
-import {
-	CartesianGrid,
-	Legend,
-	Line,
-	LineChart,
-	ResponsiveContainer,
-	Tooltip,
-	XAxis,
-	YAxis,
-} from "recharts";
 import { Card, KPICard, SectionTitle, Skeleton } from "@/components/ui";
 
 interface PerformanceMetricsProps {
@@ -25,10 +15,6 @@ export function PerformanceMetricsSkeleton() {
 				{["p1", "p2", "p3", "p4"].map((id) => (
 					<Skeleton key={`perf-kpi-${id}`} className="h-24 w-full" />
 				))}
-			</div>
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
-				<Card className="h-87.5" />
-				<Card className="h-87.5" />
 			</div>
 			<Card className="h-64" />
 		</section>
@@ -76,67 +62,8 @@ export function PerformanceMetrics({
 				))}
 			</div>
 
-			{/* Performance Trends */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
-				{/* Backend Duration Trend */}
-				<Card>
-					<SectionTitle as="h4" size="sm" className="mb-4">
-						Backend Duration Trend (Percentiles)
-					</SectionTitle>
-					<ResponsiveContainer width="100%" height={300}>
-						<LineChart
-							data={performanceMetrics.backendPerformance.backendDurationTrend}
-							margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-						>
-							<CartesianGrid stroke="#e2e8f0" />
-							<XAxis dataKey="date" />
-							<YAxis
-								label={{
-									value: "Duration (ms)",
-									angle: -90,
-									position: "insideLeft",
-								}}
-							/>
-							<Tooltip />
-							<Legend />
-							<Line type="monotone" dataKey="p50" stroke="#3b82f6" name="P50" />
-							<Line type="monotone" dataKey="p95" stroke="#8b5cf6" name="P95" />
-							<Line type="monotone" dataKey="p99" stroke="#ef4444" name="P99" />
-						</LineChart>
-					</ResponsiveContainer>
-				</Card>
-
-				{/* Client Duration Trend */}
-				<Card>
-					<SectionTitle as="h4" size="sm" className="mb-4">
-						Client Duration Trend (Percentiles)
-					</SectionTitle>
-					<ResponsiveContainer width="100%" height={300}>
-						<LineChart
-							data={performanceMetrics.clientPerformance.clientDurationTrend}
-							margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-						>
-							<CartesianGrid stroke="#e2e8f0" />
-							<XAxis dataKey="date" />
-							<YAxis
-								label={{
-									value: "Duration (ms)",
-									angle: -90,
-									position: "insideLeft",
-								}}
-							/>
-							<Tooltip />
-							<Legend />
-							<Line type="monotone" dataKey="p50" stroke="#3b82f6" name="P50" />
-							<Line type="monotone" dataKey="p95" stroke="#8b5cf6" name="P95" />
-							<Line type="monotone" dataKey="p99" stroke="#ec4899" name="P99" />
-						</LineChart>
-					</ResponsiveContainer>
-				</Card>
-			</div>
-
 			{/* Performance by Size */}
-			<Card>
+			<Card className="w-full min-w-0">
 				<SectionTitle as="h4" size="sm" className="mb-4">
 					Performance by Image Size
 				</SectionTitle>
@@ -152,32 +79,50 @@ export function PerformanceMetrics({
 							</tr>
 						</thead>
 						<tbody>
-							{performanceMetrics.performanceBySize.map((sizeMetric, idx) => (
-								<tr
-									key={`perf-size-${sizeMetric.size}`}
-									className={idx % 2 === 0 ? "bg-white" : "bg-emerald-50/30"}
-								>
-									<td className="p-2 font-medium">{sizeMetric.size}</td>
-									<td className="text-right p-2">
-										{sizeMetric.avgBackendDuration?.toFixed(0) || "-"}
-									</td>
-									<td className="text-right p-2 text-orange-600 font-medium">
-										{sizeMetric.p95BackendDuration?.toFixed(0) || "-"}
-									</td>
-									<td className="text-right p-2">
-										{sizeMetric.avgClientDuration?.toFixed(0) || "-"}
-									</td>
-									<td className="text-right p-2 font-semibold text-emerald-700">
-										{sizeMetric.avgBackendDuration &&
-										sizeMetric.avgClientDuration
-											? (
-													sizeMetric.avgBackendDuration +
-													sizeMetric.avgClientDuration
-												).toFixed(0)
-											: "-"}
+							{!performanceMetrics.performanceBySize ||
+							performanceMetrics.performanceBySize.length === 0 ? (
+								<tr>
+									<td
+										colSpan={5}
+										className="p-4 text-center text-sm text-gray-400"
+									>
+										No size-specific performance data recorded yet
 									</td>
 								</tr>
-							))}
+							) : (
+								performanceMetrics.performanceBySize.map((sizeMetric, idx) => (
+									<tr
+										key={`perf-size-${sizeMetric.size}`}
+										className={idx % 2 === 0 ? "bg-white" : "bg-emerald-50/30"}
+									>
+										<td className="p-2 font-medium">{sizeMetric.size}</td>
+										<td className="text-right p-2">
+											{sizeMetric.avgBackendDuration
+												? sizeMetric.avgBackendDuration.toFixed(0)
+												: "-"}
+										</td>
+										<td className="text-right p-2 text-orange-600 font-medium">
+											{sizeMetric.p95BackendDuration
+												? sizeMetric.p95BackendDuration.toFixed(0)
+												: "-"}
+										</td>
+										<td className="text-right p-2">
+											{sizeMetric.avgClientDuration
+												? sizeMetric.avgClientDuration.toFixed(0)
+												: "-"}
+										</td>
+										<td className="text-right p-2 font-semibold text-emerald-700">
+											{sizeMetric.avgBackendDuration &&
+											sizeMetric.avgClientDuration
+												? (
+														sizeMetric.avgBackendDuration +
+														sizeMetric.avgClientDuration
+													).toFixed(0)
+												: "-"}
+										</td>
+									</tr>
+								))
+							)}
 						</tbody>
 					</table>
 				</div>

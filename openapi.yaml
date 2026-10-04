@@ -544,12 +544,61 @@ components:
         - createdAt
         - updatedAt
 
+    UserEngagement:
+      type: object
+      description: Consolidated user engagement metrics across all generation formats
+      properties:
+        uiGenerationAttempts:
+          type: integer
+          description: Total generation attempts across image covers, GIF slideshows, and carousel decks
+        totalSuccessfulGenerations:
+          type: integer
+          description: Total successful generations across all formats
+        totalDownloads:
+          type: integer
+          description: Total downloads across all formats
+        downloadRate:
+          type: number
+          format: float
+          description: Overall download conversion percentage
+        dailyTrend:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              count:
+                type: integer
+            required:
+              - date
+              - count
+        hourlyTrend:
+          type: array
+          items:
+            type: object
+            properties:
+              hour:
+                type: integer
+              count:
+                type: integer
+            required:
+              - hour
+              - count
+      required:
+        - uiGenerationAttempts
+        - totalSuccessfulGenerations
+        - totalDownloads
+        - downloadRate
+        - dailyTrend
+        - hourlyTrend
+
     AnalyticsResult:
       type: object
       description: Dashboard analytics details (feature popularity, accessibility, engagement)
       properties:
         userEngagement:
-          type: object
+          $ref: '#/components/schemas/UserEngagement'
         featurePopularity:
           type: object
         accessibilityCompliance:

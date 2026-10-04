@@ -13,7 +13,12 @@ import {
 	getRandomCompliantColorPair,
 	getTimestampedFilename,
 } from "@/lib/utils";
-import { generateCarousel, getCarouselJobStatus } from "@/services/api";
+import {
+	generateCarousel,
+	getCarouselJobStatus,
+	sendDownloadCarouselEvent,
+	sendGenerateCarouselEvent,
+} from "@/services/api";
 import { useContrastCheck } from "./useContrastCheck";
 import { useSlideDeck } from "./useSlideDeck";
 
@@ -121,6 +126,7 @@ export function useCarouselForm() {
 
 	const pollingTimerRef = useRef<NodeJS.Timeout | null>(null);
 	const pollAttemptsRef = useRef(0);
+	const generateStartTimeRef = useRef<number | null>(null);
 
 	// Contrast check for deck-level colors or active slide overrides
 	const effectiveBg =
@@ -188,6 +194,22 @@ export function useCarouselForm() {
 				if (res.status === "completed") {
 					setIsGenerating(false);
 					stopPolling();
+					const clientDuration = generateStartTimeRef.current
+						? Math.round(performance.now() - generateStartTimeRef.current)
+						: 0;
+					const firstSlide = slides[0];
+					sendGenerateCarouselEvent({
+						font: deckSettings.font,
+						hasBorder: deckSettings.borderStyle !== "none",
+						borderStyle: deckSettings.borderStyle,
+						slideCount: slides.length,
+						size: { width: deckSettings.width, height: deckSettings.height },
+						clientDuration,
+						titleLength: firstSlide ? firstSlide.title.length : 0,
+						subtitleLength: firstSlide?.subtitle
+							? firstSlide.subtitle.length
+							: 0,
+					});
 				} else if (res.status === "failed") {
 					setIsGenerating(false);
 					setError(res.error ?? "Carousel generation failed");
@@ -201,7 +223,7 @@ export function useCarouselForm() {
 				stopPolling();
 			}
 		},
-		[stopPolling],
+		[stopPolling, slides, deckSettings],
 	);
 
 	// Validate client-side before submit
@@ -337,6 +359,8 @@ export function useCarouselForm() {
 			payload.filename = deckSettings.filename.trim();
 		}
 
+		generateStartTimeRef.current = performance.now();
+
 		try {
 			const res = await generateCarousel(payload);
 			const newJobId = res.jobId || res.id;
@@ -364,6 +388,13 @@ export function useCarouselForm() {
 		(index: number) => {
 			const dataUrl = slideResults[index];
 			if (!dataUrl) return;
+			sendDownloadCarouselEvent({
+				font: deckSettings.font,
+				hasBorder: deckSettings.borderStyle !== "none",
+				borderStyle: deckSettings.borderStyle,
+				slideCount: slides.length,
+				size: { width: deckSettings.width, height: deckSettings.height },
+			});
 			const timestamp = Math.floor(Date.now() / 1000);
 			const base = deckSettings.filename || "carousel";
 			const link = document.createElement("a");
@@ -373,12 +404,27 @@ export function useCarouselForm() {
 			link.click();
 			document.body.removeChild(link);
 		},
-		[slideResults, deckSettings.filename],
+		[
+			slideResults,
+			deckSettings.filename,
+			deckSettings.font,
+			deckSettings.borderStyle,
+			deckSettings.width,
+			deckSettings.height,
+			slides.length,
+		],
 	);
 
 	// Download compiled PDF
 	const handleDownloadPDF = useCallback(() => {
 		if (!pdfUrl) return;
+		sendDownloadCarouselEvent({
+			font: deckSettings.font,
+			hasBorder: deckSettings.borderStyle !== "none",
+			borderStyle: deckSettings.borderStyle,
+			slideCount: slides.length,
+			size: { width: deckSettings.width, height: deckSettings.height },
+		});
 		const timestamp = Math.floor(Date.now() / 1000);
 		const base = deckSettings.filename || "carousel";
 		const link = document.createElement("a");
@@ -387,7 +433,15 @@ export function useCarouselForm() {
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
-	}, [pdfUrl, deckSettings.filename]);
+	}, [
+		pdfUrl,
+		deckSettings.filename,
+		deckSettings.font,
+		deckSettings.borderStyle,
+		deckSettings.width,
+		deckSettings.height,
+		slides.length,
+	]);
 
 	// Download ZIP containing all slides and PDF
 	const handleDownloadZip = useCallback(async () => {
@@ -395,6 +449,13 @@ export function useCarouselForm() {
 
 		try {
 			setIsZipping(true);
+			sendDownloadCarouselEvent({
+				font: deckSettings.font,
+				hasBorder: deckSettings.borderStyle !== "none",
+				borderStyle: deckSettings.borderStyle,
+				slideCount: slides.length,
+				size: { width: deckSettings.width, height: deckSettings.height },
+			});
 			const zip = new JSZip();
 
 			slideResults.forEach((result, idx) => {
@@ -426,7 +487,16 @@ export function useCarouselForm() {
 		} finally {
 			setIsZipping(false);
 		}
-	}, [slideResults, pdfUrl, deckSettings.filename]);
+	}, [
+		slideResults,
+		pdfUrl,
+		deckSettings.filename,
+		deckSettings.font,
+		deckSettings.borderStyle,
+		deckSettings.width,
+		deckSettings.height,
+		slides.length,
+	]);
 
 	// Randomize colors with WCAG AA compliance
 	const handleRandomizeColors = useCallback(() => {
