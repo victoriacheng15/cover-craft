@@ -62,6 +62,7 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 			Status:       "validation_error",
 			ErrorMessage: fmt.Sprintf("Validation failed: %d errors", len(validationErrors)),
 			Size:         &db.SizePreset{Width: params.Width, Height: params.Height},
+			Font:         gifFont(params.Slides),
 			HasBorder:    gifHasBorder(params.Slides),
 			SlideCount:   intPtr(len(params.Slides)),
 		})
@@ -89,6 +90,7 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 			Status:       "error",
 			ErrorMessage: err.Error(),
 			Size:         &db.SizePreset{Width: params.Width, Height: params.Height},
+			Font:         gifFont(params.Slides),
 			HasBorder:    gifHasBorder(params.Slides),
 			SlideCount:   intPtr(len(params.Slides)),
 			Duration:     intPtr(duration),
@@ -105,14 +107,39 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store Success Metric
+	titleLen := 0
+	subtitleLen := 0
+	contrastRatio := 0.0
+	wcagLevel := "FAIL"
+	if len(params.Slides) > 0 {
+		firstSlide := params.Slides[0]
+		titleLen = len(firstSlide.Title)
+		if firstSlide.Subtitle != nil {
+			subtitleLen = len(*firstSlide.Subtitle)
+		}
+		textColor := "#000000"
+		if firstSlide.TextColor != nil && *firstSlide.TextColor != "" {
+			textColor = *firstSlide.TextColor
+		}
+		if cr, err := services.GetContrastRatio(params.BackgroundColor, textColor); err == nil {
+			contrastRatio = cr
+			wcagLevel = services.GetWCAGLevel(cr)
+		}
+	}
+
 	storeMetric(db.Metric{
-		Event:      EventGifGenerated,
-		Timestamp:  time.Now().UTC(),
-		Status:     "success",
-		Size:       &db.SizePreset{Width: params.Width, Height: params.Height},
-		HasBorder:  gifHasBorder(params.Slides),
-		SlideCount: intPtr(len(params.Slides)),
-		Duration:   intPtr(duration),
+		Event:          EventGifGenerated,
+		Timestamp:      time.Now().UTC(),
+		Status:         "success",
+		Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
+		Font:           gifFont(params.Slides),
+		HasBorder:      gifHasBorder(params.Slides),
+		SlideCount:     intPtr(len(params.Slides)),
+		Duration:       intPtr(duration),
+		TitleLength:    intPtr(titleLen),
+		SubtitleLength: intPtr(subtitleLen),
+		ContrastRatio:  floatPtr(contrastRatio),
+		WcagLevel:      wcagLevel,
 	})
 
 	slog.InfoContext(r.Context(), "Animated GIF generated successfully",
@@ -143,4 +170,13 @@ func gifHasBorder(slides []services.GifSlideParams) *bool {
 		}
 	}
 	return &hasBorder
+}
+
+func gifFont(slides []services.GifSlideParams) string {
+	for _, s := range slides {
+		if s.Font != "" {
+			return string(s.Font)
+		}
+	}
+	return ""
 }

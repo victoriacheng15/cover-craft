@@ -106,7 +106,9 @@ type AnalyticsResult struct {
 	AccessibilityCompliance map[string]interface{} `json:"accessibilityCompliance"`
 	FeaturePopularity       map[string]interface{} `json:"featurePopularity"`
 	PerformanceMetrics      map[string]interface{} `json:"performanceMetrics"`
-	UserEngagement          map[string]interface{} `json:"userEngagement"`
+
+	// UserEngagement Consolidated user engagement metrics across all generation formats
+	UserEngagement UserEngagement `json:"userEngagement"`
 }
 
 // CarouselParams defines model for CarouselParams.
@@ -270,6 +272,30 @@ type MetricPayloadStatus string
 
 // MetricPayloadWcagLevel defines model for MetricPayload.WcagLevel.
 type MetricPayloadWcagLevel string
+
+// UserEngagement Consolidated user engagement metrics across all generation formats
+type UserEngagement struct {
+	DailyTrend []struct {
+		Count int    `json:"count"`
+		Date  string `json:"date"`
+	} `json:"dailyTrend"`
+
+	// DownloadRate Overall download conversion percentage
+	DownloadRate float32 `json:"downloadRate"`
+	HourlyTrend  []struct {
+		Count int `json:"count"`
+		Hour  int `json:"hour"`
+	} `json:"hourlyTrend"`
+
+	// TotalDownloads Total downloads across all formats
+	TotalDownloads int `json:"totalDownloads"`
+
+	// TotalSuccessfulGenerations Total successful generations across all formats
+	TotalSuccessfulGenerations int `json:"totalSuccessfulGenerations"`
+
+	// UiGenerationAttempts Total generation attempts across image covers, GIF slideshows, and carousel decks
+	UiGenerationAttempts int `json:"uiGenerationAttempts"`
+}
 
 // ValidationError defines model for ValidationError.
 type ValidationError struct {

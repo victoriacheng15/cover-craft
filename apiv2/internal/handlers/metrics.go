@@ -90,6 +90,24 @@ func (mb *MetricsBuffer) worker() {
 		case <-ticker.C:
 			flush()
 		case ack := <-mb.flushReq:
+		drainFlush:
+			for {
+				select {
+				case m, ok := <-mb.ch:
+					if ok {
+						batch = append(batch, m)
+						if len(batch) >= mb.batchSize {
+							flush()
+						}
+					} else {
+						flush()
+						close(ack)
+						return
+					}
+				default:
+					break drainFlush
+				}
+			}
 			flush()
 			close(ack)
 		case <-mb.stopCh:

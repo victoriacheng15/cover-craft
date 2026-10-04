@@ -591,10 +591,40 @@ func processCarouselJobExecution(ctx context.Context, objID primitive.ObjectID, 
 	}
 	hasBorder := borderStyleStr != "none"
 
+	metricStatus := "success"
+	if finalStatus != "completed" {
+		metricStatus = "error"
+	}
+
+	titleLen := 0
+	subtitleLen := 0
+	contrastRatio := 0.0
+	wcagLevel := "FAIL"
+	if len(carousel.Slides) > 0 {
+		firstSlide := carousel.Slides[0]
+		titleLen = len(firstSlide.Title)
+		if firstSlide.Subtitle != nil {
+			subtitleLen = len(*firstSlide.Subtitle)
+		}
+		bg := carousel.BackgroundColor
+		if firstSlide.BackgroundColor != nil && *firstSlide.BackgroundColor != "" {
+			bg = *firstSlide.BackgroundColor
+		}
+		tx := carousel.TextColor
+		if firstSlide.TextColor != nil && *firstSlide.TextColor != "" {
+			tx = *firstSlide.TextColor
+		}
+		if cr, err := services.GetContrastRatio(bg, tx); err == nil {
+			contrastRatio = cr
+			wcagLevel = services.GetWCAGLevel(cr)
+		}
+	}
+
 	metric := db.Metric{
 		Event:           EventCarouselGenerated,
 		Timestamp:       time.Now().UTC(),
-		Status:          finalStatus,
+		Status:          metricStatus,
+		ErrorMessage:    finalError,
 		Size:            &db.SizePreset{Width: carousel.Width, Height: carousel.Height},
 		Font:            string(carousel.Font),
 		HasBorder:       &hasBorder,
@@ -603,10 +633,10 @@ func processCarouselJobExecution(ctx context.Context, objID primitive.ObjectID, 
 		Duration:        &totalDurationMs,
 		CompileDuration: compileDurationMs,
 		FileSizeBytes:   fileSizeBytes,
-	}
-	if finalStatus != "completed" {
-		metric.Status = "error"
-		metric.ErrorMessage = finalError
+		TitleLength:     intPtr(titleLen),
+		SubtitleLength:  intPtr(subtitleLen),
+		ContrastRatio:   floatPtr(contrastRatio),
+		WcagLevel:       wcagLevel,
 	}
 	storeMetric(metric)
 
