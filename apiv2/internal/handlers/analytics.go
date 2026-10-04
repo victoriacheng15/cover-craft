@@ -365,15 +365,23 @@ func queryUserEngagement(ctx context.Context, coll *mongo.Collection, thirtyDays
 	}
 	defer hourlyCursor.Close(ctx)
 
-	data.HourlyTrend = []HourlyTrendItem{}
+	hourlyMap := make(map[int]int)
+	for i := 0; i < 24; i++ {
+		hourlyMap[i] = 0
+	}
 	for hourlyCursor.Next(ctx) {
 		var result struct {
 			ID    int `bson:"_id"`
 			Count int `bson:"count"`
 		}
-		if err := hourlyCursor.Decode(&result); err == nil {
-			data.HourlyTrend = append(data.HourlyTrend, HourlyTrendItem{Hour: result.ID, Count: result.Count})
+		if err := hourlyCursor.Decode(&result); err == nil && result.ID >= 0 && result.ID < 24 {
+			hourlyMap[result.ID] = result.Count
 		}
+	}
+
+	data.HourlyTrend = make([]HourlyTrendItem, 24)
+	for i := 0; i < 24; i++ {
+		data.HourlyTrend[i] = HourlyTrendItem{Hour: i, Count: hourlyMap[i]}
 	}
 
 	return data, nil
