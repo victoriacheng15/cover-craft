@@ -67,35 +67,54 @@ export function FeaturePopularity({
 					<SectionTitle as="h4" size="sm" className="mb-4">
 						Top Fonts
 					</SectionTitle>
-					{featurePopularity.topFonts.every((e) => e.count === 0) ? (
-						<div className="flex h-[300px] items-center justify-center text-sm text-gray-400">
-							No font data recorded yet
-						</div>
-					) : (
-						<ResponsiveContainer width="100%" height={300} minWidth={0}>
-							<BarChart
-								layout="vertical"
-								data={featurePopularity.topFonts}
-								margin={{ top: 16, right: 16, left: 16, bottom: 0 }}
-							>
-								<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-								<XAxis type="number" allowDecimals={false} />
-								<YAxis
-									type="category"
-									dataKey="font"
-									width={105}
-									tick={{ fontSize: 12 }}
-								/>
-								<Tooltip />
-								<Bar
-									dataKey="count"
-									fill="#6366f1"
-									radius={[0, 6, 6, 0]}
-									name="Generations"
-								/>
-							</BarChart>
-						</ResponsiveContainer>
-					)}
+					{(() => {
+						const fontData =
+							featurePopularity.topFonts &&
+							featurePopularity.topFonts.length > 0
+								? featurePopularity.topFonts
+								: [
+										{ font: "Montserrat", count: 0 },
+										{ font: "Roboto", count: 0 },
+										{ font: "Lato", count: 0 },
+										{ font: "Playfair Display", count: 0 },
+										{ font: "Open Sans", count: 0 },
+									];
+
+						const maxCount = Math.max(...fontData.map((d) => d.count), 0);
+						const xDomainMax = Math.max(maxCount, 6);
+						const xTicks = xDomainMax <= 6 ? [0, 2, 4, 6] : undefined;
+
+						return (
+							<ResponsiveContainer width="100%" height={300} minWidth={0}>
+								<BarChart
+									layout="vertical"
+									data={fontData}
+									margin={{ top: 16, right: 16, left: 16, bottom: 0 }}
+								>
+									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+									<XAxis
+										type="number"
+										allowDecimals={false}
+										domain={[0, xDomainMax]}
+										ticks={xTicks}
+									/>
+									<YAxis
+										type="category"
+										dataKey="font"
+										width={105}
+										tick={{ fontSize: 12 }}
+									/>
+									<Tooltip />
+									<Bar
+										dataKey="count"
+										fill="#6366f1"
+										radius={[0, 6, 6, 0]}
+										name="Generations"
+									/>
+								</BarChart>
+							</ResponsiveContainer>
+						);
+					})()}
 				</Card>
 
 				{/* Top Sizes */}
@@ -105,22 +124,23 @@ export function FeaturePopularity({
 							Top Sizes
 						</SectionTitle>
 						{(() => {
-							const totalSizes = featurePopularity.topSizes.reduce(
+							const sizeItems =
+								featurePopularity.topSizes &&
+								featurePopularity.topSizes.length > 0
+									? featurePopularity.topSizes
+									: [
+											{ size: "Square (1080 × 1080)", count: 0 },
+											{ size: "Post (1200 × 627)", count: 0 },
+											{ size: "Portrait (1080 × 1350)", count: 0 },
+										];
+							const totalSizes = sizeItems.reduce(
 								(acc, curr) => acc + curr.count,
 								0,
 							);
 
-							if (totalSizes === 0) {
-								return (
-									<div className="flex h-[300px] items-center justify-center text-sm text-gray-400">
-										No size data recorded yet
-									</div>
-								);
-							}
-
 							return (
 								<div className="flex flex-col gap-3 py-1">
-									{featurePopularity.topSizes.map((item) => {
+									{sizeItems.map((item) => {
 										const pct =
 											totalSizes > 0 ? (item.count / totalSizes) * 100 : 0;
 										const isSquare = item.size.includes("Square");
@@ -184,7 +204,7 @@ export function FeaturePopularity({
 						<p className="text-xs text-gray-500">
 							Total sized assets:{" "}
 							<span className="font-semibold text-gray-800">
-								{featurePopularity.topSizes.reduce(
+								{(featurePopularity.topSizes || []).reduce(
 									(acc, curr) => acc + curr.count,
 									0,
 								)}
@@ -218,33 +238,29 @@ export function FeaturePopularity({
 								"bg-indigo-500",
 							];
 
-							if (totalFormats === 0) {
-								return (
-									<div className="flex h-[240px] items-center justify-center text-sm text-gray-400">
-										No format data recorded yet
-									</div>
-								);
-							}
-
 							return (
 								<div className="flex flex-col gap-6 py-2">
 									{/* Segmented Proportional Bar */}
 									<div className="flex h-5 w-full overflow-hidden rounded-full bg-gray-100 p-0.5 shadow-inner">
-										{formatItems.map((item, idx) => {
-											const pct =
-												totalFormats > 0
-													? (item.count / totalFormats) * 100
-													: 0;
-											if (pct === 0) return null;
-											return (
-												<div
-													key={item.format}
-													style={{ width: `${pct}%` }}
-													className={`${formatColors[idx % formatColors.length]} transition-all duration-300 first:rounded-l-full last:rounded-r-full`}
-													title={`${item.format}: ${item.count} (${pct.toFixed(1)}%)`}
-												/>
-											);
-										})}
+										{totalFormats === 0 ? (
+											<div className="h-full w-full rounded-full bg-gray-200/70" />
+										) : (
+											formatItems.map((item, idx) => {
+												const pct =
+													totalFormats > 0
+														? (item.count / totalFormats) * 100
+														: 0;
+												if (pct === 0) return null;
+												return (
+													<div
+														key={item.format}
+														style={{ width: `${pct}%` }}
+														className={`${formatColors[idx % formatColors.length]} transition-all duration-300 first:rounded-l-full last:rounded-r-full`}
+														title={`${item.format}: ${item.count} (${pct.toFixed(1)}%)`}
+													/>
+												);
+											})
+										)}
 									</div>
 
 									{/* Format breakdown rows */}
@@ -290,45 +306,98 @@ export function FeaturePopularity({
 					<SectionTitle as="h4" size="sm" className="mb-4">
 						Border Adoption
 					</SectionTitle>
-					{(featurePopularity.borderUsageDistribution?.withBorder || 0) +
-						(featurePopularity.borderUsageDistribution?.withoutBorder || 0) ===
-					0 ? (
-						<div className="flex h-[300px] items-center justify-center text-sm text-gray-400">
-							No border data recorded yet
-						</div>
-					) : (
-						<ResponsiveContainer width="100%" height={300} minWidth={0}>
-							<PieChart>
-								<Pie
-									data={[
-										{
-											name: "With Border",
-											value:
-												featurePopularity.borderUsageDistribution?.withBorder ||
-												0,
-										},
-										{
-											name: "Without Border",
-											value:
-												featurePopularity.borderUsageDistribution
-													?.withoutBorder || 0,
-										},
-									].map((item, idx) => ({
-										...item,
-										fill: COLORS[idx % COLORS.length],
-									}))}
-									dataKey="value"
-									nameKey="name"
-									cx="50%"
-									cy="50%"
-									outerRadius={100}
-									label={renderPercentLabel}
-								/>
-								<Tooltip />
-								<Legend />
-							</PieChart>
-						</ResponsiveContainer>
-					)}
+					{(() => {
+						const withBorder =
+							featurePopularity.borderUsageDistribution?.withBorder || 0;
+						const withoutBorder =
+							featurePopularity.borderUsageDistribution?.withoutBorder || 0;
+						const totalBorder = withBorder + withoutBorder;
+
+						const borderData = [
+							{
+								name: "With Border",
+								value: withBorder,
+								fill: COLORS[0],
+							},
+							{
+								name: "Without Border",
+								value: withoutBorder,
+								fill: COLORS[1],
+							},
+						];
+
+						return (
+							<ResponsiveContainer width="100%" height={300} minWidth={0}>
+								<PieChart>
+									{totalBorder === 0 ? (
+										<Pie
+											data={[{ name: "No Data", value: 1, fill: "#f1f5f9" }]}
+											dataKey="value"
+											cx="50%"
+											cy="50%"
+											innerRadius={50}
+											outerRadius={95}
+											stroke="#cbd5e1"
+											strokeDasharray="4 4"
+											isAnimationActive={false}
+										/>
+									) : (
+										<Pie
+											data={borderData}
+											dataKey="value"
+											nameKey="name"
+											cx="50%"
+											cy="50%"
+											innerRadius={50}
+											outerRadius={95}
+											label={renderPercentLabel}
+										/>
+									)}
+									<Tooltip
+										formatter={(_value, name) => {
+											if (totalBorder === 0) return ["0 (0.0%)", name];
+											const count =
+												name === "With Border" ? withBorder : withoutBorder;
+											const pct = ((count / totalBorder) * 100).toFixed(1);
+											return [`${count} (${pct}%)`, name];
+										}}
+									/>
+									<Legend
+										content={() => (
+											<div className="flex justify-center gap-6 pt-2 text-xs font-medium text-gray-600">
+												<div className="flex items-center gap-2">
+													<span
+														className="h-2.5 w-2.5 rounded-full"
+														style={{ backgroundColor: COLORS[0] }}
+													/>
+													<span>
+														With Border: {withBorder} (
+														{totalBorder > 0
+															? ((withBorder / totalBorder) * 100).toFixed(1)
+															: "0.0"}
+														%)
+													</span>
+												</div>
+												<div className="flex items-center gap-2">
+													<span
+														className="h-2.5 w-2.5 rounded-full"
+														style={{ backgroundColor: COLORS[1] }}
+													/>
+													<span>
+														Without Border: {withoutBorder} (
+														{totalBorder > 0
+															? ((withoutBorder / totalBorder) * 100).toFixed(1)
+															: "0.0"}
+														%)
+													</span>
+												</div>
+											</div>
+										)}
+									/>
+								</PieChart>
+							</ResponsiveContainer>
+						);
+					})()}
 				</Card>
 			</div>
 

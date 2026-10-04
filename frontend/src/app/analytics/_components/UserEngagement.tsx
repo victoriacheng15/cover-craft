@@ -71,62 +71,102 @@ export function UserEngagement({
 				))}
 			</div>
 			{/* Daily & Hourly Trends */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Daily Trend */}
-				<Card className="w-full min-w-0">
-					<SectionTitle as="h4" size="sm" className="mb-4">
-						Successful Generations (Daily)
-					</SectionTitle>
-					<ResponsiveContainer width="100%" height={250} minWidth={0}>
-						<LineChart
-							data={dailyTrendData}
-							margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
-						>
-							<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-							<XAxis dataKey="date" />
-							<YAxis allowDecimals={false} />
-							<Tooltip />
-							<Line
-								type="monotone"
-								dataKey="count"
-								stroke="#3b82f6"
-								strokeWidth={2}
-								dot={{ r: 4 }}
-								name="Successful Generations"
-							/>
-						</LineChart>
-					</ResponsiveContainer>
-				</Card>
+			{(() => {
+				const dailyData =
+					dailyTrendData && dailyTrendData.length > 0
+						? dailyTrendData
+						: Array.from({ length: 7 }, (_, i) => {
+								const d = new Date();
+								d.setDate(d.getDate() - (6 - i));
+								return {
+									date: d.toLocaleDateString("default", {
+										month: "short",
+										day: "numeric",
+									}),
+									count: 0,
+								};
+							});
 
-				{/* Hourly Trend */}
-				<Card className="w-full min-w-0">
-					<SectionTitle as="h4" size="sm" className="mb-4">
-						Peak Usage Times (By Hour)
-					</SectionTitle>
-					<ResponsiveContainer width="100%" height={250} minWidth={0}>
-						<LineChart
-							data={userEngagement.hourlyTrend}
-							margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
-						>
-							<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-							<XAxis
-								dataKey="hour"
-								label={{ value: "Hour", position: "bottom" }}
-							/>
-							<YAxis allowDecimals={false} />
-							<Tooltip />
-							<Line
-								type="monotone"
-								dataKey="count"
-								stroke="#8b5cf6"
-								strokeWidth={2}
-								dot={{ r: 4 }}
-								name="Successful Generations"
-							/>
-						</LineChart>
-					</ResponsiveContainer>
-				</Card>
-			</div>
+				const hourlyData = (() => {
+					const hours = Array.from({ length: 24 }, (_, i) => ({
+						hour: i,
+						count: 0,
+					}));
+					for (const item of userEngagement.hourlyTrend || []) {
+						if (item.hour >= 0 && item.hour < 24) {
+							hours[item.hour].count = item.count;
+						}
+					}
+					return hours;
+				})();
+
+				return (
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+						{/* Daily Trend */}
+						<Card className="w-full min-w-0">
+							<SectionTitle as="h4" size="sm" className="mb-4">
+								Successful Generations (Daily)
+							</SectionTitle>
+							<ResponsiveContainer width="100%" height={250} minWidth={0}>
+								<LineChart
+									data={dailyData}
+									margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
+								>
+									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+									<XAxis dataKey="date" />
+									<YAxis
+										allowDecimals={false}
+										domain={[0, (dataMax: number) => Math.max(dataMax || 0, 5)]}
+									/>
+									<Tooltip />
+									<Line
+										type="monotone"
+										dataKey="count"
+										stroke="#3b82f6"
+										strokeWidth={2}
+										dot={{ r: 4 }}
+										name="Successful Generations"
+									/>
+								</LineChart>
+							</ResponsiveContainer>
+						</Card>
+
+						{/* Hourly Trend */}
+						<Card className="w-full min-w-0">
+							<SectionTitle as="h4" size="sm" className="mb-4">
+								Peak Usage Times (By Hour)
+							</SectionTitle>
+							<ResponsiveContainer width="100%" height={250} minWidth={0}>
+								<LineChart
+									data={hourlyData}
+									margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
+								>
+									<CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+									<XAxis
+										dataKey="hour"
+										ticks={[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22]}
+										interval={0}
+										label={{ value: "Hour", position: "bottom" }}
+									/>
+									<YAxis
+										allowDecimals={false}
+										domain={[0, (dataMax: number) => Math.max(dataMax || 0, 5)]}
+									/>
+									<Tooltip />
+									<Line
+										type="monotone"
+										dataKey="count"
+										stroke="#8b5cf6"
+										strokeWidth={2}
+										dot={{ r: 4 }}
+										name="Successful Generations"
+									/>
+								</LineChart>
+							</ResponsiveContainer>
+						</Card>
+					</div>
+				);
+			})()}
 		</section>
 	);
 }
