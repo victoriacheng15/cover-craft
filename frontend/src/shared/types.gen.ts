@@ -589,9 +589,31 @@ export interface components {
 			/** Format: date-time */
 			updatedAt: string;
 		};
+		/** @description Consolidated user engagement metrics across all generation formats */
+		UserEngagement: {
+			/** @description Total generation attempts across image covers, GIF slideshows, and carousel decks */
+			uiGenerationAttempts: number;
+			/** @description Total successful generations across all formats */
+			totalSuccessfulGenerations: number;
+			/** @description Total downloads across all formats */
+			totalDownloads: number;
+			/**
+			 * Format: float
+			 * @description Overall download conversion percentage
+			 */
+			downloadRate: number;
+			dailyTrend: {
+				date: string;
+				count: number;
+			}[];
+			hourlyTrend: {
+				hour: number;
+				count: number;
+			}[];
+		};
 		/** @description Dashboard analytics details (feature popularity, accessibility, engagement) */
 		AnalyticsResult: {
-			userEngagement: Record<string, never>;
+			userEngagement: components["schemas"]["UserEngagement"];
 			featurePopularity: Record<string, never>;
 			accessibilityCompliance: Record<string, never>;
 			performanceMetrics: Record<string, never>;

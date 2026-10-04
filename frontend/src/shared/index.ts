@@ -44,6 +44,9 @@ export const IMAGE_GENERATED_EVENT = "image_generated";
 export const GENERATE_GIF_CLICK_EVENT = "generate_gif_click";
 export const DOWNLOAD_GIF_CLICK_EVENT = "download_gif_click";
 export const GIF_GENERATED_EVENT = "gif_generated";
+export const GENERATE_CAROUSEL_CLICK_EVENT = "generate_carousel_click";
+export const DOWNLOAD_CAROUSEL_CLICK_EVENT = "download_carousel_click";
+export const CAROUSEL_GENERATED_EVENT = "carousel_generated";
 export const METRIC_STATUS_SUCCESS = "success";
 export const METRIC_STATUS_ERROR = "error";
 export const METRIC_STATUS_VALIDATION_ERROR = "validation_error";
@@ -60,7 +63,10 @@ export type EventType =
 	| typeof IMAGE_GENERATED_EVENT
 	| typeof GENERATE_GIF_CLICK_EVENT
 	| typeof DOWNLOAD_GIF_CLICK_EVENT
-	| typeof GIF_GENERATED_EVENT;
+	| typeof GIF_GENERATED_EVENT
+	| typeof GENERATE_CAROUSEL_CLICK_EVENT
+	| typeof DOWNLOAD_CAROUSEL_CLICK_EVENT
+	| typeof CAROUSEL_GENERATED_EVENT;
 
 export type MetricPayload = components["schemas"]["MetricPayload"];
 
@@ -121,9 +127,9 @@ export type UserEngagement = {
 	downloadRate: number;
 	dailyTrend: Array<{ date: string; count: number }>;
 	totalSuccessfulGenerations: number;
-	uiUsagePercent: number;
-	apiUsagePercent: number;
 	hourlyTrend: HourlyTrendItem[];
+	uiUsagePercent?: number;
+	apiUsagePercent?: number;
 	gifGenerationAttempts?: number;
 	totalSuccessfulGifGenerations?: number;
 	totalGifDownloads?: number;
@@ -138,6 +144,12 @@ export type FeaturePopularity = {
 		avgTitleLength: number;
 		minTitleLength: number;
 		maxTitleLength: number;
+	};
+	subtitleLengthStats?: {
+		_id: null;
+		avgSubtitleLength: number;
+		minSubtitleLength: number;
+		maxSubtitleLength: number;
 	};
 	titleLengthDistribution: LengthDistribution;
 	subtitleUsagePercent: number;

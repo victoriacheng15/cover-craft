@@ -192,14 +192,18 @@ export function useGifForm() {
 				})),
 			});
 
+			const firstSlide = formData.slides[0];
 			sendGenerateGifEvent({
 				clientDuration,
+				font: formData.font,
 				size: {
 					width: selectedSize.width,
 					height: selectedSize.height,
 				},
 				hasBorder: formData.hasBorder,
 				slideCount: formData.slides.length,
+				titleLength: firstSlide ? firstSlide.title.length : 0,
+				subtitleLength: firstSlide?.subtitle ? firstSlide.subtitle.length : 0,
 			});
 
 			setGeneratedGif(blob);
