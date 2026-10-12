@@ -17,6 +17,7 @@ import type {
 	CarouselDeckSettings,
 	CarouselSlideItem,
 } from "@/hooks/useCarouselForm";
+import { detectBulletList, detectTextDiagram } from "@/lib/carouselUtils";
 import { FormField } from "./CoverFormControls";
 
 export interface CarouselFormControlsProps {
@@ -227,29 +228,57 @@ export function CarouselFormControls({
 				</div>
 
 				{/* Subtitle Field */}
-				{activeSlide.mode === "subtitle" && (
-					<FormField
-						label="Slide Subtitle"
-						htmlFor={`slide-sub-${activeSlideIndex}`}
-					>
-						<textarea
-							id={`slide-sub-${activeSlideIndex}`}
-							rows={3}
-							className="flex w-full rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-							placeholder="A clear, concise summary of this slide's takeaway..."
-							value={activeSlide.subtitle}
-							onChange={(e) =>
-								updateSlide(activeSlideIndex, { subtitle: e.target.value })
-							}
-							maxLength={CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH}
-							aria-label="Slide subtitle text"
-						/>
-						<div className="flex justify-end text-xs text-gray-500 mt-1">
-							{activeSlide.subtitle.length} /{" "}
-							{CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH}
-						</div>
-					</FormField>
-				)}
+				{activeSlide.mode === "subtitle" &&
+					(() => {
+						const detectedBullets = detectBulletList(activeSlide.subtitle);
+						const detectedDiagram = detectTextDiagram(activeSlide.subtitle);
+
+						return (
+							<FormField
+								label="Slide Subtitle"
+								htmlFor={`slide-sub-${activeSlideIndex}`}
+							>
+								<textarea
+									id={`slide-sub-${activeSlideIndex}`}
+									rows={3}
+									className="flex w-full rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 font-mono leading-relaxed"
+									placeholder="A clear summary, bulleted points, or text diagram flow..."
+									value={activeSlide.subtitle}
+									onChange={(e) =>
+										updateSlide(activeSlideIndex, { subtitle: e.target.value })
+									}
+									maxLength={CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH}
+									aria-label="Slide subtitle text"
+								/>
+								<div className="flex justify-between items-center text-xs text-gray-500 mt-1">
+									<span className="text-[11px] text-gray-400">
+										Supports text diagrams (↓, →) and multiline bullets
+									</span>
+									<span>
+										{activeSlide.subtitle.length} /{" "}
+										{CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH}
+									</span>
+								</div>
+
+								{detectedBullets && (
+									<div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center text-xs text-emerald-800">
+										<span className="font-medium">
+											✓ Detected bullet list ({detectedBullets.length} items)
+										</span>
+									</div>
+								)}
+
+								{!detectedBullets && detectedDiagram && (
+									<div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center text-xs text-emerald-800">
+										<span className="font-medium">
+											✓ Detected text diagram ({detectedDiagram.steps.length}{" "}
+											steps)
+										</span>
+									</div>
+								)}
+							</FormField>
+						);
+					})()}
 
 				{/* Bulleted List Fields */}
 				{activeSlide.mode === "list" && (

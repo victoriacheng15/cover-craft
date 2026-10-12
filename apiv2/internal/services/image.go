@@ -326,7 +326,20 @@ func RenderCarouselSlideFrame(deck CarouselParams, slideIndex int) (image.Image,
 		if err := dc.LoadFontFace(regularFontPath, bodyFontSize); err != nil {
 			return nil, fmt.Errorf("failed to load regular font face for subtitle: %w", err)
 		}
-		subtitleLines = dc.WordWrap(*slide.Subtitle, boxWidth)
+		rawSubtitle := *slide.Subtitle
+		lines := strings.Split(rawSubtitle, "\n")
+		normalizedLines := make([]string, len(lines))
+		for idx, l := range lines {
+			trimmed := strings.TrimLeft(l, " \t")
+			if strings.HasPrefix(trimmed, "- ") {
+				normalizedLines[idx] = strings.Replace(l, "- ", "• ", 1)
+			} else if strings.HasPrefix(trimmed, "* ") {
+				normalizedLines[idx] = strings.Replace(l, "* ", "• ", 1)
+			} else {
+				normalizedLines[idx] = l
+			}
+		}
+		subtitleLines = dc.WordWrap(strings.Join(normalizedLines, "\n"), boxWidth)
 		bodyHeight = float64(len(subtitleLines)) * bodyLineHeight
 	}
 

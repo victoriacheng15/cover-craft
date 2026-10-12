@@ -146,22 +146,33 @@ export function CarouselPreviewCanvas({
 		const boxWidth = width - 2 * contentMargin;
 
 		const wrapText = (text: string, maxWidth: number): string[] => {
-			const words = text.split(" ");
+			const paragraphs = text.split("\n");
 			const lines: string[] = [];
-			let currentLine = "";
 
-			for (const word of words) {
-				const testLine = currentLine ? `${currentLine} ${word}` : word;
-				const measured = ctx.measureText(testLine).width;
-				if (measured > maxWidth && currentLine) {
-					lines.push(currentLine);
-					currentLine = word;
-				} else {
-					currentLine = testLine;
+			for (const paragraph of paragraphs) {
+				let trimmedParagraph = paragraph.trim();
+				if (!trimmedParagraph) {
+					continue;
 				}
-			}
-			if (currentLine) {
-				lines.push(currentLine);
+				if (/^[-*]\s+/.test(trimmedParagraph)) {
+					trimmedParagraph = trimmedParagraph.replace(/^[-*]\s+/, "• ");
+				}
+				const words = trimmedParagraph.split(/\s+/);
+				let currentLine = "";
+
+				for (const word of words) {
+					const testLine = currentLine ? `${currentLine} ${word}` : word;
+					const measured = ctx.measureText(testLine).width;
+					if (measured > maxWidth && currentLine) {
+						lines.push(currentLine);
+						currentLine = word;
+					} else {
+						currentLine = testLine;
+					}
+				}
+				if (currentLine) {
+					lines.push(currentLine);
+				}
 			}
 			return lines;
 		};
