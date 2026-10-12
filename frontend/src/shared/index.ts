@@ -268,6 +268,23 @@ export const WCAG_AA_THRESHOLD = 4.5;
 export const HEX_COLOR_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
 export const DEFAULT_FILENAME = "cover";
 
+export interface ColorPreset {
+	name: string;
+	backgroundColor: string;
+	textColor: string;
+}
+
+export const COLOR_PRESETS: readonly ColorPreset[] = [
+	{ name: "Cloud Navy", backgroundColor: "#0F172A", textColor: "#F8FAFC" },
+	{ name: "Terminal Matrix", backgroundColor: "#051A14", textColor: "#34D399" },
+	{ name: "Obsidian Violet", backgroundColor: "#0F0E17", textColor: "#DDD6FE" },
+	{ name: "Cyber Ember", backgroundColor: "#18181B", textColor: "#FBBF24" },
+	{ name: "Mist Slate", backgroundColor: "#E2E8F0", textColor: "#0F172A" },
+	{ name: "Warm Parchment", backgroundColor: "#EFECE6", textColor: "#292524" },
+	{ name: "Nordic Frost", backgroundColor: "#E0F2FE", textColor: "#0C4A6E" },
+	{ name: "Sage Mist", backgroundColor: "#E2EBE2", textColor: "#14381C" },
+] as const;
+
 // ===================================================================================
 // Derived Types
 // ===================================================================================
