@@ -19,6 +19,31 @@ import {
 	type WcagLevel,
 } from "@cover-craft/shared";
 
+/**
+ * Formats a machine validation field path (e.g. "slides[2].subtitle" or "slides[0].listItems[1]")
+ * into a human-friendly label (e.g. "Slide 3 subtitle" or "Slide 1 list item 2").
+ */
+export function formatValidationField(field: string): string {
+	return field
+		.replace(
+			/slides\[(\d+)\]/g,
+			(_, idx) => `Slide ${Number.parseInt(idx, 10) + 1}`,
+		)
+		.replace(
+			/\.listItems\[(\d+)\]/g,
+			(_, idx) => ` list item ${Number.parseInt(idx, 10) + 1}`,
+		)
+		.replace(/\.listItems/g, " list items")
+		.replace(/\.title/g, " title")
+		.replace(/\.subtitle/g, " subtitle")
+		.replace(/\.textColor/g, " text color")
+		.replace(/\.backgroundColor/g, " background color")
+		.replace(/\.contrast/g, " contrast")
+		.replace(/\.textAlign/g, " text alignment")
+		.replace(/\.verticalAlign/g, " vertical alignment")
+		.replace(/\.font/g, " font");
+}
+
 // Re-export type contracts
 export {
 	CAROUSEL_GENERATED_EVENT,
@@ -103,7 +128,10 @@ export async function generateImage(
 		let message = baseMessage;
 		if (details.length > 0) {
 			const detailsText = details
-				.map((detail) => `${detail.field}: ${detail.message}`)
+				.map(
+					(detail) =>
+						`${formatValidationField(detail.field)}: ${detail.message}`,
+				)
 				.join("; ");
 			message = `${message}: ${detailsText}`;
 		}
@@ -150,7 +178,10 @@ export async function generateGif(
 		let message = baseMessage;
 		if (details.length > 0) {
 			const detailsText = details
-				.map((detail) => `${detail.field}: ${detail.message}`)
+				.map(
+					(detail) =>
+						`${formatValidationField(detail.field)}: ${detail.message}`,
+				)
 				.join("; ");
 			message = `${message}: ${detailsText}`;
 		}
@@ -186,9 +217,26 @@ export async function generateCarousel(
 		try {
 			errorBody = await response.json();
 		} catch (_err) {
-			/* ignore */
+			// ignore parse errors
 		}
-		throw new Error(errorBody?.error ?? "Failed to submit carousel job");
+		const baseMessage = errorBody?.error ?? "Failed to submit carousel job";
+		const details =
+			errorBody && Array.isArray(errorBody.details) ? errorBody.details : [];
+		let message = baseMessage;
+		if (details.length > 0) {
+			const detailsText = details
+				.map(
+					(detail) =>
+						`${formatValidationField(detail.field)}: ${detail.message}`,
+				)
+				.join("; ");
+			message = `${message}: ${detailsText}`;
+		}
+		const err = new Error(message) as Error & {
+			details?: ValidationError[];
+		};
+		err.details = details;
+		throw err;
 	}
 
 	return await response.json();

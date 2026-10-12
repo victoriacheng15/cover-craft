@@ -17,7 +17,7 @@ const (
 	WcagAaThreshold   = 4.5
 
 	MaxCarouselTitleLength        = 50
-	MaxCarouselSubtitleLength     = 120
+	MaxCarouselSubtitleLength     = 250
 	MinCarouselListItems          = 2
 	MaxCarouselListItems          = 5
 	MaxCarouselListItemLength     = 70

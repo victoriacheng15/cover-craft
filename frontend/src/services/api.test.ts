@@ -407,6 +407,38 @@ describe("API Service Wrapper", () => {
 				}),
 			).rejects.toThrow("Validation failed");
 		});
+
+		it("throws error with formatted details when carousel validation fails", async () => {
+			fetchMock.mockResolvedValueOnce({
+				ok: false,
+				json: async () => ({
+					error: "Validation failed",
+					details: [
+						{
+							field: "slides[0].subtitle",
+							message: "Subtitle must be 120 characters or less",
+						},
+					],
+				}),
+			} as unknown as Response);
+
+			await expect(
+				generateCarousel({
+					width: 1080,
+					height: 1080,
+					backgroundColor: "#0F172A",
+					textColor: "#F8FAFC",
+					font: "Montserrat",
+					borderStyle: "none",
+					authorHandlePosition: "bottom-left",
+					showSlideNumbers: true,
+					slideNumberPosition: "top-right",
+					slides: [],
+				}),
+			).rejects.toThrow(
+				"Validation failed: Slide 1 subtitle: Subtitle must be 120 characters or less",
+			);
+		});
 	});
 
 	describe("getCarouselJobStatus", () => {

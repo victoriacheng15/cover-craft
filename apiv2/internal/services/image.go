@@ -302,7 +302,7 @@ func RenderCarouselSlideFrame(deck CarouselParams, slideIndex int) (image.Image,
 
 	gap := headingFontSize * 1.25
 	bodyLineHeight := bodyFontSize * 1.35
-	itemSpacing := bodyFontSize * 0.55
+	itemSpacing := bodyFontSize * 0.85
 
 	var wrappedListItems [][]string
 	var subtitleLines []string

@@ -232,6 +232,11 @@ export function CarouselFormControls({
 					(() => {
 						const detectedBullets = detectBulletList(activeSlide.subtitle);
 						const detectedDiagram = detectTextDiagram(activeSlide.subtitle);
+						const isListDetected = Boolean(detectedBullets);
+						const maxChars = isListDetected
+							? CAROUSEL_LIMITS.MAX_LIST_ITEMS *
+								CAROUSEL_LIMITS.MAX_LIST_ITEM_LENGTH
+							: CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH;
 
 						return (
 							<FormField
@@ -247,16 +252,19 @@ export function CarouselFormControls({
 									onChange={(e) =>
 										updateSlide(activeSlideIndex, { subtitle: e.target.value })
 									}
-									maxLength={CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH}
+									maxLength={maxChars}
 									aria-label="Slide subtitle text"
 								/>
 								<div className="flex justify-between items-center text-xs text-gray-500 mt-1">
 									<span className="text-[11px] text-gray-400">
-										Supports text diagrams (↓, →) and multiline bullets
+										{isListDetected
+											? `List detected: up to ${CAROUSEL_LIMITS.MAX_LIST_ITEMS} items (${CAROUSEL_LIMITS.MAX_LIST_ITEM_LENGTH} chars each)`
+											: detectedDiagram
+												? `Steps diagram detected: up to ${CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH} characters`
+												: "Supports text diagrams (↓, →) and multiline bullets"}
 									</span>
 									<span>
-										{activeSlide.subtitle.length} /{" "}
-										{CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH}
+										{activeSlide.subtitle.length} / {maxChars}
 									</span>
 								</div>
 
@@ -266,7 +274,7 @@ export function CarouselFormControls({
 										className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center text-xs text-emerald-800"
 									>
 										<span className="font-medium">
-											✓ Detected bullet list ({detectedBullets.length} items)
+											{`✓ Detected bullet list (${detectedBullets.length} items, max ${CAROUSEL_LIMITS.MAX_LIST_ITEM_LENGTH} chars each)`}
 										</span>
 									</output>
 								)}
@@ -308,7 +316,7 @@ export function CarouselFormControls({
 							</Button>
 						</div>
 
-						<div className="flex flex-col gap-2">
+						<div className="flex flex-col gap-3.5">
 							{activeSlide.listItems.map((item, itemIdx) => (
 								<div
 									// biome-ignore lint/suspicious/noArrayIndexKey: list item order is by index

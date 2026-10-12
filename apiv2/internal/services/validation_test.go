@@ -472,7 +472,7 @@ func TestValidateCarouselParams(t *testing.T) {
 	}
 
 	validSubtitle := "This is a valid subtitle commentary."
-	tooLongSubtitle := makeStringOfLength(121)
+	tooLongSubtitle := makeStringOfLength(251)
 
 	validList := []string{"First key point", "Second key point", "Third key point"}
 	tooFewList := []string{"Only one item"}
@@ -689,7 +689,7 @@ func TestValidateCarouselParams(t *testing.T) {
 			errorField:  "slides[0].title",
 		},
 		{
-			name: "Slide subtitle too long (>120) fails",
+			name: "Slide subtitle too long (>250) fails",
 			params: func() CarouselParams {
 				p := baseValidParams
 				p.Slides = []CarouselSlideParams{{Title: "Valid", Subtitle: &tooLongSubtitle}, validSlide2}
