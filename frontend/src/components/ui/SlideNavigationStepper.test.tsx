@@ -13,20 +13,26 @@ describe("SlideNavigationStepper", () => {
 		);
 
 		expect(
+			screen.getByRole("navigation", { name: "Slide navigation" }),
+		).toBeInTheDocument();
+		expect(screen.getByRole("list", { name: "Slides" })).toBeInTheDocument();
+		expect(
 			screen.getByRole("button", { name: /previous slide/i }),
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole("button", { name: /next slide/i }),
 		).toBeInTheDocument();
-		expect(
-			screen.getByRole("button", { name: "Jump to slide 1" }),
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole("button", { name: "Jump to slide 2" }),
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole("button", { name: "Jump to slide 3" }),
-		).toBeInTheDocument();
+
+		const slide1Dot = screen.getByRole("button", { name: "Jump to slide 1" });
+		const slide2Dot = screen.getByRole("button", { name: "Jump to slide 2" });
+		const slide3Dot = screen.getByRole("button", { name: "Jump to slide 3" });
+
+		expect(slide1Dot).toBeInTheDocument();
+		expect(slide1Dot).toHaveAttribute("aria-current", "step");
+		expect(slide2Dot).toBeInTheDocument();
+		expect(slide2Dot).not.toHaveAttribute("aria-current");
+		expect(slide3Dot).toBeInTheDocument();
+		expect(slide3Dot).not.toHaveAttribute("aria-current");
 	});
 
 	it("disables previous button on first slide and enables next button", () => {
