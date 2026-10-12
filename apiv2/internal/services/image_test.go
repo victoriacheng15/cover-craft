@@ -132,6 +132,23 @@ func TestRenderCarouselSlideFrame_SubtitleMode(t *testing.T) {
 	if img2 == nil {
 		t.Fatal("expected non-nil image for slide 2")
 	}
+
+	// Render slide with multiline diagram and dash bullet list
+	multilineSubtitle := "EventBridge\n↓\nECS Fargate\n- Point 1\n* Point 2"
+	deckWithList := deck
+	deckWithList.Slides = []CarouselSlideParams{
+		{
+			Title:    "Architecture Flow",
+			Subtitle: &multilineSubtitle,
+		},
+	}
+	img3, err := RenderCarouselSlideFrame(deckWithList, 0)
+	if err != nil {
+		t.Fatalf("expected success for multiline diagram and bullet subtitle, got error: %v", err)
+	}
+	if img3 == nil {
+		t.Fatal("expected non-nil image for multiline subtitle")
+	}
 }
 
 func TestRenderCarouselSlideFrame_ListMode(t *testing.T) {
