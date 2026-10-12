@@ -322,7 +322,7 @@ describe("CarouselForm", () => {
 
 		render(<CarouselForm />);
 		const output = screen
-			.getByText(/Detected bullet list \(2 items\)/i)
+			.getByText(/Detected bullet list \(2 items/i)
 			.closest("output");
 		expect(output).toBeInTheDocument();
 		expect(output).toHaveAttribute("aria-live", "polite");

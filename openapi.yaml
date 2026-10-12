@@ -314,7 +314,7 @@ components:
           example: Building Scalable Systems
         subtitle:
           type: string
-          maxLength: 120
+          maxLength: 250
           description: Optional paragraph or subtitle commentary
           example: Architectural principles for high-throughput distributed systems.
         listItems:

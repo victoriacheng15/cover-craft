@@ -9,6 +9,7 @@ import {
 } from "@cover-craft/shared";
 import JSZip from "jszip";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { detectBulletList } from "@/lib/carouselUtils";
 import {
 	getRandomCompliantColorPair,
 	getTimestampedFilename,
@@ -261,7 +262,21 @@ export function useCarouselForm() {
 			}
 
 			if (s.mode === "subtitle" && s.subtitle) {
-				if (s.subtitle.length > CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH) {
+				const detectedBullets = detectBulletList(s.subtitle);
+				if (detectedBullets) {
+					if (
+						detectedBullets.length < CAROUSEL_LIMITS.MIN_LIST_ITEMS ||
+						detectedBullets.length > CAROUSEL_LIMITS.MAX_LIST_ITEMS
+					) {
+						return `Slide ${i + 1} detected bullet list must have between ${CAROUSEL_LIMITS.MIN_LIST_ITEMS} and ${CAROUSEL_LIMITS.MAX_LIST_ITEMS} items.`;
+					}
+					for (let j = 0; j < detectedBullets.length; j++) {
+						const item = detectedBullets[j];
+						if (item.length > CAROUSEL_LIMITS.MAX_LIST_ITEM_LENGTH) {
+							return `Slide ${i + 1} bullet item ${j + 1} exceeds maximum ${CAROUSEL_LIMITS.MAX_LIST_ITEM_LENGTH} characters.`;
+						}
+					}
+				} else if (s.subtitle.length > CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH) {
 					return `Slide ${i + 1} subtitle exceeds maximum ${CAROUSEL_LIMITS.MAX_SUBTITLE_LENGTH} characters.`;
 				}
 			}
@@ -322,7 +337,15 @@ export function useCarouselForm() {
 				verticalAlign: s.verticalAlign,
 			};
 			if (s.mode === "subtitle" && s.subtitle && s.subtitle.trim() !== "") {
-				slideParam.subtitle = s.subtitle.trim();
+				const detectedBullets = detectBulletList(s.subtitle);
+				if (
+					detectedBullets &&
+					detectedBullets.length >= CAROUSEL_LIMITS.MIN_LIST_ITEMS
+				) {
+					slideParam.listItems = detectedBullets;
+				} else {
+					slideParam.subtitle = s.subtitle.trim();
+				}
 			} else if (s.mode === "list" && s.listItems.length > 0) {
 				slideParam.listItems = s.listItems.map((item) => item.trim());
 			}

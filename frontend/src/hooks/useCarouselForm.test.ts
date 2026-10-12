@@ -405,4 +405,55 @@ describe("useCarouselForm", () => {
 
 		vi.useRealTimers();
 	});
+
+	it("follows list limits and serializes listItems when bullet list is detected in subtitle", async () => {
+		const { result } = renderHook(() => useCarouselForm());
+
+		// 3 bullet items totaling 150 characters (exceeding standard 120 subtitle limit, but <= 70 chars each)
+		const multilineBullets =
+			"- First point with substantial architecture notes for the system\n- Second point with detailed implementation considerations\n- Third point explaining long-term operational resilience";
+
+		act(() => {
+			result.current.updateSlide(0, {
+				title: "Slide 1",
+				mode: "subtitle",
+				subtitle: multilineBullets,
+			});
+			result.current.updateSlide(1, {
+				title: "Slide 2",
+				mode: "subtitle",
+				subtitle: "Short summary",
+			});
+		});
+
+		generateCarouselMock.mockResolvedValueOnce({
+			id: "job-bullets",
+			jobId: "job-bullets",
+			message: "Accepted",
+		});
+
+		await act(async () => {
+			await result.current.handleGenerate();
+		});
+
+		expect(result.current.error).toBeNull();
+		expect(generateCarouselMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				slides: expect.arrayContaining([
+					expect.objectContaining({
+						title: "Slide 1",
+						listItems: [
+							"First point with substantial architecture notes for the system",
+							"Second point with detailed implementation considerations",
+							"Third point explaining long-term operational resilience",
+						],
+					}),
+					expect.objectContaining({
+						title: "Slide 2",
+						subtitle: "Short summary",
+					}),
+				]),
+			}),
+		);
+	});
 });

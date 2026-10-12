@@ -11,6 +11,7 @@ import type {
 	CarouselDeckSettings,
 	CarouselSlideItem,
 } from "@/hooks/useCarouselForm";
+import { detectBulletList } from "@/lib/carouselUtils";
 
 interface CarouselPreviewCanvasProps {
 	deckSettings: CarouselDeckSettings;
@@ -184,16 +185,22 @@ export function CarouselPreviewCanvas({
 		const titleHeight = titleLines.length * titleLineHeight;
 
 		// 8. Measure body
-		const hasListItems =
-			slide.mode === "list" && slide.listItems && slide.listItems.length > 0;
+		const detectedBullets =
+			slide.mode === "subtitle" ? detectBulletList(slide.subtitle) : null;
+		const effectiveListItems =
+			slide.mode === "list" && slide.listItems && slide.listItems.length > 0
+				? slide.listItems
+				: detectedBullets;
+		const hasListItems = effectiveListItems && effectiveListItems.length > 0;
 		const hasSubtitle =
+			!hasListItems &&
 			slide.mode === "subtitle" &&
 			slide.subtitle &&
 			slide.subtitle.trim() !== "";
 
 		const gap = headingFontSize * 1.25;
 		const bodyLineHeight = bodyFontSize * 1.35;
-		const itemSpacing = bodyFontSize * 0.55;
+		const itemSpacing = bodyFontSize * 0.85;
 
 		ctx.font = `normal ${bodyFontSize}px "${font}", sans-serif`;
 		let wrappedListItems: string[][] = [];
@@ -201,14 +208,14 @@ export function CarouselPreviewCanvas({
 		let bodyHeight = 0;
 
 		if (hasListItems) {
-			wrappedListItems = slide.listItems.map((item) =>
+			wrappedListItems = effectiveListItems.map((item) =>
 				wrapText(`• ${item}`, boxWidth),
 			);
 			for (const lines of wrappedListItems) {
 				bodyHeight += lines.length * bodyLineHeight;
 			}
-			if (slide.listItems.length > 1) {
-				bodyHeight += (slide.listItems.length - 1) * itemSpacing;
+			if (effectiveListItems.length > 1) {
+				bodyHeight += (effectiveListItems.length - 1) * itemSpacing;
 			}
 		} else if (hasSubtitle) {
 			subtitleLines = wrapText(slide.subtitle, boxWidth);
