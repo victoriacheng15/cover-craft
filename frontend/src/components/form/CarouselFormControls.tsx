@@ -193,10 +193,10 @@ export function CarouselFormControls({
 				</FormField>
 
 				{/* Mode Switcher: Subtitle vs Bulleted List */}
-				<div className="flex flex-col gap-1.5">
-					<span className="block text-sm font-medium text-gray-900">
+				<fieldset className="flex flex-col gap-1.5 border-0 p-0 m-0">
+					<legend className="block text-sm font-medium text-gray-900">
 						Content Mode
-					</span>
+					</legend>
 					<div className="inline-flex p-1 bg-gray-100 rounded-xl border border-gray-200 w-fit gap-1">
 						<button
 							type="button"
@@ -225,7 +225,7 @@ export function CarouselFormControls({
 							Bulleted List (2-5 items)
 						</button>
 					</div>
-				</div>
+				</fieldset>
 
 				{/* Subtitle Field */}
 				{activeSlide.mode === "subtitle" &&
@@ -261,20 +261,26 @@ export function CarouselFormControls({
 								</div>
 
 								{detectedBullets && (
-									<div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center text-xs text-emerald-800">
+									<output
+										aria-live="polite"
+										className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center text-xs text-emerald-800"
+									>
 										<span className="font-medium">
 											✓ Detected bullet list ({detectedBullets.length} items)
 										</span>
-									</div>
+									</output>
 								)}
 
 								{!detectedBullets && detectedDiagram && (
-									<div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center text-xs text-emerald-800">
+									<output
+										aria-live="polite"
+										className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center text-xs text-emerald-800"
+									>
 										<span className="font-medium">
 											✓ Detected text diagram ({detectedDiagram.steps.length}{" "}
 											steps)
 										</span>
-									</div>
+									</output>
 								)}
 							</FormField>
 						);

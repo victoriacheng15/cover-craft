@@ -113,12 +113,16 @@ describe("SharedColorControls", () => {
 			/>,
 		);
 
+		expect(
+			screen.getByRole("group", { name: "Color Presets" }),
+		).toBeInTheDocument();
+
 		for (const preset of COLOR_PRESETS) {
-			expect(
-				screen.getByRole("button", {
-					name: new RegExp(`Apply ${preset.name} colors`, "i"),
-				}),
-			).toBeInTheDocument();
+			const btn = screen.getByRole("button", {
+				name: new RegExp(`Apply ${preset.name} colors`, "i"),
+			});
+			expect(btn).toBeInTheDocument();
+			expect(btn).toHaveAttribute("aria-pressed", "false");
 		}
 
 		const cloudNavyBtn = screen.getByRole("button", {
@@ -128,6 +132,28 @@ describe("SharedColorControls", () => {
 
 		expect(handleBgChange).toHaveBeenCalledWith("#0F172A");
 		expect(handleTextChange).toHaveBeenCalledWith("#F8FAFC");
+	});
+
+	it("sets aria-pressed to true on the currently active preset", () => {
+		render(
+			<SharedColorControls
+				backgroundColor="#0F172A"
+				textColor="#F8FAFC"
+				onBackgroundColorChange={vi.fn()}
+				onTextColorChange={vi.fn()}
+				onRandomizeColors={vi.fn()}
+			/>,
+		);
+
+		const activeBtn = screen.getByRole("button", {
+			name: /Apply Cloud Navy colors/i,
+		});
+		expect(activeBtn).toHaveAttribute("aria-pressed", "true");
+
+		const inactiveBtn = screen.getByRole("button", {
+			name: /Apply Terminal Matrix colors/i,
+		});
+		expect(inactiveBtn).toHaveAttribute("aria-pressed", "false");
 	});
 
 	it("verifies all COLOR_PRESETS exceed WCAG AAA threshold (>= 7.0:1) and avoid pure black text", () => {

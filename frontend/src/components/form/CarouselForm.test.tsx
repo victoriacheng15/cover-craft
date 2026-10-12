@@ -295,4 +295,36 @@ describe("CarouselForm", () => {
 		});
 		expect(generateBtn).toBeDisabled();
 	});
+
+	it("renders content mode inside semantic fieldset group", () => {
+		render(<CarouselForm />);
+		expect(
+			screen.getByRole("group", { name: "Content Mode" }),
+		).toBeInTheDocument();
+	});
+
+	it("renders detected bullet list inside semantic output tag with live region", () => {
+		const customSlide = {
+			id: "s-1",
+			title: "Slide 1",
+			mode: "subtitle" as const,
+			subtitle: "- Step 1\n- Step 2",
+			listItems: [],
+			textAlign: "center" as const,
+			verticalAlign: "center" as const,
+		};
+
+		mockUseCarouselForm.mockReturnValueOnce({
+			...baseMockReturn,
+			slides: [customSlide],
+			activeSlide: customSlide,
+		});
+
+		render(<CarouselForm />);
+		const output = screen
+			.getByText(/Detected bullet list \(2 items\)/i)
+			.closest("output");
+		expect(output).toBeInTheDocument();
+		expect(output).toHaveAttribute("aria-live", "polite");
+	});
 });

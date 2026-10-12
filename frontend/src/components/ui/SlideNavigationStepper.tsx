@@ -51,7 +51,10 @@ export function SlideNavigationStepper({
 			: Array.from({ length: totalSlides }, (_, i) => `slide-step-${i + 1}`);
 
 	return (
-		<div className={cn("flex items-center gap-4", className)}>
+		<nav
+			className={cn("flex items-center gap-4", className)}
+			aria-label="Slide navigation"
+		>
 			<Button
 				type="button"
 				variant="secondary"
@@ -63,23 +66,28 @@ export function SlideNavigationStepper({
 				◀ Previous
 			</Button>
 
-			<div className="flex gap-1.5">
+			<ol
+				className="flex items-center gap-1.5 list-none p-0 m-0"
+				aria-label="Slides"
+			>
 				{keys.map((key, idx) => (
-					<button
-						key={key}
-						type="button"
-						onClick={() => onSelectIndex(idx)}
-						className={cn(
-							"rounded-full transition-all",
-							isSmall ? "w-2.5 h-2.5" : "w-3 h-3",
-							idx === activeIndex
-								? "bg-emerald-600 scale-125"
-								: "bg-gray-300 hover:bg-gray-400",
-						)}
-						aria-label={`Jump to slide ${idx + 1}`}
-					/>
+					<li key={key} className="inline-flex">
+						<button
+							type="button"
+							onClick={() => onSelectIndex(idx)}
+							className={cn(
+								"rounded-full transition-all cursor-pointer",
+								isSmall ? "w-2.5 h-2.5" : "w-3 h-3",
+								idx === activeIndex
+									? "bg-emerald-600 scale-125"
+									: "bg-gray-300 hover:bg-gray-400",
+							)}
+							aria-label={`Jump to slide ${idx + 1}`}
+							aria-current={idx === activeIndex ? "step" : undefined}
+						/>
+					</li>
 				))}
-			</div>
+			</ol>
 
 			<Button
 				type="button"
@@ -91,6 +99,6 @@ export function SlideNavigationStepper({
 			>
 				Next ▶
 			</Button>
-		</div>
+		</nav>
 	);
 }

@@ -168,10 +168,10 @@ export function SharedColorControls({
 				</Button>
 			</div>
 
-			<div className="flex flex-col gap-1.5">
-				<span className="block text-sm font-medium text-gray-900">
+			<fieldset className="flex flex-col gap-1.5 border-0 p-0 m-0">
+				<legend className="block text-sm font-medium text-gray-900">
 					Color Presets
-				</span>
+				</legend>
 				<div className="flex flex-wrap gap-2">
 					{COLOR_PRESETS.map((preset) => {
 						const isSelected =
@@ -193,13 +193,14 @@ export function SharedColorControls({
 										: "border-gray-200 hover:border-gray-300 bg-gray-50 text-gray-700 hover:bg-white"
 								}`}
 								aria-label={`Apply ${preset.name} colors`}
+								aria-pressed={isSelected}
 							>
 								{preset.name}
 							</button>
 						);
 					})}
 				</div>
-			</div>
+			</fieldset>
 		</div>
 	);
 }
