@@ -239,4 +239,23 @@ export const chapters: Chapter[] = [
 			},
 		],
 	},
+	{
+		title: "Intelligent Authoring & Accessible Presets",
+		intro:
+			"Enhanced authoring velocity and accessibility with automated step detection for technical diagrams, unified circle dot list normalization, and curated WCAG AAA color palettes across all generators.",
+		timeline: [
+			{
+				date: "2026-10-12",
+				title: "Smart Subtitle & Step Detection",
+				description:
+					"Enhanced carousel authoring with intelligent detection for multiline architecture flow diagrams and bullet lists in slide subtitles. Added automatic circle dot list normalization across the canvas preview and Go backend rendering engine.",
+			},
+			{
+				date: "2026-10-12",
+				title: "WCAG AAA Color Presets",
+				description:
+					"Introduced 8 curated, WCAG AAA-compliant color presets (4 dark, 4 light) across the Cover, Carousel, and GIF forms, providing balanced contrast without stark whites or pure black text.",
+			},
+		],
+	},
 ];

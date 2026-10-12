@@ -1,5 +1,6 @@
 "use client";
 
+import { COLOR_PRESETS } from "@cover-craft/shared";
 import { Button, ColorPicker } from "@/components/ui";
 import type { ContrastCheckResult } from "@/hooks";
 import { cn } from "@/lib/utils";
@@ -165,6 +166,39 @@ export function SharedColorControls({
 				>
 					Randomize Colors
 				</Button>
+			</div>
+
+			<div className="flex flex-col gap-1.5">
+				<span className="block text-sm font-medium text-gray-900">
+					Color Presets
+				</span>
+				<div className="flex flex-wrap gap-2">
+					{COLOR_PRESETS.map((preset) => {
+						const isSelected =
+							backgroundColor.toLowerCase() ===
+								preset.backgroundColor.toLowerCase() &&
+							textColor.toLowerCase() === preset.textColor.toLowerCase();
+
+						return (
+							<button
+								key={preset.name}
+								type="button"
+								onClick={() => {
+									onBackgroundColorChange(preset.backgroundColor);
+									onTextColorChange(preset.textColor);
+								}}
+								className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all cursor-pointer ${
+									isSelected
+										? "ring-2 ring-emerald-500 border-transparent shadow-xs bg-white text-emerald-900"
+										: "border-gray-200 hover:border-gray-300 bg-gray-50 text-gray-700 hover:bg-white"
+								}`}
+								aria-label={`Apply ${preset.name} colors`}
+							>
+								{preset.name}
+							</button>
+						);
+					})}
+				</div>
 			</div>
 		</div>
 	);

@@ -1,3 +1,4 @@
+import { COLOR_PRESETS, getContrastRatio } from "@cover-craft/shared";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { ContrastCheckResult } from "@/hooks";
@@ -96,6 +97,46 @@ describe("SharedColorControls", () => {
 			"title",
 			"Choose background color for your carousel",
 		);
+	});
+
+	it("renders all color presets and triggers change handlers on selection", () => {
+		const handleBgChange = vi.fn();
+		const handleTextChange = vi.fn();
+
+		render(
+			<SharedColorControls
+				backgroundColor="#000000"
+				textColor="#ffffff"
+				onBackgroundColorChange={handleBgChange}
+				onTextColorChange={handleTextChange}
+				onRandomizeColors={vi.fn()}
+			/>,
+		);
+
+		for (const preset of COLOR_PRESETS) {
+			expect(
+				screen.getByRole("button", {
+					name: new RegExp(`Apply ${preset.name} colors`, "i"),
+				}),
+			).toBeInTheDocument();
+		}
+
+		const cloudNavyBtn = screen.getByRole("button", {
+			name: /Apply Cloud Navy colors/i,
+		});
+		fireEvent.click(cloudNavyBtn);
+
+		expect(handleBgChange).toHaveBeenCalledWith("#0F172A");
+		expect(handleTextChange).toHaveBeenCalledWith("#F8FAFC");
+	});
+
+	it("verifies all COLOR_PRESETS exceed WCAG AAA threshold (>= 7.0:1) and avoid pure black text", () => {
+		for (const preset of COLOR_PRESETS) {
+			const ratio = getContrastRatio(preset.backgroundColor, preset.textColor);
+			expect(ratio).not.toBeNull();
+			expect(ratio).toBeGreaterThanOrEqual(7.0);
+			expect(preset.textColor.toLowerCase()).not.toBe("#000000");
+		}
 	});
 });
 
