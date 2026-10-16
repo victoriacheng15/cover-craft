@@ -468,4 +468,3 @@ func TestRenderBorder_AllStylesAndMultiplicities(t *testing.T) {
 		}
 	}
 }
-
