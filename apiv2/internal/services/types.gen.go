@@ -7,19 +7,28 @@ import (
 	"time"
 )
 
+// Defines values for BorderLines.
+const (
+	Double BorderLines = "double"
+	Single BorderLines = "single"
+)
+
+// Defines values for BorderStyle.
+const (
+	Brackets BorderStyle = "brackets"
+	Dashed   BorderStyle = "dashed"
+	Dotted   BorderStyle = "dotted"
+	None     BorderStyle = "none"
+	Rounded  BorderStyle = "rounded"
+	Solid    BorderStyle = "solid"
+)
+
 // Defines values for CarouselParamsAuthorHandlePosition.
 const (
 	CarouselParamsAuthorHandlePositionBottomLeft  CarouselParamsAuthorHandlePosition = "bottom-left"
 	CarouselParamsAuthorHandlePositionBottomRight CarouselParamsAuthorHandlePosition = "bottom-right"
 	CarouselParamsAuthorHandlePositionTopLeft     CarouselParamsAuthorHandlePosition = "top-left"
 	CarouselParamsAuthorHandlePositionTopRight    CarouselParamsAuthorHandlePosition = "top-right"
-)
-
-// Defines values for CarouselParamsBorderStyle.
-const (
-	Double CarouselParamsBorderStyle = "double"
-	None   CarouselParamsBorderStyle = "none"
-	Single CarouselParamsBorderStyle = "single"
 )
 
 // Defines values for CarouselParamsFont.
@@ -111,27 +120,35 @@ type AnalyticsResult struct {
 	UserEngagement UserEngagement `json:"userEngagement"`
 }
 
+// BorderLines Line multiplicity for the border (single or double). Ignored if borderStyle is none.
+type BorderLines string
+
+// BorderStyle Border pattern geometry.
+type BorderStyle string
+
 // CarouselParams defines model for CarouselParams.
 type CarouselParams struct {
 	AuthorHandle         *string                             `json:"authorHandle,omitempty"`
 	AuthorHandlePosition *CarouselParamsAuthorHandlePosition `json:"authorHandlePosition,omitempty"`
 	BackgroundColor      string                              `json:"backgroundColor"`
-	BorderStyle          *CarouselParamsBorderStyle          `json:"borderStyle,omitempty"`
-	Filename             *string                             `json:"filename,omitempty"`
-	Font                 CarouselParamsFont                  `json:"font"`
-	Height               int                                 `json:"height"`
-	ShowSlideNumbers     *bool                               `json:"showSlideNumbers,omitempty"`
-	SlideNumberPosition  *CarouselParamsSlideNumberPosition  `json:"slideNumberPosition,omitempty"`
-	Slides               []CarouselSlideParams               `json:"slides"`
-	TextColor            string                              `json:"textColor"`
-	Width                int                                 `json:"width"`
+
+	// BorderLines Line multiplicity for the border (single or double). Ignored if borderStyle is none.
+	BorderLines *BorderLines `json:"borderLines,omitempty"`
+
+	// BorderStyle Border pattern geometry.
+	BorderStyle         *BorderStyle                       `json:"borderStyle,omitempty"`
+	Filename            *string                            `json:"filename,omitempty"`
+	Font                CarouselParamsFont                 `json:"font"`
+	Height              int                                `json:"height"`
+	ShowSlideNumbers    *bool                              `json:"showSlideNumbers,omitempty"`
+	SlideNumberPosition *CarouselParamsSlideNumberPosition `json:"slideNumberPosition,omitempty"`
+	Slides              []CarouselSlideParams              `json:"slides"`
+	TextColor           string                             `json:"textColor"`
+	Width               int                                `json:"width"`
 }
 
 // CarouselParamsAuthorHandlePosition defines model for CarouselParams.AuthorHandlePosition.
 type CarouselParamsAuthorHandlePosition string
-
-// CarouselParamsBorderStyle defines model for CarouselParams.BorderStyle.
-type CarouselParamsBorderStyle string
 
 // CarouselParamsFont defines model for CarouselParams.Font.
 type CarouselParamsFont string
@@ -170,12 +187,18 @@ type ErrorResponse struct {
 
 // GifParams defines model for GifParams.
 type GifParams struct {
-	BackgroundColor string            `json:"backgroundColor"`
-	DelayMs         *GifParamsDelayMs `json:"delayMs,omitempty"`
-	Filename        *string           `json:"filename,omitempty"`
-	Height          int               `json:"height"`
-	Slides          []GifSlideParams  `json:"slides"`
-	Width           int               `json:"width"`
+	BackgroundColor string `json:"backgroundColor"`
+
+	// BorderLines Line multiplicity for the border (single or double). Ignored if borderStyle is none.
+	BorderLines *BorderLines `json:"borderLines,omitempty"`
+
+	// BorderStyle Border pattern geometry.
+	BorderStyle *BorderStyle      `json:"borderStyle,omitempty"`
+	DelayMs     *GifParamsDelayMs `json:"delayMs,omitempty"`
+	Filename    *string           `json:"filename,omitempty"`
+	Height      int               `json:"height"`
+	Slides      []GifSlideParams  `json:"slides"`
+	Width       int               `json:"width"`
 }
 
 // GifParamsDelayMs defines model for GifParams.DelayMs.
@@ -183,9 +206,15 @@ type GifParamsDelayMs int
 
 // GifSlideParams defines model for GifSlideParams.
 type GifSlideParams struct {
-	Font GifSlideParamsFont `json:"font"`
+	// BorderLines Line multiplicity for the border (single or double). Ignored if borderStyle is none.
+	BorderLines *BorderLines `json:"borderLines,omitempty"`
 
-	// HasBorder Whether to render an inset border around the slide (defaults to false)
+	// BorderStyle Border pattern geometry.
+	BorderStyle *BorderStyle       `json:"borderStyle,omitempty"`
+	Font        GifSlideParamsFont `json:"font"`
+
+	// HasBorder Deprecated. Whether to render an inset border around the slide (defaults to false)
+	// Deprecated:
 	HasBorder *bool   `json:"hasBorder,omitempty"`
 	Subtitle  *string `json:"subtitle,omitempty"`
 
@@ -209,11 +238,18 @@ type HealthResponse struct {
 
 // ImageParams defines model for ImageParams.
 type ImageParams struct {
-	BackgroundColor string          `json:"backgroundColor"`
-	Filename        string          `json:"filename"`
-	Font            ImageParamsFont `json:"font"`
+	BackgroundColor string `json:"backgroundColor"`
 
-	// HasBorder Whether to render an inset border around the cover (defaults to false)
+	// BorderLines Line multiplicity for the border (single or double). Ignored if borderStyle is none.
+	BorderLines *BorderLines `json:"borderLines,omitempty"`
+
+	// BorderStyle Border pattern geometry.
+	BorderStyle *BorderStyle    `json:"borderStyle,omitempty"`
+	Filename    string          `json:"filename"`
+	Font        ImageParamsFont `json:"font"`
+
+	// HasBorder Deprecated. Whether to render an inset border around the cover (defaults to false)
+	// Deprecated:
 	HasBorder *bool   `json:"hasBorder,omitempty"`
 	Height    int     `json:"height"`
 	Subtitle  *string `json:"subtitle,omitempty"`

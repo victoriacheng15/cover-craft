@@ -483,8 +483,8 @@ func TestValidateCarouselParams(t *testing.T) {
 	validAuthor := "@engineer"
 	tooLongAuthor := makeStringOfLength(31)
 
-	invalidBorderStyle := CarouselParamsBorderStyle("dotted")
-	validBorderStyle := Single
+	invalidBorderStyle := CarouselParamsBorderStyle("invalid-style")
+	validBorderStyle := Solid
 	invalidAuthorPos := CarouselParamsAuthorHandlePosition("middle")
 	invalidSlideNumPos := CarouselParamsSlideNumberPosition("center")
 	invalidAlign := CarouselSlideParamsTextAlign("justify")
@@ -817,4 +817,215 @@ func TestValidateCarouselParams(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNormalizeBorder(t *testing.T) {
+	tr := true
+	fl := false
+
+	tests := []struct {
+		name          string
+		style         *BorderStyle
+		lines         *BorderLines
+		hasBorder     *bool
+		expectedStyle BorderStyle
+		expectedLines BorderLines
+	}{
+		{
+			name:          "Default nil inputs return None, Single",
+			style:         nil,
+			lines:         nil,
+			hasBorder:     nil,
+			expectedStyle: None,
+			expectedLines: Single,
+		},
+		{
+			name:          "Legacy hasBorder true returns Solid, Single",
+			style:         nil,
+			lines:         nil,
+			hasBorder:     &tr,
+			expectedStyle: Solid,
+			expectedLines: Single,
+		},
+		{
+			name:          "Legacy hasBorder false returns None, Single",
+			style:         nil,
+			lines:         nil,
+			hasBorder:     &fl,
+			expectedStyle: None,
+			expectedLines: Single,
+		},
+		{
+			name: "Legacy style single returns Solid, Single",
+			style: func() *BorderStyle {
+				s := BorderStyle("single")
+				return &s
+			}(),
+			lines:         nil,
+			hasBorder:     nil,
+			expectedStyle: Solid,
+			expectedLines: Single,
+		},
+		{
+			name: "Legacy style double returns Solid, Double",
+			style: func() *BorderStyle {
+				s := BorderStyle("double")
+				return &s
+			}(),
+			lines:         nil,
+			hasBorder:     nil,
+			expectedStyle: Solid,
+			expectedLines: Double,
+		},
+		{
+			name: "Dashed pattern with Double multiplicity",
+			style: func() *BorderStyle {
+				s := Dashed
+				return &s
+			}(),
+			lines: func() *BorderLines {
+				l := Double
+				return &l
+			}(),
+			hasBorder:     nil,
+			expectedStyle: Dashed,
+			expectedLines: Double,
+		},
+		{
+			name: "Rounded pattern with Single multiplicity",
+			style: func() *BorderStyle {
+				s := Rounded
+				return &s
+			}(),
+			lines: func() *BorderLines {
+				l := Single
+				return &l
+			}(),
+			hasBorder:     nil,
+			expectedStyle: Rounded,
+			expectedLines: Single,
+		},
+		{
+			name: "Brackets pattern with Double multiplicity",
+			style: func() *BorderStyle {
+				s := Brackets
+				return &s
+			}(),
+			lines: func() *BorderLines {
+				l := Double
+				return &l
+			}(),
+			hasBorder:     nil,
+			expectedStyle: Brackets,
+			expectedLines: Double,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, l := NormalizeBorder(tt.style, tt.lines, tt.hasBorder)
+			if s != tt.expectedStyle {
+				t.Errorf("expected style %q, got %q", tt.expectedStyle, s)
+			}
+			if l != tt.expectedLines {
+				t.Errorf("expected lines %q, got %q", tt.expectedLines, l)
+			}
+		})
+	}
+}
+
+func TestValidateImageParams_Border(t *testing.T) {
+	validStyle := Dashed
+	validLines := Double
+	invalidStyle := BorderStyle("wavy")
+	invalidLines := BorderLines("triple")
+
+	base := ImageParams{
+		Width:           1200,
+		Height:          627,
+		BackgroundColor: "#1E293B",
+		TextColor:       "#F8FAFC",
+		Font:            "Montserrat",
+		Title:           "Border Test",
+		Filename:        "cover",
+	}
+
+	t.Run("Valid border parameters succeed", func(t *testing.T) {
+		p := base
+		p.BorderStyle = &validStyle
+		p.BorderLines = &validLines
+		errs := ValidateImageParams(p)
+		if len(errs) != 0 {
+			t.Fatalf("expected 0 errors, got: %+v", errs)
+		}
+	})
+
+	t.Run("Invalid borderStyle fails", func(t *testing.T) {
+		p := base
+		p.BorderStyle = &invalidStyle
+		errs := ValidateImageParams(p)
+		if len(errs) != 1 || errs[0].Field != "borderStyle" {
+			t.Fatalf("expected borderStyle error, got: %+v", errs)
+		}
+	})
+
+	t.Run("Invalid borderLines fails", func(t *testing.T) {
+		p := base
+		p.BorderLines = &invalidLines
+		errs := ValidateImageParams(p)
+		if len(errs) != 1 || errs[0].Field != "borderLines" {
+			t.Fatalf("expected borderLines error, got: %+v", errs)
+		}
+	})
+}
+
+func TestValidateGifParams_Border(t *testing.T) {
+	validStyle := Dotted
+	validLines := Single
+	invalidStyle := BorderStyle("zigzag")
+	invalidLines := BorderLines("quad")
+	gifFilename := "gif"
+
+	baseSlide := GifSlideParams{
+		Title: "Slide",
+		Font:  GifSlideParamsFontMontserrat,
+	}
+
+	base := GifParams{
+		Width:           1200,
+		Height:          627,
+		BackgroundColor: "#1E293B",
+		Slides:          []GifSlideParams{baseSlide, baseSlide},
+		Filename:        &gifFilename,
+	}
+
+	t.Run("Valid top-level and slide-level border succeeds", func(t *testing.T) {
+		p := base
+		p.BorderStyle = &validStyle
+		p.BorderLines = &validLines
+		p.Slides[0].BorderStyle = &validStyle
+		p.Slides[0].BorderLines = &validLines
+		errs := ValidateGifParams(p)
+		if len(errs) != 0 {
+			t.Fatalf("expected 0 errors, got: %+v", errs)
+		}
+	})
+
+	t.Run("Invalid top-level borderStyle fails", func(t *testing.T) {
+		p := base
+		p.BorderStyle = &invalidStyle
+		errs := ValidateGifParams(p)
+		if len(errs) != 1 || errs[0].Field != "borderStyle" {
+			t.Fatalf("expected borderStyle error, got: %+v", errs)
+		}
+	})
+
+	t.Run("Invalid slide-level borderLines fails", func(t *testing.T) {
+		p := base
+		p.Slides[0].BorderLines = &invalidLines
+		errs := ValidateGifParams(p)
+		if len(errs) != 1 || errs[0].Field != "slides[0].borderLines" {
+			t.Fatalf("expected slides[0].borderLines error, got: %+v", errs)
+		}
+	})
 }
