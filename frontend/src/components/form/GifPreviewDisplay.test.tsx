@@ -22,7 +22,7 @@ describe("GifPreviewDisplay", () => {
 		filename: "slideshow",
 		backgroundColor: "#374151",
 		textColor: "#FFFFFF",
-		delayMs: 1500,
+		delayMs: 2000,
 		font: "Montserrat",
 		hasBorder: true,
 		borderStyle: "solid",

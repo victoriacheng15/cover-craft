@@ -17,7 +17,7 @@ func GenerateGIF(params GifParams) ([]byte, error) {
 		return nil, fmt.Errorf("gif generation requires at least 2 slides")
 	}
 
-	delayMs := 1500
+	delayMs := 2000
 	if params.DelayMs != nil {
 		delayMs = int(*params.DelayMs)
 	}

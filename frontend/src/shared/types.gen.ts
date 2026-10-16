@@ -441,11 +441,11 @@ export interface components {
 			borderStyle?: components["schemas"]["BorderStyle"];
 			borderLines?: components["schemas"]["BorderLines"];
 			/**
-			 * @default 1500
-			 * @example 1500
+			 * @default 2000
+			 * @example 2000
 			 * @enum {integer}
 			 */
-			delayMs: 1000 | 1500 | 2000 | 3000;
+			delayMs: 2000 | 3000 | 4000 | 5000;
 			slides: components["schemas"]["GifSlideParams"][];
 			/** @example slideshow */
 			filename?: string;

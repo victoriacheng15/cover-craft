@@ -8,7 +8,10 @@ import {
 	playfairDisplay,
 	roboto,
 } from "@/lib/utils";
-import { CoverFormControls } from "./CoverFormControls";
+import {
+	CoverContentControls,
+	CoverSettingsControls,
+} from "./CoverFormControls";
 import { CoverPreviewDisplay } from "./CoverPreviewDisplay";
 
 export function CoverForm() {
@@ -28,9 +31,10 @@ export function CoverForm() {
 
 	return (
 		<div
-			className={`w-full flex flex-col md:flex-row gap-6 ${montserrat.variable} ${roboto.variable} ${lato.variable} ${playfairDisplay.variable} ${openSans.variable}`}
+			className={`w-full flex flex-col gap-6 ${montserrat.variable} ${roboto.variable} ${lato.variable} ${playfairDisplay.variable} ${openSans.variable}`}
 		>
-			<CoverFormControls
+			{/* Top: Full-width Canvas & Cover Settings */}
+			<CoverSettingsControls
 				formData={formData}
 				handleInputChange={handleInputChange}
 				error={error}
@@ -41,12 +45,20 @@ export function CoverForm() {
 				handleRandomizeColors={handleRandomizeColors}
 			/>
 
-			<CoverPreviewDisplay
-				formData={formData}
-				generatedImageUrl={generatedImageUrl}
-				getPreviewDimensions={getPreviewDimensions}
-				handleDownload={handleDownload}
-			/>
+			{/* Bottom: Side-by-side Cover Details and Live Preview */}
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+				<CoverContentControls
+					formData={formData}
+					handleInputChange={handleInputChange}
+				/>
+
+				<CoverPreviewDisplay
+					formData={formData}
+					generatedImageUrl={generatedImageUrl}
+					getPreviewDimensions={getPreviewDimensions}
+					handleDownload={handleDownload}
+				/>
+			</div>
 		</div>
 	);
 }

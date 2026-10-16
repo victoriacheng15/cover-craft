@@ -9,7 +9,7 @@ describe("GifSettingsControls", () => {
 		filename: "my-slideshow",
 		backgroundColor: "#374151",
 		textColor: "#F9FAFB",
-		delayMs: 1500,
+		delayMs: 2000,
 		font: "Montserrat",
 		hasBorder: false,
 		borderStyle: "none",
@@ -118,5 +118,13 @@ describe("GifSettingsControls", () => {
 			name: /generate animated gif slideshow/i,
 		});
 		expect(generateBtn).toBeDisabled();
+	});
+
+	it("triggers setDelayMs when a slide delay button is clicked", () => {
+		render(<GifSettingsControls {...defaultProps} />);
+
+		const delay4sBtn = screen.getByRole("button", { name: "4s" });
+		fireEvent.click(delay4sBtn);
+		expect(mockSetDelayMs).toHaveBeenCalledWith(4000);
 	});
 });

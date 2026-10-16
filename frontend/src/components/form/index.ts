@@ -1,3 +1,4 @@
+export { CanvasSettingsCard } from "./CanvasSettingsCard";
 export { CarouselForm } from "./CarouselForm";
 export { CarouselFormControls } from "./CarouselFormControls";
 export { CarouselPreviewDisplay } from "./CarouselPreviewDisplay";

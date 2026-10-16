@@ -10,13 +10,13 @@ func TestGenerateGIF_Success(t *testing.T) {
 	subText := "Second Slide Subtitle"
 	textColor := "#F9FAFB"
 	hasBorder := true
-	delay1500 := GifParamsDelayMs(1500)
+	delay2000 := GifParamsDelayMs(2000)
 
 	params := GifParams{
 		Width:           400,
 		Height:          300,
 		BackgroundColor: "#1E3A8A",
-		DelayMs:         &delay1500,
+		DelayMs:         &delay2000,
 		Slides: []GifSlideParams{
 			{
 				Title:     "Slide 1: Overview",
@@ -54,9 +54,9 @@ func TestGenerateGIF_Success(t *testing.T) {
 	if len(decoded.Delay) != 2 {
 		t.Errorf("expected 2 delay entries, got %d", len(decoded.Delay))
 	} else {
-		// 1500ms -> 150 hundredths of a second
-		if decoded.Delay[0] != 150 || decoded.Delay[1] != 150 {
-			t.Errorf("expected delay 150, got [%d, %d]", decoded.Delay[0], decoded.Delay[1])
+		// 2000ms -> 200 hundredths of a second
+		if decoded.Delay[0] != 200 || decoded.Delay[1] != 200 {
+			t.Errorf("expected delay 200, got [%d, %d]", decoded.Delay[0], decoded.Delay[1])
 		}
 	}
 

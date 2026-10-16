@@ -1,26 +1,14 @@
 "use client";
 
 import {
-	BORDER_LINES,
-	BORDER_STYLES,
-	type BorderLines,
-	type BorderStyle,
 	MAX_SUBTITLE_LENGTH,
 	MAX_TITLE_LENGTH,
 	SIZE_PRESETS,
 } from "@cover-craft/shared";
-import {
-	Button,
-	Card,
-	FormError,
-	Input,
-	SectionTitle,
-	SegmentedGroup,
-	Select,
-} from "@/components/ui";
+import { Card, Input, SectionTitle } from "@/components/ui";
 import type { ContrastCheckResult, FormData } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { FontSelect } from "./FontSelect";
+import { CanvasSettingsCard } from "./CanvasSettingsCard";
 import {
 	ColorContrastMessage,
 	type ColorContrastMessageProps,
@@ -91,7 +79,7 @@ export function ColorControls({
 	);
 }
 
-interface CoverFormControlsProps {
+export interface CoverSettingsControlsProps {
 	formData: FormData;
 	handleInputChange: (key: keyof FormData, value: string | boolean) => void;
 	error: string | null;
@@ -102,7 +90,7 @@ interface CoverFormControlsProps {
 	handleRandomizeColors: () => void;
 }
 
-export function CoverFormControls({
+export function CoverSettingsControls({
 	formData,
 	handleInputChange,
 	error,
@@ -111,7 +99,7 @@ export function CoverFormControls({
 	handleGenerate,
 	handleReset,
 	handleRandomizeColors,
-}: CoverFormControlsProps) {
+}: CoverSettingsControlsProps) {
 	const errorId = "form-error-message";
 
 	function getGenerateButtonLabel() {
@@ -122,36 +110,66 @@ export function CoverFormControls({
 	}
 
 	return (
-		<Card
-			className="min-w-[50%] flex-1 flex flex-col gap-4"
-			aria-label="Cover image generator form"
-		>
-			<SectionTitle size="lg">Cover Details</SectionTitle>
+		<CanvasSettingsCard
+			title="Canvas & Cover Settings"
+			sizeId="size-preset"
+			sizeValue={formData.size}
+			sizeOptions={SIZE_PRESETS}
+			onSizeChange={(size) => handleInputChange("size", size)}
+			sizeAriaLabel="Select cover image size preset"
+			fontId="font"
+			fontValue={formData.font}
+			onFontChange={(font) => handleInputChange("font", font)}
+			fontAriaLabel="Select font for your cover text"
+			filenameId="filename"
+			filenameValue={formData.filename}
+			filenamePlaceholder="my-awesome-cover"
+			onFilenameChange={(filename) => handleInputChange("filename", filename)}
+			filenameAriaLabel="Enter filename for your cover image (optional)"
+			backgroundColor={formData.backgroundColor}
+			textColor={formData.textColor}
+			onBackgroundColorChange={(color) =>
+				handleInputChange("backgroundColor", color)
+			}
+			onTextColorChange={(color) => handleInputChange("textColor", color)}
+			onRandomizeColors={handleRandomizeColors}
+			contrastCheck={contrastCheck}
+			colorIdPrefix="cover"
+			colorTitleContext="cover"
+			borderStyle={formData.borderStyle}
+			borderLines={formData.borderLines}
+			onBorderStyleChange={(style) => handleInputChange("borderStyle", style)}
+			onBorderLinesChange={(lines) => handleInputChange("borderLines", lines)}
+			error={error}
+			errorId={errorId}
+			isGenerating={isGenerating}
+			generateDisabled={!formData.title || !contrastCheck.meetsWCAG}
+			generateButtonLabel="Generate"
+			generateButtonTitle={
+				!contrastCheck.meetsWCAG
+					? `Cannot generate: ${contrastCheck.message}`
+					: undefined
+			}
+			generateButtonAriaLabel={getGenerateButtonLabel()}
+			onGenerate={handleGenerate}
+			onReset={handleReset}
+			resetAriaLabel="Reset form to default values"
+		/>
+	);
+}
 
-			<FormField label="Size Preset" htmlFor="size-preset">
-				<Select
-					id="size-preset"
-					value={formData.size}
-					onChange={(e) => handleInputChange("size", e.target.value)}
-					aria-label="Select cover image size preset"
-				>
-					{SIZE_PRESETS.map((preset) => (
-						<option key={preset.label} value={preset.label}>
-							{preset.label}
-						</option>
-					))}
-				</Select>
-			</FormField>
+export interface CoverContentControlsProps {
+	formData: FormData;
+	handleInputChange: (key: keyof FormData, value: string) => void;
+}
 
-			<FormField label="Filename" htmlFor="filename">
-				<Input
-					id="filename"
-					placeholder="my-awesome-cover"
-					value={formData.filename}
-					onChange={(e) => handleInputChange("filename", e.target.value)}
-					aria-label="Enter filename for your cover image (optional)"
-				/>
-			</FormField>
+export function CoverContentControls({
+	formData,
+	handleInputChange,
+}: CoverContentControlsProps) {
+	return (
+		<Card className="w-full flex flex-col gap-4" aria-label="Cover Details">
+			<SectionTitle size="md">Cover Details</SectionTitle>
 
 			<FormField label="Title" htmlFor="title" required>
 				<Input
@@ -159,9 +177,8 @@ export function CoverFormControls({
 					placeholder="Enter your cover title..."
 					value={formData.title}
 					onChange={(e) => handleInputChange("title", e.target.value)}
-					maxLength={40}
+					maxLength={MAX_TITLE_LENGTH}
 					aria-label="Enter your cover title (required)"
-					aria-describedby={error ? errorId : undefined}
 				/>
 				<div className="flex justify-between items-center mt-1">
 					<span className="text-xs text-gray-500"></span>
@@ -185,7 +202,7 @@ export function CoverFormControls({
 					placeholder="Subtitle"
 					value={formData.subtitle || ""}
 					onChange={(e) => handleInputChange("subtitle", e.target.value)}
-					maxLength={70}
+					maxLength={MAX_SUBTITLE_LENGTH}
 					aria-label="Enter your cover subtitle (optional)"
 				/>
 				<div className="flex justify-between items-center mt-1">
@@ -203,61 +220,38 @@ export function CoverFormControls({
 					</span>
 				</div>
 			</FormField>
+		</Card>
+	);
+}
 
-			<ColorContrastMessage contrastCheck={contrastCheck} />
+export interface CoverFormControlsProps extends CoverSettingsControlsProps {}
 
-			<ColorControls
+export function CoverFormControls({
+	formData,
+	handleInputChange,
+	error,
+	isGenerating,
+	contrastCheck,
+	handleGenerate,
+	handleReset,
+	handleRandomizeColors,
+}: CoverFormControlsProps) {
+	return (
+		<div className="w-full flex flex-col gap-6">
+			<CoverSettingsControls
 				formData={formData}
 				handleInputChange={handleInputChange}
+				error={error}
+				isGenerating={isGenerating}
+				contrastCheck={contrastCheck}
+				handleGenerate={handleGenerate}
+				handleReset={handleReset}
 				handleRandomizeColors={handleRandomizeColors}
 			/>
-
-			<FontSelect
-				id="font"
-				value={formData.font}
-				onChange={(font) => handleInputChange("font", font)}
-				ariaLabel="Select font for your cover text"
+			<CoverContentControls
+				formData={formData}
+				handleInputChange={handleInputChange}
 			/>
-
-			<SegmentedGroup<BorderStyle>
-				label="Border Pattern"
-				options={BORDER_STYLES}
-				value={formData.borderStyle}
-				onChange={(style) => handleInputChange("borderStyle", style)}
-			/>
-
-			<SegmentedGroup<BorderLines>
-				label="Border Multiplicity"
-				options={BORDER_LINES}
-				value={formData.borderLines}
-				onChange={(lines) => handleInputChange("borderLines", lines)}
-				disabled={formData.borderStyle === "none"}
-			/>
-
-			<FormError error={error} errorId={errorId} />
-
-			<div className="flex justify-center gap-2">
-				<Button
-					onClick={handleGenerate}
-					disabled={!formData.title || isGenerating || !contrastCheck.meetsWCAG}
-					isLoading={isGenerating}
-					title={
-						!contrastCheck.meetsWCAG
-							? `Cannot generate: ${contrastCheck.message}`
-							: undefined
-					}
-					aria-label={getGenerateButtonLabel()}
-				>
-					{isGenerating ? "Generating..." : "Generate"}
-				</Button>
-				<Button
-					variant="outline"
-					onClick={handleReset}
-					aria-label="Reset form to default values"
-				>
-					Reset
-				</Button>
-			</div>
-		</Card>
+		</div>
 	);
 }

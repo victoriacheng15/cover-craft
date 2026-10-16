@@ -29,7 +29,9 @@ describe("useCarouselForm", () => {
 		expect(result.current.deckSettings.borderStyle).toBe("none");
 		expect(result.current.deckSettings.borderLines).toBe("single");
 		expect(result.current.deckSettings.font).toBe("Montserrat");
-		expect(result.current.deckSettings.slideNumberPosition).toBe("none");
+		expect(result.current.deckSettings.slideNumberPosition).toBe(
+			"bottom-right",
+		);
 		expect(result.current.isGenerating).toBe(false);
 		expect(result.current.error).toBeNull();
 	});

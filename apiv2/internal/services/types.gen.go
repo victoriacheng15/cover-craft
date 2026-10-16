@@ -64,10 +64,10 @@ const (
 
 // Defines values for GifParamsDelayMs.
 const (
-	N1000 GifParamsDelayMs = 1000
-	N1500 GifParamsDelayMs = 1500
 	N2000 GifParamsDelayMs = 2000
 	N3000 GifParamsDelayMs = 3000
+	N4000 GifParamsDelayMs = 4000
+	N5000 GifParamsDelayMs = 5000
 )
 
 // Defines values for GifSlideParamsFont.

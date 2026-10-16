@@ -275,7 +275,7 @@ func TestValidateGifParams(t *testing.T) {
 		TextColor: &goodTextColor,
 	}
 
-	delay1000 := GifParamsDelayMs(1000)
+	delay2000 := GifParamsDelayMs(2000)
 	delay9999 := GifParamsDelayMs(9999)
 
 	tests := []struct {
@@ -290,7 +290,7 @@ func TestValidateGifParams(t *testing.T) {
 				Width:           1200,
 				Height:          627,
 				BackgroundColor: "#374151",
-				DelayMs:         &delay1000,
+				DelayMs:         &delay2000,
 				Slides:          []GifSlideParams{validSlide1, validSlide2},
 			},
 			expectError: false,

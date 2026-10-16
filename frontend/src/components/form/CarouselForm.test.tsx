@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useCarouselForm } from "@/hooks/useCarouselForm";
 import { CarouselForm } from "./CarouselForm";
@@ -73,7 +73,7 @@ describe("CarouselForm", () => {
 			borderLines: "single" as const,
 			authorHandle: "@techlead",
 			authorHandlePosition: "bottom-left" as const,
-			slideNumberPosition: "top-right" as const,
+			slideNumberPosition: "bottom-right" as const,
 			filename: "deck",
 		},
 		slides: [
@@ -351,6 +351,37 @@ describe("CarouselForm", () => {
 		fireEvent.click(doubleBtn);
 		expect(mockUpdateDeckSettings).toHaveBeenCalledWith({
 			borderLines: "double",
+		});
+	});
+
+	it("updates author handle and slide numbers position", () => {
+		render(<CarouselForm />);
+
+		const authorInput = screen.getByLabelText(
+			/Author handle branding \(optional\)/i,
+		);
+		fireEvent.change(authorInput, { target: { value: "@newhandle" } });
+		expect(mockUpdateDeckSettings).toHaveBeenCalledWith({
+			authorHandle: "@newhandle",
+		});
+
+		const slideNumbersGroup = screen.getByRole("group", {
+			name: "Slide Numbers",
+		});
+		const noneBtn = within(slideNumbersGroup).getByRole("button", {
+			name: "None",
+		});
+		fireEvent.click(noneBtn);
+		expect(mockUpdateDeckSettings).toHaveBeenCalledWith({
+			slideNumberPosition: "none",
+		});
+
+		const topRightBtn = within(slideNumbersGroup).getByRole("button", {
+			name: "Top Right",
+		});
+		fireEvent.click(topRightBtn);
+		expect(mockUpdateDeckSettings).toHaveBeenCalledWith({
+			slideNumberPosition: "top-right",
 		});
 	});
 });

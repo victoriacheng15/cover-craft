@@ -43,7 +43,7 @@ describe("GifForm", () => {
 				filename: "slideshow",
 				backgroundColor: "#374151",
 				textColor: "#F9FAFB",
-				delayMs: 1500,
+				delayMs: 2000,
 				font: "Montserrat",
 				hasBorder: false,
 				borderStyle: "none",
@@ -99,29 +99,22 @@ describe("GifForm", () => {
 		});
 	});
 
-	it("renders delay preset checkboxes and triggers setDelayMs", () => {
+	it("renders delay preset buttons and triggers setDelayMs", () => {
 		render(<GifForm />);
 
-		const delay1000 = screen.getByLabelText(
-			"Set slide delay to 1000 milliseconds",
-		);
-		const delay1500 = screen.getByLabelText(
-			"Set slide delay to 1500 milliseconds",
-		);
-		const delay2000 = screen.getByLabelText(
-			"Set slide delay to 2000 milliseconds",
-		);
-		const delay3000 = screen.getByLabelText(
-			"Set slide delay to 3000 milliseconds",
-		);
+		const delay2s = screen.getByRole("button", { name: "2s" });
+		const delay3s = screen.getByRole("button", { name: "3s" });
+		const delay4s = screen.getByRole("button", { name: "4s" });
+		const delay5s = screen.getByRole("button", { name: "5s" });
 
-		expect(delay1000).toBeInTheDocument();
-		expect(delay1500).toBeChecked();
-		expect(delay2000).toBeInTheDocument();
-		expect(delay3000).toBeInTheDocument();
+		expect(delay2s).toBeInTheDocument();
+		expect(delay2s).toHaveAttribute("aria-pressed", "true");
+		expect(delay3s).toBeInTheDocument();
+		expect(delay4s).toBeInTheDocument();
+		expect(delay5s).toBeInTheDocument();
 
-		fireEvent.click(delay2000);
-		expect(mockSetDelayMs).toHaveBeenCalledWith(2000);
+		fireEvent.click(delay4s);
+		expect(mockSetDelayMs).toHaveBeenCalledWith(4000);
 	});
 
 	it("renders slides and handles adding new slides", () => {
