@@ -1,5 +1,7 @@
 import {
 	type AllowedFont,
+	type BorderLines,
+	type BorderStyle,
 	DEFAULT_FILENAME,
 	FONT_OPTIONS,
 	MAX_SUBTITLE_LENGTH,
@@ -29,6 +31,8 @@ export interface FormData {
 	textColor: string;
 	font: AllowedFont;
 	hasBorder?: boolean;
+	borderStyle: BorderStyle;
+	borderLines: BorderLines;
 }
 
 const initialFormData: FormData = {
@@ -40,6 +44,8 @@ const initialFormData: FormData = {
 	textColor: "#F9FAFB",
 	font: FONT_OPTIONS[0],
 	hasBorder: false,
+	borderStyle: "none",
+	borderLines: "single",
 };
 
 export function useForm() {
@@ -58,8 +64,19 @@ export function useForm() {
 		formData.textColor,
 	);
 
-	const handleInputChange = (key: keyof FormData, value: string | boolean) => {
-		setFormData((prev) => ({ ...prev, [key]: value }));
+	const handleInputChange = (
+		key: keyof FormData,
+		value: string | boolean | BorderStyle | BorderLines,
+	) => {
+		setFormData((prev) => {
+			const updated = { ...prev, [key]: value };
+			if (key === "hasBorder") {
+				updated.borderStyle = value ? "solid" : "none";
+			} else if (key === "borderStyle") {
+				updated.hasBorder = value !== "none";
+			}
+			return updated;
+		});
 	};
 
 	const getPreviewDimensions = () => {
@@ -90,6 +107,11 @@ export function useForm() {
 				return;
 			}
 
+			const borderStyle =
+				formData.borderStyle ?? (formData.hasBorder ? "solid" : "none");
+			const borderLines = formData.borderLines ?? "single";
+			const hasBorder = borderStyle !== "none";
+
 			const { blob, clientDuration } = await generateImage({
 				width: selectedSize.width,
 				height: selectedSize.height,
@@ -99,7 +121,9 @@ export function useForm() {
 				title: formData.title,
 				subtitle: formData.subtitle,
 				filename: formData.filename || DEFAULT_FILENAME,
-				...(formData.hasBorder ? { hasBorder: true } : {}),
+				borderStyle,
+				borderLines,
+				hasBorder,
 			});
 			// Send minimal payload (intent + client performance)
 			sendGenerateEvent({
@@ -109,7 +133,7 @@ export function useForm() {
 					width: selectedSize.width,
 					height: selectedSize.height,
 				},
-				hasBorder: formData.hasBorder,
+				hasBorder,
 				titleLength: formData.title.length,
 				subtitleLength: formData.subtitle?.length || 0,
 			});

@@ -1,5 +1,7 @@
 import {
 	type AllowedFont,
+	type BorderLines,
+	type BorderStyle,
 	CAROUSEL_LIMITS,
 	type CarouselParams,
 	type CarouselSlideParams,
@@ -44,7 +46,8 @@ export interface CarouselDeckSettings {
 	backgroundColor: string;
 	textColor: string;
 	font: AllowedFont;
-	borderStyle: "none" | "single" | "double";
+	borderStyle: BorderStyle;
+	borderLines: BorderLines;
 	authorHandle: string;
 	authorHandlePosition: "bottom-left" | "bottom-right" | "top-left";
 	slideNumberPosition: "none" | "top-right" | "bottom-right" | "top-left";
@@ -82,6 +85,7 @@ export const initialDeckSettings: CarouselDeckSettings = {
 	textColor: "#F9FAFB",
 	font: "Montserrat",
 	borderStyle: "none",
+	borderLines: "single",
 	authorHandle: "",
 	authorHandlePosition: "bottom-left",
 	slideNumberPosition: "none",
@@ -358,10 +362,8 @@ export function useCarouselForm() {
 			return slideParam;
 		});
 
-		const borderStyle: CarouselParams["borderStyle"] =
-			deckSettings.borderStyle === "none" ? "none" : "solid";
-		const borderLines: CarouselParams["borderLines"] =
-			deckSettings.borderStyle === "double" ? "double" : "single";
+		const borderStyle: CarouselParams["borderStyle"] = deckSettings.borderStyle;
+		const borderLines: CarouselParams["borderLines"] = deckSettings.borderLines;
 
 		const payload: CarouselParams = {
 			width: deckSettings.width,

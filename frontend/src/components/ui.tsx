@@ -235,6 +235,11 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
 }
 
 export {
+	SegmentedGroup,
+	type SegmentedGroupProps,
+	type SegmentedOption,
+} from "./ui/SegmentedGroup";
+export {
 	SlideNavigationStepper,
 	type SlideNavigationStepperProps,
 } from "./ui/SlideNavigationStepper";

@@ -1,6 +1,10 @@
 "use client";
 
 import {
+	BORDER_LINES,
+	BORDER_STYLES,
+	type BorderLines,
+	type BorderStyle,
 	MAX_SUBTITLE_LENGTH,
 	MAX_TITLE_LENGTH,
 	SIZE_PRESETS,
@@ -11,6 +15,7 @@ import {
 	FormError,
 	Input,
 	SectionTitle,
+	SegmentedGroup,
 	Select,
 } from "@/components/ui";
 import type { ContrastCheckResult, FormData } from "@/hooks";
@@ -214,22 +219,20 @@ export function CoverFormControls({
 				ariaLabel="Select font for your cover text"
 			/>
 
-			<div className="flex items-center gap-2 py-1">
-				<input
-					type="checkbox"
-					id="has-border"
-					checked={formData.hasBorder ?? false}
-					onChange={(e) => handleInputChange("hasBorder", e.target.checked)}
-					className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-					aria-label="Add border around cover"
-				/>
-				<label
-					htmlFor="has-border"
-					className="text-sm font-medium text-gray-900 cursor-pointer"
-				>
-					Add Border
-				</label>
-			</div>
+			<SegmentedGroup<BorderStyle>
+				label="Border Pattern"
+				options={BORDER_STYLES}
+				value={formData.borderStyle}
+				onChange={(style) => handleInputChange("borderStyle", style)}
+			/>
+
+			<SegmentedGroup<BorderLines>
+				label="Border Multiplicity"
+				options={BORDER_LINES}
+				value={formData.borderLines}
+				onChange={(lines) => handleInputChange("borderLines", lines)}
+				disabled={formData.borderStyle === "none"}
+			/>
 
 			<FormError error={error} errorId={errorId} />
 

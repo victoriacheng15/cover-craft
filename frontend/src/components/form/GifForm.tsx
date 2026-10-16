@@ -26,6 +26,8 @@ export function GifForm() {
 		setFilename,
 		setFont,
 		setHasBorder,
+		setBorderStyle,
+		setBorderLines,
 		activeSlideIndex,
 		activeSlide,
 		setActiveSlideIndex,
@@ -57,6 +59,8 @@ export function GifForm() {
 				setFilename={setFilename}
 				setFont={setFont}
 				setHasBorder={setHasBorder}
+				setBorderStyle={setBorderStyle}
+				setBorderLines={setBorderLines}
 				handleRandomizeColors={handleRandomizeColors}
 				handleGenerate={handleGenerate}
 				handleReset={handleReset}

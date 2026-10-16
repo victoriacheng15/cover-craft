@@ -11,6 +11,7 @@ import type {
 	CarouselDeckSettings,
 	CarouselSlideItem,
 } from "@/hooks/useCarouselForm";
+import { drawCanvasBorder } from "@/lib/canvasUtils";
 import { detectBulletList } from "@/lib/carouselUtils";
 
 interface CarouselPreviewCanvasProps {
@@ -49,31 +50,14 @@ export function CarouselPreviewCanvas({
 		ctx.fillRect(0, 0, width, height);
 
 		// 2. Draw border
-		if (deckSettings.borderStyle === "single") {
-			const inset = 18.0;
-			ctx.strokeStyle = textColor;
-			ctx.lineWidth = 4.0;
-			ctx.strokeRect(inset, inset, width - 2 * inset, height - 2 * inset);
-		} else if (deckSettings.borderStyle === "double") {
-			const outerInset = 18.0;
-			ctx.strokeStyle = textColor;
-			ctx.lineWidth = 4.0;
-			ctx.strokeRect(
-				outerInset,
-				outerInset,
-				width - 2 * outerInset,
-				height - 2 * outerInset,
-			);
-
-			const innerInset = 28.0;
-			ctx.lineWidth = 4.0;
-			ctx.strokeRect(
-				innerInset,
-				innerInset,
-				width - 2 * innerInset,
-				height - 2 * innerInset,
-			);
-		}
+		drawCanvasBorder(
+			ctx,
+			width,
+			height,
+			deckSettings.borderStyle,
+			deckSettings.borderLines,
+			textColor,
+		);
 
 		// 3. Typography scale
 		const headingFontSize = Math.round(Math.max(32.0, width * 0.052));

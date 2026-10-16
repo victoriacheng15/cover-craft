@@ -241,6 +241,9 @@ describe("useForm", () => {
 				title: "Test Title",
 				subtitle: "Test Subtitle",
 				filename: "test-file",
+				borderStyle: "none",
+				borderLines: "single",
+				hasBorder: false,
 			});
 
 			expect(sendGenerateEvent).toHaveBeenCalled();

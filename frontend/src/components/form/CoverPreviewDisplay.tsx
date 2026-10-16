@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { Button, Card, SectionTitle } from "@/components/ui";
 import type { FormData } from "@/hooks";
+import { drawCanvasBorder } from "@/lib/canvasUtils";
 
 interface PreviewCanvasProps {
 	params: ImageParams;
@@ -29,18 +30,18 @@ export function PreviewCanvas({ params, className }: PreviewCanvasProps) {
 		ctx.fillStyle = params.backgroundColor;
 		ctx.fillRect(0, 0, params.width, params.height);
 
-		// Draw inset border if enabled
-		if (params.hasBorder) {
-			const inset = IMAGE_CONFIG.dimensions.borderInset;
-			ctx.strokeStyle = params.textColor;
-			ctx.lineWidth = IMAGE_CONFIG.dimensions.borderWidth;
-			ctx.strokeRect(
-				inset,
-				inset,
-				params.width - inset * 2,
-				params.height - inset * 2,
-			);
-		}
+		// Draw border
+		const borderStyle =
+			params.borderStyle ?? (params.hasBorder ? "solid" : "none");
+		const borderLines = params.borderLines ?? "single";
+		drawCanvasBorder(
+			ctx,
+			params.width,
+			params.height,
+			borderStyle,
+			borderLines,
+			params.textColor,
+		);
 
 		// Calculate text positioning (same logic as backend)
 		const padding = IMAGE_CONFIG.dimensions.padding;
@@ -136,7 +137,10 @@ export function CoverPreviewDisplay({
 								width,
 								height,
 								filename: formData.filename,
-								hasBorder: formData.hasBorder,
+								borderStyle: formData.borderStyle,
+								borderLines: formData.borderLines,
+								hasBorder:
+									formData.borderStyle !== "none" || formData.hasBorder,
 							}}
 							className="w-full h-auto"
 						/>

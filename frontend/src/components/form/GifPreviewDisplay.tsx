@@ -74,7 +74,10 @@ export function GifPreviewDisplay({
 										width,
 										height,
 										filename: formData.filename || "slideshow",
-										hasBorder: formData.hasBorder,
+										borderStyle: formData.borderStyle,
+										borderLines: formData.borderLines,
+										hasBorder:
+											formData.borderStyle !== "none" || formData.hasBorder,
 									}}
 									className="w-full h-auto"
 								/>

@@ -301,6 +301,22 @@ export type GifSlideParams = components["schemas"]["GifSlideParams"];
 export type CarouselParams = components["schemas"]["CarouselParams"];
 export type CarouselSlideParams = components["schemas"]["CarouselSlideParams"];
 export type ValidationError = components["schemas"]["ValidationError"];
+export type BorderStyle = components["schemas"]["BorderStyle"];
+export type BorderLines = components["schemas"]["BorderLines"];
+
+export const BORDER_STYLES: Array<{ value: BorderStyle; label: string }> = [
+	{ value: "none", label: "None" },
+	{ value: "solid", label: "Solid" },
+	{ value: "dashed", label: "Dashed" },
+	{ value: "dotted", label: "Dotted" },
+	{ value: "rounded", label: "Rounded" },
+	{ value: "brackets", label: "Brackets" },
+];
+
+export const BORDER_LINES: Array<{ value: BorderLines; label: string }> = [
+	{ value: "single", label: "Single" },
+	{ value: "double", label: "Double" },
+];
 
 // ===================================================================================
 // Validation Functions (Color & Contrast)
