@@ -17,16 +17,6 @@ Cover Craft is a serverless cover image, multi-slide carousel, and animated GIF 
 make install-ui
 ```
 
-### Local Run
-
-```bash
-# Start frontend locally (port 3000)
-make run-ui
-
-# Start Go API, Azurite emulator, and local Functions host (port 7071)
-make run-go
-```
-
 ### Local Dev Container
 
 ```bash
@@ -39,8 +29,12 @@ make dev-logs     # Tail container logs
 ### Quality Checks
 
 ```bash
+make lint         # Run all static analysis checks (Go vet, Biome, markdownlint)
+make format       # Automatically format Go, frontend, and markdown files
 make lint-ui      # Audit frontend using Biome
 make format-ui    # Format frontend using Biome
+make lint-go      # Run static analysis checks on Go API (go vet)
+make format-go    # Format Go source files
 ```
 
 ### Code Generation
@@ -52,11 +46,12 @@ make contract-sync  # Re-generate Go structs and TypeScript interfaces from open
 ### Testing
 
 ```bash
-make test-go      # Run Go unit tests
-make test-bdd     # Run Go BDD end-to-end features
-make test-all-go  # Run Go unit and BDD tests
-make test-ui      # Run frontend component and hook tests
-make cov-go       # Run Go coverage analysis (requires MONGODB_URI)
+make test          # Run all tests across the entire stack (backend and frontend)
+make test-backend  # Run all Go unit and BDD tests
+make test-frontend # Run frontend Vitest tests
+make test-go       # Run Go unit tests
+make test-bdd      # Run Go BDD end-to-end features
+make cov-go        # Run Go coverage analysis (requires MONGODB_URI)
 ```
 
 ## Architecture

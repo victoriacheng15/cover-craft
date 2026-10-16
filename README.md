@@ -194,11 +194,11 @@ To run components directly on the host machine rather than inside a container:
 
 #### Frontend
 
-Install dependencies and start the Next.js development server from the repository root:
+Install dependencies and start the Next.js development server:
 
 ```bash
 make install-ui
-make run-ui
+cd frontend && npm run dev
 ```
 
 #### Go API & Storage Emulator
@@ -206,7 +206,8 @@ make run-ui
 In a separate terminal window at the repository root, start Azurite storage emulator and launch the Go Functions host:
 
 ```bash
-make run-go
+npx azurite --location ./__azurite_db__ &
+cd apiv2 && func start
 ```
 
 ### 3. Checks & Tests
@@ -214,16 +215,21 @@ make run-go
 Execute quality checks and tests across the stack from the repository root:
 
 ```bash
-# Run all Go unit and BDD end-to-end tests
-make test-all-go
+# Run all tests across the entire stack
+make test
+
+# Run all Go unit and BDD tests
+make test-backend
+
+# Run frontend Vitest tests
+make test-frontend
 
 # Run Go coverage analysis
 make cov-go
 
-# Run frontend tests
-make test-ui
+# Run all static analysis checks (Go vet, Biome, markdownlint)
+make lint
 
-# Audit and format frontend code
-make lint-ui
-make format-ui
+# Automatically format Go, frontend, and markdown files
+make format
 ```
