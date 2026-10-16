@@ -113,44 +113,33 @@ describe("CoverForm", () => {
 	it("renders all form fields correctly", () => {
 		renderCoverForm();
 
-		// Scope to the form card
-		const formCardText = screen.getByText("Cover Details");
-		const formCard = formCardText.closest("div");
+		// Scope to the settings card
+		const settingsCardText = screen.getByText("Canvas & Cover Settings");
+		const settingsCard = settingsCardText.closest("div");
+		const contentCardText = screen.getByText("Cover Details");
+		const contentCard = contentCardText.closest("div");
 
-		if (!formCard) {
-			throw new Error("Could not find form card container");
+		if (!settingsCard || !contentCard) {
+			throw new Error("Could not find form card containers");
 		}
 
 		// Dropdown
-		const sizeSelect = within(formCard).getByLabelText(
+		const sizeSelect = within(settingsCard).getByLabelText(
 			/Size Preset/i,
 		) as HTMLSelectElement;
 		expect(sizeSelect.value).toBe("Post (1200 × 627)");
 
-		// Inputs - use placeholder to find specific inputs
-		const imageNameInput = within(formCard).getByPlaceholderText(
+		// Filename input
+		const imageNameInput = within(settingsCard).getByPlaceholderText(
 			"my-awesome-cover",
 		) as HTMLInputElement;
-		const titleInput = within(formCard).getByPlaceholderText(
-			"Enter your cover title...",
-		) as HTMLInputElement;
-		const subtitleInput = within(formCard).getByPlaceholderText(
-			"Subtitle",
-		) as HTMLInputElement;
-
 		expect(imageNameInput).toBeInTheDocument();
-		expect(titleInput).toBeInTheDocument();
-		expect((titleInput as HTMLInputElement).maxLength).toBe(MAX_TITLE_LENGTH);
-		expect(subtitleInput).toBeInTheDocument();
-		expect((subtitleInput as HTMLInputElement).maxLength).toBe(
-			MAX_SUBTITLE_LENGTH,
-		);
 
 		// Color pickers
-		const bgColorInput = within(formCard).getByLabelText(
+		const bgColorInput = within(settingsCard).getByLabelText(
 			/^Background Color$/i,
 		) as HTMLInputElement;
-		const textColorInput = within(formCard).getByLabelText(
+		const textColorInput = within(settingsCard).getByLabelText(
 			/^Text Color$/i,
 		) as HTMLInputElement;
 
@@ -158,16 +147,31 @@ describe("CoverForm", () => {
 		expect(textColorInput.value).toBe("#f9fafb");
 
 		// Font select
-		const fontSelect = within(formCard).getByLabelText(
+		const fontSelect = within(settingsCard).getByLabelText(
 			/Font/i,
 		) as HTMLSelectElement;
 		expect(fontSelect.value).toBe("Montserrat");
 
 		// Generate button
-		const generateBtn = within(formCard).getByRole("button", {
+		const generateBtn = within(settingsCard).getByRole("button", {
 			name: /generate/i,
 		});
 		expect(generateBtn).toBeDisabled();
+
+		// Content inputs
+		const titleInput = within(contentCard).getByPlaceholderText(
+			"Enter your cover title...",
+		) as HTMLInputElement;
+		const subtitleInput = within(contentCard).getByPlaceholderText(
+			"Subtitle",
+		) as HTMLInputElement;
+
+		expect(titleInput).toBeInTheDocument();
+		expect((titleInput as HTMLInputElement).maxLength).toBe(MAX_TITLE_LENGTH);
+		expect(subtitleInput).toBeInTheDocument();
+		expect((subtitleInput as HTMLInputElement).maxLength).toBe(
+			MAX_SUBTITLE_LENGTH,
+		);
 	});
 
 	it("calls handleInputChange when form fields are changed", () => {
@@ -239,8 +243,11 @@ describe("CoverForm", () => {
 	it("has correct aria labels for accessibility", () => {
 		renderCoverForm();
 
-		const formCard = screen.getByLabelText("Cover image generator form");
-		expect(formCard).toBeInTheDocument();
+		const settingsCard = screen.getByLabelText("Canvas & Cover Settings");
+		expect(settingsCard).toBeInTheDocument();
+
+		const detailsCard = screen.getByLabelText("Cover Details");
+		expect(detailsCard).toBeInTheDocument();
 
 		const sizeInput = screen.getByLabelText("Select cover image size preset");
 		expect(sizeInput).toBeInTheDocument();

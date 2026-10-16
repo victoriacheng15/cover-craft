@@ -1,21 +1,7 @@
 "use client";
 
-import {
-	BORDER_LINES,
-	BORDER_STYLES,
-	type BorderLines,
-	type BorderStyle,
-	CAROUSEL_LIMITS,
-} from "@cover-craft/shared";
-import {
-	Button,
-	Card,
-	FormError,
-	Input,
-	SectionTitle,
-	SegmentedGroup,
-	Select,
-} from "@/components/ui";
+import { CAROUSEL_LIMITS } from "@cover-craft/shared";
+import { Input } from "@/components/ui";
 import { useCarouselForm } from "@/hooks/useCarouselForm";
 import {
 	lato,
@@ -24,11 +10,9 @@ import {
 	playfairDisplay,
 	roboto,
 } from "@/lib/utils";
+import { CanvasSettingsCard } from "./CanvasSettingsCard";
 import { CarouselFormControls } from "./CarouselFormControls";
 import { CarouselPreviewDisplay } from "./CarouselPreviewDisplay";
-import { FormField } from "./CoverFormControls";
-import { FontSelect } from "./FontSelect";
-import { SharedColorControls } from "./SharedColorControls";
 
 export function CarouselForm() {
 	const {
@@ -73,142 +57,121 @@ export function CarouselForm() {
 			className={`w-full flex flex-col gap-6 ${montserrat.variable} ${roboto.variable} ${lato.variable} ${playfairDisplay.variable} ${openSans.variable}`}
 		>
 			{/* Top: Full-width Canvas & Deck Settings */}
-			<Card className="w-full flex flex-col gap-6">
-				<SectionTitle size="md">Canvas & Deck Settings</SectionTitle>
-
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-					<FormField label="Size Preset" htmlFor="deck-size">
-						<Select
-							id="deck-size"
-							value={deckSettings.size}
-							onChange={(e) => updateDeckSettings({ size: e.target.value })}
-							aria-label="Carousel dimensions format"
-						>
-							<option value="Square (1080 × 1080)">Square (1080 × 1080)</option>
-							<option value="Portrait (1080 × 1350)">
-								Portrait (1080 × 1350)
-							</option>
-						</Select>
-					</FormField>
-
-					<FontSelect
-						id="deck-font"
-						value={deckSettings.font}
-						onChange={(font) => updateDeckSettings({ font })}
-						ariaLabel="Select font for all slides"
-					/>
-
-					<FormField label="Filename" htmlFor="deck-filename">
-						<Input
-							id="deck-filename"
-							placeholder="my-awesome-carousel"
-							value={deckSettings.filename}
-							onChange={(e) => updateDeckSettings({ filename: e.target.value })}
-							maxLength={CAROUSEL_LIMITS.MAX_FILENAME_LENGTH}
-							aria-label="Filename for generated carousel (optional)"
-						/>
-					</FormField>
-				</div>
-
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-					{/* Left: Global Colors & Contrast */}
-					<SharedColorControls
-						idPrefix="deck"
-						backgroundColor={deckSettings.backgroundColor}
-						textColor={deckSettings.textColor}
-						onBackgroundColorChange={(color) =>
-							updateDeckSettings({ backgroundColor: color })
-						}
-						onTextColorChange={(color) =>
-							updateDeckSettings({ textColor: color })
-						}
-						onRandomizeColors={handleRandomizeColors}
-						contrastCheck={contrastCheck}
-						titleContext="carousel"
-					/>
-
-					{/* Right: Border & Corner Overlays */}
+			<CanvasSettingsCard
+				title="Canvas & Deck Settings"
+				sizeId="deck-size"
+				sizeValue={deckSettings.size}
+				sizeOptions={["Square (1080 × 1080)", "Portrait (1080 × 1350)"]}
+				onSizeChange={(size) => updateDeckSettings({ size })}
+				sizeAriaLabel="Carousel dimensions format"
+				fontId="deck-font"
+				fontValue={deckSettings.font}
+				onFontChange={(font) => updateDeckSettings({ font })}
+				fontAriaLabel="Select font for all slides"
+				filenameId="deck-filename"
+				filenameValue={deckSettings.filename}
+				filenamePlaceholder="my-awesome-carousel"
+				filenameMaxLength={CAROUSEL_LIMITS.MAX_FILENAME_LENGTH}
+				onFilenameChange={(filename) => updateDeckSettings({ filename })}
+				filenameAriaLabel="Filename for generated carousel (optional)"
+				backgroundColor={deckSettings.backgroundColor}
+				textColor={deckSettings.textColor}
+				onBackgroundColorChange={(color) =>
+					updateDeckSettings({ backgroundColor: color })
+				}
+				onTextColorChange={(color) => updateDeckSettings({ textColor: color })}
+				onRandomizeColors={handleRandomizeColors}
+				contrastCheck={contrastCheck}
+				colorIdPrefix="deck"
+				colorTitleContext="carousel"
+				borderStyle={deckSettings.borderStyle}
+				borderLines={deckSettings.borderLines}
+				onBorderStyleChange={(style) =>
+					updateDeckSettings({ borderStyle: style })
+				}
+				onBorderLinesChange={(lines) =>
+					updateDeckSettings({ borderLines: lines })
+				}
+				extraSettings={
 					<div className="flex flex-col gap-4">
-						<SegmentedGroup<BorderStyle>
-							label="Border Pattern"
-							options={BORDER_STYLES}
-							value={deckSettings.borderStyle}
-							onChange={(style) => updateDeckSettings({ borderStyle: style })}
-						/>
+						<div className="flex flex-col sm:flex-row sm:items-center gap-3">
+							<label
+								htmlFor="deck-author"
+								className="text-sm font-medium text-gray-900 shrink-0"
+							>
+								Author Handle:
+							</label>
+							<Input
+								id="deck-author"
+								placeholder="@username"
+								value={deckSettings.authorHandle}
+								onChange={(e) =>
+									updateDeckSettings({ authorHandle: e.target.value })
+								}
+								maxLength={CAROUSEL_LIMITS.MAX_AUTHOR_HANDLE_LENGTH}
+								aria-label="Author handle branding (optional)"
+								className="flex-1"
+							/>
+						</div>
 
-						<SegmentedGroup<BorderLines>
-							label="Border Multiplicity"
-							options={BORDER_LINES}
-							value={deckSettings.borderLines}
-							onChange={(lines) => updateDeckSettings({ borderLines: lines })}
-							disabled={deckSettings.borderStyle === "none"}
-						/>
-
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-							<FormField label="Author Handle" htmlFor="deck-author">
-								<Input
-									id="deck-author"
-									placeholder="@username"
-									value={deckSettings.authorHandle}
-									onChange={(e) =>
-										updateDeckSettings({ authorHandle: e.target.value })
-									}
-									maxLength={CAROUSEL_LIMITS.MAX_AUTHOR_HANDLE_LENGTH}
-									aria-label="Author handle branding (optional)"
-								/>
-							</FormField>
-
-							<FormField label="Slide Numbers" htmlFor="deck-number-pos">
-								<Select
-									id="deck-number-pos"
-									value={deckSettings.slideNumberPosition}
-									onChange={(e) =>
-										updateDeckSettings({
-											slideNumberPosition: e.target.value as
-												| "none"
-												| "top-right"
-												| "bottom-right"
-												| "top-left",
-										})
-									}
-									aria-label="Slide number position"
-								>
-									<option value="none">None</option>
-									<option value="top-right">Top Right</option>
-									<option value="bottom-right">Bottom Right</option>
-									<option value="top-left">Top Left</option>
-								</Select>
-							</FormField>
+						<div className="flex flex-col sm:flex-row sm:items-center gap-3">
+							<span className="text-sm font-medium text-gray-900 shrink-0">
+								Slide Numbers:
+							</span>
+							<fieldset
+								aria-label="Slide Numbers"
+								className="inline-flex p-1 bg-gray-100 rounded-xl border border-gray-200 gap-1 flex-wrap m-0"
+							>
+								{(
+									[
+										{ value: "none", label: "None" },
+										{ value: "bottom-right", label: "Bottom Right" },
+										{ value: "top-right", label: "Top Right" },
+										{ value: "top-left", label: "Top Left" },
+									] as const
+								).map((opt) => {
+									const isActive =
+										deckSettings.slideNumberPosition === opt.value;
+									return (
+										<button
+											key={opt.value}
+											type="button"
+											onClick={() =>
+												updateDeckSettings({
+													slideNumberPosition: opt.value,
+												})
+											}
+											aria-pressed={isActive}
+											aria-label={opt.label}
+											className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+												isActive
+													? "bg-white text-emerald-700 shadow-xs font-bold"
+													: "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+											}`}
+										>
+											{opt.label}
+										</button>
+									);
+								})}
+							</fieldset>
 						</div>
 					</div>
-				</div>
-
-				<FormError error={error} errorId="carousel-form-error" />
-
-				<div className="flex justify-center gap-2">
-					<Button
-						onClick={handleGenerate}
-						disabled={hasEmptyTitle || isGenerating || !contrastCheck.meetsWCAG}
-						isLoading={isGenerating}
-						title={
-							!contrastCheck.meetsWCAG
-								? `Cannot generate: ${contrastCheck.message}`
-								: undefined
-						}
-						aria-label={getGenerateButtonLabel()}
-					>
-						{isGenerating ? "Generating..." : "Generate Carousel"}
-					</Button>
-					<Button
-						variant="outline"
-						onClick={handleReset}
-						disabled={isGenerating}
-						aria-label="Reset entire carousel deck"
-					>
-						Reset
-					</Button>
-				</div>
-			</Card>
+				}
+				error={error}
+				errorId="carousel-form-error"
+				isGenerating={isGenerating}
+				generateDisabled={hasEmptyTitle || !contrastCheck.meetsWCAG}
+				generateButtonLabel="Generate Carousel"
+				generateButtonTitle={
+					!contrastCheck.meetsWCAG
+						? `Cannot generate: ${contrastCheck.message}`
+						: undefined
+				}
+				generateButtonAriaLabel={getGenerateButtonLabel()}
+				onGenerate={handleGenerate}
+				onReset={handleReset}
+				resetAriaLabel="Reset entire carousel deck"
+			/>
 
 			{/* Bottom: Side-by-side Slides Manager and Live Preview */}
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">

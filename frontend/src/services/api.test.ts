@@ -268,7 +268,7 @@ describe("API Service Wrapper", () => {
 				width: 1200,
 				height: 627,
 				backgroundColor: "#374151",
-				delayMs: 1500,
+				delayMs: 2000,
 				slides: [
 					{ title: "Slide 1", font: "Montserrat" },
 					{ title: "Slide 2", font: "Roboto" },
@@ -298,7 +298,7 @@ describe("API Service Wrapper", () => {
 				width: 1200,
 				height: 627,
 				backgroundColor: "#374151",
-				delayMs: 1500,
+				delayMs: 2000,
 				slides: [{ title: "Only 1", font: "Montserrat" }],
 			};
 
@@ -316,7 +316,7 @@ describe("API Service Wrapper", () => {
 				width: 1200,
 				height: 627,
 				backgroundColor: "#374151",
-				delayMs: 1500,
+				delayMs: 2000,
 				slides: [
 					{ title: "Slide 1", font: "Montserrat" },
 					{ title: "Slide 2", font: "Roboto" },

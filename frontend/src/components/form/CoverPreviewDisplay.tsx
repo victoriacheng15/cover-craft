@@ -111,7 +111,7 @@ export function CoverPreviewDisplay({
 
 	return (
 		<Card
-			className="w-full md:min-w-75 flex flex-col items-center"
+			className="w-full flex flex-col items-center gap-6"
 			aria-label={
 				generatedImageUrl
 					? "Generated cover image"
@@ -121,7 +121,7 @@ export function CoverPreviewDisplay({
 		>
 			{!generatedImageUrl ? (
 				<>
-					<SectionTitle size="lg">Live Preview</SectionTitle>
+					<SectionTitle size="md">Live Preview</SectionTitle>
 					<div
 						className="flex justify-center items-center rounded-xl border border-gray-300 max-w-full overflow-hidden"
 						role="img"
@@ -148,7 +148,7 @@ export function CoverPreviewDisplay({
 				</>
 			) : (
 				<>
-					<SectionTitle size="lg">Generated Image</SectionTitle>
+					<SectionTitle size="md">Generated Image</SectionTitle>
 					<div className="w-full flex justify-center items-center">
 						<Image
 							src={generatedImageUrl || ""}

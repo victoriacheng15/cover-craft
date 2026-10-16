@@ -337,10 +337,10 @@ func ValidateGifParams(params GifParams) []ValidationError {
 	// Delay validation if provided
 	if params.DelayMs != nil {
 		d := int(*params.DelayMs)
-		if d != 1000 && d != 1500 && d != 2000 && d != 3000 {
+		if d != 2000 && d != 3000 && d != 4000 && d != 5000 {
 			errors = append(errors, ValidationError{
 				Field:   "delayMs",
-				Message: "Delay must be one of: 1000, 1500, 2000, 3000",
+				Message: "Delay must be one of: 2000, 3000, 4000, 5000",
 			})
 		}
 	}

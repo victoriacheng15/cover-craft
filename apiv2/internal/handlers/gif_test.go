@@ -65,7 +65,7 @@ func TestGenerateGifHandler_ValidationFailure(t *testing.T) {
 
 func TestGenerateGifHandler_Success(t *testing.T) {
 	filename := "test-gif"
-	delay1500 := services.GifParamsDelayMs(1500)
+	delay2000 := services.GifParamsDelayMs(2000)
 	textColor := "#F9FAFB"
 	hasBorder := true
 
@@ -73,7 +73,7 @@ func TestGenerateGifHandler_Success(t *testing.T) {
 		Width:           400,
 		Height:          300,
 		BackgroundColor: "#1E3A8A",
-		DelayMs:         &delay1500,
+		DelayMs:         &delay2000,
 		Filename:        &filename,
 		Slides: []services.GifSlideParams{
 			{

@@ -59,7 +59,7 @@ Feature: Animated GIF Generation API
         "width": 400,
         "height": 300,
         "backgroundColor": "#1e3a8a",
-        "delayMs": 1500,
+        "delayMs": 2000,
         "slides": [
           {
             "title": "Slide 1",

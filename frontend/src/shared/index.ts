@@ -268,22 +268,71 @@ export const WCAG_AA_THRESHOLD = 4.5;
 export const HEX_COLOR_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
 export const DEFAULT_FILENAME = "cover";
 
+export type PresetTheme = "dark" | "light";
+
 export interface ColorPreset {
 	name: string;
 	backgroundColor: string;
 	textColor: string;
+	theme: PresetTheme;
 }
 
 export const COLOR_PRESETS: readonly ColorPreset[] = [
-	{ name: "Cloud Navy", backgroundColor: "#0F172A", textColor: "#F8FAFC" },
-	{ name: "Terminal Matrix", backgroundColor: "#051A14", textColor: "#34D399" },
-	{ name: "Obsidian Violet", backgroundColor: "#0F0E17", textColor: "#DDD6FE" },
-	{ name: "Cyber Ember", backgroundColor: "#18181B", textColor: "#FBBF24" },
-	{ name: "Mist Slate", backgroundColor: "#E2E8F0", textColor: "#0F172A" },
-	{ name: "Warm Parchment", backgroundColor: "#EFECE6", textColor: "#292524" },
-	{ name: "Nordic Frost", backgroundColor: "#E0F2FE", textColor: "#0C4A6E" },
-	{ name: "Sage Mist", backgroundColor: "#E2EBE2", textColor: "#14381C" },
+	{
+		name: "Cloud Navy",
+		backgroundColor: "#0F172A",
+		textColor: "#F8FAFC",
+		theme: "dark",
+	},
+	{
+		name: "Terminal Matrix",
+		backgroundColor: "#051A14",
+		textColor: "#34D399",
+		theme: "dark",
+	},
+	{
+		name: "Obsidian Violet",
+		backgroundColor: "#0F0E17",
+		textColor: "#DDD6FE",
+		theme: "dark",
+	},
+	{
+		name: "Cyber Ember",
+		backgroundColor: "#18181B",
+		textColor: "#FBBF24",
+		theme: "dark",
+	},
+	{
+		name: "Mist Slate",
+		backgroundColor: "#E2E8F0",
+		textColor: "#0F172A",
+		theme: "light",
+	},
+	{
+		name: "Warm Parchment",
+		backgroundColor: "#EFECE6",
+		textColor: "#292524",
+		theme: "light",
+	},
+	{
+		name: "Nordic Frost",
+		backgroundColor: "#E0F2FE",
+		textColor: "#0C4A6E",
+		theme: "light",
+	},
+	{
+		name: "Sage Mist",
+		backgroundColor: "#E2EBE2",
+		textColor: "#14381C",
+		theme: "light",
+	},
 ] as const;
+
+export const COLOR_THEME_OPTIONS: Array<{ value: PresetTheme; label: string }> =
+	[
+		{ value: "dark", label: "Dark" },
+		{ value: "light", label: "Light" },
+	];
 
 // ===================================================================================
 // Derived Types
@@ -291,9 +340,9 @@ export const COLOR_PRESETS: readonly ColorPreset[] = [
 
 export type AllowedFont = (typeof FONT_OPTIONS)[number];
 
-export const GIF_DELAY_PRESETS = [1000, 1500, 2000, 3000] as const;
+export const GIF_DELAY_PRESETS = [2000, 3000, 4000, 5000] as const;
 export type GifDelayPreset = (typeof GIF_DELAY_PRESETS)[number];
-export const DEFAULT_GIF_DELAY: GifDelayPreset = 1500;
+export const DEFAULT_GIF_DELAY: GifDelayPreset = 2000;
 
 export type ImageParams = components["schemas"]["ImageParams"];
 export type GifParams = components["schemas"]["GifParams"];

@@ -88,7 +88,7 @@ export const initialDeckSettings: CarouselDeckSettings = {
 	borderLines: "single",
 	authorHandle: "",
 	authorHandlePosition: "bottom-left",
-	slideNumberPosition: "none",
+	slideNumberPosition: "bottom-right",
 	filename: "",
 };
 

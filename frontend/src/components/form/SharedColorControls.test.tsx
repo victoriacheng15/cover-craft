@@ -117,7 +117,13 @@ describe("SharedColorControls", () => {
 			screen.getByRole("group", { name: "Color Presets" }),
 		).toBeInTheDocument();
 
-		for (const preset of COLOR_PRESETS) {
+		const darkBtn = screen.getByRole("button", { name: "Dark" });
+		const lightBtn = screen.getByRole("button", { name: "Light" });
+		expect(darkBtn).toHaveAttribute("aria-pressed", "true");
+		expect(lightBtn).toHaveAttribute("aria-pressed", "false");
+
+		// Dark presets are displayed by default
+		for (const preset of COLOR_PRESETS.filter((p) => p.theme === "dark")) {
 			const btn = screen.getByRole("button", {
 				name: new RegExp(`Apply ${preset.name} colors`, "i"),
 			});
@@ -125,13 +131,36 @@ describe("SharedColorControls", () => {
 			expect(btn).toHaveAttribute("aria-pressed", "false");
 		}
 
-		const cloudNavyBtn = screen.getByRole("button", {
-			name: /Apply Cloud Navy colors/i,
-		});
-		fireEvent.click(cloudNavyBtn);
+		// Light presets are not visible while Dark is active
+		for (const preset of COLOR_PRESETS.filter((p) => p.theme === "light")) {
+			expect(
+				screen.queryByRole("button", {
+					name: new RegExp(`Apply ${preset.name} colors`, "i"),
+				}),
+			).not.toBeInTheDocument();
+		}
 
-		expect(handleBgChange).toHaveBeenCalledWith("#0F172A");
-		expect(handleTextChange).toHaveBeenCalledWith("#F8FAFC");
+		// Switch to Light theme
+		fireEvent.click(lightBtn);
+		expect(lightBtn).toHaveAttribute("aria-pressed", "true");
+		expect(darkBtn).toHaveAttribute("aria-pressed", "false");
+
+		// Light presets are now visible
+		for (const preset of COLOR_PRESETS.filter((p) => p.theme === "light")) {
+			const btn = screen.getByRole("button", {
+				name: new RegExp(`Apply ${preset.name} colors`, "i"),
+			});
+			expect(btn).toBeInTheDocument();
+			expect(btn).toHaveAttribute("aria-pressed", "false");
+		}
+
+		const mistSlateBtn = screen.getByRole("button", {
+			name: /Apply Mist Slate colors/i,
+		});
+		fireEvent.click(mistSlateBtn);
+
+		expect(handleBgChange).toHaveBeenCalledWith("#E2E8F0");
+		expect(handleTextChange).toHaveBeenCalledWith("#0F172A");
 	});
 
 	it("sets aria-pressed to true on the currently active preset", () => {

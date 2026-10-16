@@ -32,11 +32,11 @@ describe("useGifForm", () => {
 		vi.clearAllMocks();
 	});
 
-	it("initializes with 2 default slides and 1500ms delay", () => {
+	it("initializes with 2 default slides and 2000ms delay", () => {
 		const { result } = renderHook(() => useGifForm());
 
 		expect(result.current.formData.slides).toHaveLength(2);
-		expect(result.current.formData.delayMs).toBe(1500);
+		expect(result.current.formData.delayMs).toBe(2000);
 		expect(result.current.formData.backgroundColor).toBe("#374151");
 		expect(result.current.formData.textColor).toBe("#F9FAFB");
 		expect(result.current.formData.font).toBe("Montserrat");
@@ -49,16 +49,16 @@ describe("useGifForm", () => {
 		const { result } = renderHook(() => useGifForm());
 
 		act(() => {
-			result.current.setDelayMs(2000);
-		});
-
-		expect(result.current.formData.delayMs).toBe(2000);
-
-		act(() => {
 			result.current.setDelayMs(3000);
 		});
 
 		expect(result.current.formData.delayMs).toBe(3000);
+
+		act(() => {
+			result.current.setDelayMs(4000);
+		});
+
+		expect(result.current.formData.delayMs).toBe(4000);
 	});
 
 	it("allows changing font and border globally", () => {
@@ -155,7 +155,7 @@ describe("useGifForm", () => {
 
 		expect(generateGifMock).toHaveBeenCalledWith(
 			expect.objectContaining({
-				delayMs: 1500,
+				delayMs: 2000,
 				backgroundColor: "#374151",
 				slides: expect.arrayContaining([
 					expect.objectContaining({
@@ -215,7 +215,7 @@ describe("useGifForm", () => {
 		});
 
 		expect(result.current.formData.slides).toHaveLength(2);
-		expect(result.current.formData.delayMs).toBe(1500);
+		expect(result.current.formData.delayMs).toBe(2000);
 		expect(result.current.formData.backgroundColor).toBe("#374151");
 		expect(result.current.formData.textColor).toBe("#F9FAFB");
 		expect(result.current.formData.font).toBe("Montserrat");

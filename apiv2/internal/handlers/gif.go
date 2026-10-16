@@ -41,7 +41,7 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Default delay if omitted
 	if params.DelayMs == nil {
-		defaultDelay := services.GifParamsDelayMs(1500)
+		defaultDelay := services.GifParamsDelayMs(2000)
 		params.DelayMs = &defaultDelay
 	}
 

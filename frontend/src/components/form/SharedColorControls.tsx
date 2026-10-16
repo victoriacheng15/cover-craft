@@ -1,6 +1,7 @@
 "use client";
 
-import { COLOR_PRESETS } from "@cover-craft/shared";
+import { COLOR_PRESETS, type PresetTheme } from "@cover-craft/shared";
+import { useState } from "react";
 import { Button, ColorPicker } from "@/components/ui";
 import type { ContrastCheckResult } from "@/hooks";
 import { cn } from "@/lib/utils";
@@ -125,8 +126,13 @@ export function SharedColorControls({
 	className = "flex flex-col gap-4",
 	colorRowClassName = "flex flex-col sm:flex-row gap-4 sm:items-end",
 }: SharedColorControlsProps) {
+	const [presetTheme, setPresetTheme] = useState<PresetTheme>("dark");
 	const bgId = idPrefix ? `${idPrefix}-background-color` : "background-color";
 	const textId = idPrefix ? `${idPrefix}-text-color` : "text-color";
+
+	const filteredPresets = COLOR_PRESETS.filter(
+		(preset) => preset.theme === presetTheme,
+	);
 
 	return (
 		<div className={className}>
@@ -168,12 +174,48 @@ export function SharedColorControls({
 				</Button>
 			</div>
 
-			<fieldset className="flex flex-col gap-1.5 border-0 p-0 m-0">
+			<fieldset className="flex flex-col gap-2.5 border-0 p-0 m-0">
 				<legend className="block text-sm font-medium text-gray-900">
 					Color Presets
 				</legend>
-				<div className="flex flex-wrap gap-2">
-					{COLOR_PRESETS.map((preset) => {
+				<div className="flex items-center gap-3">
+					<span className="text-sm font-medium text-gray-900">
+						Preset Theme
+					</span>
+					<fieldset
+						aria-label="Preset Theme"
+						className="inline-flex p-1 bg-gray-100 rounded-xl border border-gray-200 gap-1 m-0"
+					>
+						<button
+							type="button"
+							onClick={() => setPresetTheme("dark")}
+							aria-pressed={presetTheme === "dark"}
+							aria-label="Dark"
+							className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+								presetTheme === "dark"
+									? "bg-white text-emerald-700 shadow-xs font-bold"
+									: "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+							}`}
+						>
+							Dark
+						</button>
+						<button
+							type="button"
+							onClick={() => setPresetTheme("light")}
+							aria-pressed={presetTheme === "light"}
+							aria-label="Light"
+							className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+								presetTheme === "light"
+									? "bg-white text-emerald-700 shadow-xs font-bold"
+									: "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+							}`}
+						>
+							Light
+						</button>
+					</fieldset>
+				</div>
+				<div className="inline-flex p-1 bg-gray-100 rounded-xl border border-gray-200 gap-1 flex-wrap">
+					{filteredPresets.map((preset) => {
 						const isSelected =
 							backgroundColor.toLowerCase() ===
 								preset.backgroundColor.toLowerCase() &&
@@ -187,10 +229,10 @@ export function SharedColorControls({
 									onBackgroundColorChange(preset.backgroundColor);
 									onTextColorChange(preset.textColor);
 								}}
-								className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all cursor-pointer ${
+								className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
 									isSelected
-										? "ring-2 ring-emerald-500 border-transparent shadow-xs bg-white text-emerald-900"
-										: "border-gray-200 hover:border-gray-300 bg-gray-50 text-gray-700 hover:bg-white"
+										? "bg-white text-emerald-700 shadow-xs font-bold"
+										: "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
 								}`}
 								aria-label={`Apply ${preset.name} colors`}
 								aria-pressed={isSelected}

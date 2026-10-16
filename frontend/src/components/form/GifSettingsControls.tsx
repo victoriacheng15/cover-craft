@@ -1,8 +1,6 @@
 "use client";
 
 import {
-	BORDER_LINES,
-	BORDER_STYLES,
 	type BorderLines,
 	type BorderStyle,
 	type FONT_OPTIONS,
@@ -10,19 +8,8 @@ import {
 	type GifDelayPreset,
 	SIZE_PRESETS,
 } from "@cover-craft/shared";
-import {
-	Button,
-	Card,
-	FormError,
-	Input,
-	SectionTitle,
-	SegmentedGroup,
-	Select,
-} from "@/components/ui";
 import type { ContrastCheckResult, GifFormData } from "@/hooks";
-import { FormField } from "./CoverFormControls";
-import { FontSelect } from "./FontSelect";
-import { SharedColorControls } from "./SharedColorControls";
+import { CanvasSettingsCard } from "./CanvasSettingsCard";
 
 export interface GifSettingsControlsProps {
 	formData: GifFormData;
@@ -61,139 +48,95 @@ export function GifSettingsControls({
 	handleGenerate,
 	handleReset,
 }: GifSettingsControlsProps) {
+	const hasEmptyTitle = formData.slides.some(
+		(s) => !s.title || s.title.trim() === "",
+	);
+	const isDisabled = hasEmptyTitle || !contrastCheck.meetsWCAG;
+
 	return (
-		<Card className="w-full flex flex-col gap-6">
-			<SectionTitle size="md">Canvas & Slideshow Settings</SectionTitle>
-
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-				<FormField label="Size Preset" htmlFor="gif-size">
-					<Select
-						id="gif-size"
-						value={formData.size}
-						onChange={(e) => setSize(e.target.value)}
-						aria-label="Select size preset for animated GIF"
+		<CanvasSettingsCard
+			title="Canvas & Slideshow Settings"
+			sizeId="gif-size"
+			sizeValue={formData.size}
+			sizeOptions={SIZE_PRESETS}
+			onSizeChange={setSize}
+			sizeAriaLabel="Select size preset for animated GIF"
+			fontId="gif-font"
+			fontValue={formData.font}
+			onFontChange={setFont}
+			fontAriaLabel="Select font for all slides"
+			filenameId="gif-filename"
+			filenameValue={formData.filename}
+			filenamePlaceholder="my-awesome-slideshow"
+			onFilenameChange={setFilename}
+			filenameAriaLabel="Filename for generated animated GIF (optional)"
+			backgroundColor={formData.backgroundColor}
+			textColor={formData.textColor}
+			onBackgroundColorChange={setBackgroundColor}
+			onTextColorChange={setTextColor}
+			onRandomizeColors={handleRandomizeColors}
+			contrastCheck={contrastCheck}
+			colorIdPrefix="gif"
+			colorTitleContext="slideshow"
+			borderStyle={formData.borderStyle}
+			borderLines={formData.borderLines}
+			onBorderStyleChange={(style) => {
+				if (setBorderStyle) {
+					setBorderStyle(style);
+				} else {
+					setHasBorder(style !== "none");
+				}
+			}}
+			onBorderLinesChange={(lines) => {
+				if (setBorderLines) {
+					setBorderLines(lines);
+				}
+			}}
+			extraSettings={
+				<div className="flex flex-col sm:flex-row sm:items-center gap-3">
+					<span className="text-sm font-medium text-gray-900 shrink-0">
+						Slide Delay:
+					</span>
+					<fieldset
+						aria-label="Slide Delay"
+						className="inline-flex p-1 bg-gray-100 rounded-xl border border-gray-200 gap-1 flex-wrap m-0"
 					>
-						{SIZE_PRESETS.map((p) => (
-							<option key={p.label} value={p.label}>
-								{p.label}
-							</option>
-						))}
-					</Select>
-				</FormField>
-
-				<FontSelect
-					id="gif-font"
-					value={formData.font}
-					onChange={setFont}
-					ariaLabel="Select font for all slides"
-				/>
-
-				<FormField label="Filename" htmlFor="gif-filename">
-					<Input
-						id="gif-filename"
-						placeholder="my-awesome-slideshow"
-						value={formData.filename}
-						onChange={(e) => setFilename(e.target.value)}
-						aria-label="Filename for generated animated GIF (optional)"
-					/>
-				</FormField>
-			</div>
-
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-				<SharedColorControls
-					idPrefix="gif"
-					backgroundColor={formData.backgroundColor}
-					textColor={formData.textColor}
-					onBackgroundColorChange={setBackgroundColor}
-					onTextColorChange={setTextColor}
-					onRandomizeColors={handleRandomizeColors}
-					contrastCheck={contrastCheck}
-					titleContext="slideshow"
-				/>
-
-				<div className="flex flex-col gap-4">
-					<FormField label="Slide Delay (ms)">
-						<div className="flex flex-wrap gap-4 pt-2">
-							{GIF_DELAY_PRESETS.map((delay) => (
-								<label
+						{GIF_DELAY_PRESETS.map((delay) => {
+							const isActive = formData.delayMs === delay;
+							const label = `${delay / 1000}s`;
+							return (
+								<button
 									key={delay}
-									className="flex items-center gap-2 text-sm font-medium text-gray-800 cursor-pointer"
+									type="button"
+									onClick={() => setDelayMs(delay)}
+									aria-pressed={isActive}
+									aria-label={label}
+									className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+										isActive
+											? "bg-white text-emerald-700 shadow-xs font-bold"
+											: "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+									}`}
 								>
-									<input
-										type="checkbox"
-										name="delayMs"
-										checked={formData.delayMs === delay}
-										onChange={() => setDelayMs(delay)}
-										className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-										aria-label={`Set slide delay to ${delay} milliseconds`}
-									/>
-									<span>{delay} ms</span>
-								</label>
-							))}
-						</div>
-					</FormField>
-
-					<SegmentedGroup<BorderStyle>
-						label="Border Pattern"
-						options={BORDER_STYLES}
-						value={formData.borderStyle}
-						onChange={(style) => {
-							if (setBorderStyle) {
-								setBorderStyle(style);
-							} else {
-								setHasBorder(style !== "none");
-							}
-						}}
-					/>
-
-					<SegmentedGroup<BorderLines>
-						label="Border Multiplicity"
-						options={BORDER_LINES}
-						value={formData.borderLines}
-						onChange={(lines) => {
-							if (setBorderLines) {
-								setBorderLines(lines);
-							}
-						}}
-						disabled={formData.borderStyle === "none"}
-					/>
+									{label}
+								</button>
+							);
+						})}
+					</fieldset>
 				</div>
-			</div>
-
-			<FormError error={error} />
-
-			{(() => {
-				const hasEmptyTitle = formData.slides.some(
-					(s) => !s.title || s.title.trim() === "",
-				);
-				const isDisabled =
-					hasEmptyTitle || isGenerating || !contrastCheck.meetsWCAG;
-
-				return (
-					<div className="flex justify-center gap-3 pt-2">
-						<Button
-							onClick={handleGenerate}
-							disabled={isDisabled}
-							isLoading={isGenerating}
-							title={
-								!contrastCheck.meetsWCAG
-									? `Cannot generate: ${contrastCheck.message}`
-									: undefined
-							}
-							aria-label="Generate animated GIF slideshow"
-						>
-							{isGenerating ? "Generating..." : "Generate GIF"}
-						</Button>
-						<Button
-							variant="outline"
-							onClick={handleReset}
-							aria-label="Reset slideshow form"
-						>
-							Reset
-						</Button>
-					</div>
-				);
-			})()}
-		</Card>
+			}
+			error={error}
+			isGenerating={isGenerating}
+			generateDisabled={isDisabled}
+			generateButtonLabel="Generate GIF"
+			generateButtonTitle={
+				!contrastCheck.meetsWCAG
+					? `Cannot generate: ${contrastCheck.message}`
+					: undefined
+			}
+			generateButtonAriaLabel="Generate animated GIF slideshow"
+			onGenerate={handleGenerate}
+			onReset={handleReset}
+			resetAriaLabel="Reset slideshow form"
+		/>
 	);
 }
