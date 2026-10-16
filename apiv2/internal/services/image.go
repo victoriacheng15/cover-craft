@@ -16,7 +16,8 @@ import (
 // Constants matching shared configuration
 const (
 	Padding               = 40.0
-	BorderInset           = 12.0
+	BorderInset           = 18.0
+	BorderDoubleInset     = 28.0
 	BorderWidth           = 4.0
 	HeadingMinSize        = 32.0
 	HeadingPercentage     = 0.075
@@ -25,21 +26,96 @@ const (
 	LineSpacingMultiplier = 1.2
 )
 
+func drawBorderShape(dc *gg.Context, inset, width, height float64, style BorderStyle) {
+	w := width - 2*inset
+	h := height - 2*inset
+	if w <= 0 || h <= 0 {
+		return
+	}
+
+	switch style {
+	case Solid:
+		dc.DrawRectangle(inset, inset, w, h)
+		dc.Stroke()
+	case Dashed:
+		dc.SetDash(16, 8)
+		dc.DrawRectangle(inset, inset, w, h)
+		dc.Stroke()
+	case Dotted:
+		dc.SetDash(0.1, 10)
+		dc.SetLineCap(gg.LineCapRound)
+		dc.DrawRectangle(inset, inset, w, h)
+		dc.Stroke()
+	case Rounded:
+		minDim := math.Min(width, height)
+		radius := math.Round(math.Max(12.0, minDim*0.025))
+		if inset > BorderInset {
+			radius = math.Max(6.0, radius-(inset-BorderInset))
+		}
+		dc.DrawRoundedRectangle(inset, inset, w, h, radius)
+		dc.Stroke()
+	case Brackets:
+		minDim := math.Min(width, height)
+		arm := math.Round(math.Max(24.0, minDim*0.04))
+		if arm > w/2 {
+			arm = w / 2
+		}
+		if arm > h/2 {
+			arm = h / 2
+		}
+		x1 := inset
+		y1 := inset
+		x2 := inset + w
+		y2 := inset + h
+
+		// Top-left corner
+		dc.DrawLine(x1, y1+arm, x1, y1)
+		dc.DrawLine(x1, y1, x1+arm, y1)
+		// Top-right corner
+		dc.DrawLine(x2-arm, y1, x2, y1)
+		dc.DrawLine(x2, y1, x2, y1+arm)
+		// Bottom-right corner
+		dc.DrawLine(x2, y2-arm, x2, y2)
+		dc.DrawLine(x2, y2, x2-arm, y2)
+		// Bottom-left corner
+		dc.DrawLine(x1+arm, y2, x1, y2)
+		dc.DrawLine(x1, y2, x1, y2-arm)
+		dc.Stroke()
+	}
+}
+
+// RenderBorder renders a standardized border onto a gg.Context.
+func RenderBorder(dc *gg.Context, width, height int, style BorderStyle, lines BorderLines, color string) {
+	if style == None || style == "" {
+		return
+	}
+
+	dc.Push()
+	defer dc.Pop()
+
+	dc.SetHexColor(color)
+	dc.SetLineWidth(BorderWidth)
+
+	w := float64(width)
+	h := float64(height)
+
+	drawBorderShape(dc, BorderInset, w, h, style)
+
+	if lines == Double {
+		drawBorderShape(dc, BorderDoubleInset, w, h, style)
+	}
+}
+
 // RenderFrame renders a canvas frame into an image.Image
-func RenderFrame(width, height int, backgroundColor, textColor, font, title string, subtitle *string, hasBorder bool) (image.Image, error) {
+func RenderFrame(width, height int, backgroundColor, textColor, font, title string, subtitle *string, style BorderStyle, lines BorderLines) (image.Image, error) {
 	dc := gg.NewContext(width, height)
 
 	// Fill background
 	dc.SetHexColor(backgroundColor)
 	dc.Clear()
 
-	// Draw inset border if enabled
-	if hasBorder {
-		dc.SetHexColor(textColor)
-		dc.SetLineWidth(BorderWidth)
-		dc.DrawRectangle(BorderInset, BorderInset, float64(width)-2*BorderInset, float64(height)-2*BorderInset)
-		dc.Stroke()
-	}
+	// Draw border if requested
+	RenderBorder(dc, width, height, style, lines, textColor)
 
 	// Calculate text dimensions
 	maxTextWidth := float64(width) - Padding*2
@@ -107,8 +183,8 @@ func RenderFrame(width, height int, backgroundColor, textColor, font, title stri
 
 // GeneratePNG renders the canvas and returns raw PNG bytes
 func GeneratePNG(params ImageParams) ([]byte, error) {
-	hasBorder := params.HasBorder != nil && *params.HasBorder
-	img, err := RenderFrame(params.Width, params.Height, params.BackgroundColor, params.TextColor, string(params.Font), params.Title, params.Subtitle, hasBorder)
+	style, lines := NormalizeBorder(params.BorderStyle, params.BorderLines, params.HasBorder)
+	img, err := RenderFrame(params.Width, params.Height, params.BackgroundColor, params.TextColor, string(params.Font), params.Title, params.Subtitle, style, lines)
 	if err != nil {
 		return nil, err
 	}
@@ -182,34 +258,8 @@ func RenderCarouselSlideFrame(deck CarouselParams, slideIndex int) (image.Image,
 	dc.Clear()
 
 	// Draw border if requested
-	if deck.BorderStyle != nil && *deck.BorderStyle != None {
-		dc.SetHexColor(textColor)
-		lines := Single
-		if deck.BorderLines != nil {
-			lines = *deck.BorderLines
-		}
-		if string(*deck.BorderStyle) == "double" {
-			lines = Double
-		}
-		switch lines {
-		case Single:
-			inset := 18.0
-			dc.SetLineWidth(BorderWidth)
-			dc.DrawRectangle(inset, inset, float64(deck.Width)-2*inset, float64(deck.Height)-2*inset)
-			dc.Stroke()
-		case Double:
-			// Outer border
-			outerInset := 18.0
-			dc.SetLineWidth(BorderWidth)
-			dc.DrawRectangle(outerInset, outerInset, float64(deck.Width)-2*outerInset, float64(deck.Height)-2*outerInset)
-			dc.Stroke()
-			// Inner border: 10px gap from outer border (28px total)
-			innerInset := 28.0
-			dc.SetLineWidth(BorderWidth)
-			dc.DrawRectangle(innerInset, innerInset, float64(deck.Width)-2*innerInset, float64(deck.Height)-2*innerInset)
-			dc.Stroke()
-		}
-	}
+	style, lines := NormalizeBorder(deck.BorderStyle, deck.BorderLines, nil)
+	RenderBorder(dc, deck.Width, deck.Height, style, lines, textColor)
 
 	// Clean font name
 	fontNameCleaned := strings.ReplaceAll(string(deck.Font), " ", "")

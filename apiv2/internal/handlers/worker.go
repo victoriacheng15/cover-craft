@@ -585,10 +585,8 @@ func processCarouselJobExecution(ctx context.Context, objID primitive.ObjectID, 
 	// Dispatch telemetry metric to in-memory buffer
 	totalDurationMs := int(time.Since(startTime).Milliseconds())
 	slideCount := len(carousel.Slides)
-	borderStyleStr := "none"
-	if carousel.BorderStyle != nil {
-		borderStyleStr = string(*carousel.BorderStyle)
-	}
+	style, _ := services.NormalizeBorder(carousel.BorderStyle, carousel.BorderLines, nil)
+	borderStyleStr := string(style)
 	hasBorder := borderStyleStr != "none"
 
 	metricStatus := "success"

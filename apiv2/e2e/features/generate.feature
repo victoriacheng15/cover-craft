@@ -26,6 +26,19 @@ Feature: Image Generation API
     Then the response status code should be 200
     And the response content type should be "image/png"
 
+  Scenario: Generate image with standardized border style and lines
+    When I send a "GET" request to "/api/generateImage" with parameters:
+      | width           | 800        |
+      | height          | 600        |
+      | backgroundColor | #1e293b    |
+      | textColor       | #f8fafc    |
+      | font            | Montserrat |
+      | title           | Styled BDD |
+      | borderStyle     | dashed     |
+      | borderLines     | double     |
+    Then the response status code should be 200
+    And the response content type should be "image/png"
+
   Scenario: Validation error with invalid parameters
     When I send a "GET" request to "/api/generateImage" with parameters:
       | width           | -100      |

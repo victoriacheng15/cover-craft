@@ -45,7 +45,14 @@ func GenerateGIF(params GifParams) ([]byte, error) {
 			textColor = generatedColor
 		}
 
-		hasBorder := slide.HasBorder != nil && *slide.HasBorder
+		slideStyle := slide.BorderStyle
+		slideLines := slide.BorderLines
+		slideHasBorder := slide.HasBorder
+		if slideStyle == nil && slideHasBorder == nil {
+			slideStyle = params.BorderStyle
+			slideLines = params.BorderLines
+		}
+		style, lines := NormalizeBorder(slideStyle, slideLines, slideHasBorder)
 
 		frameImg, err := RenderFrame(
 			params.Width,
@@ -55,7 +62,8 @@ func GenerateGIF(params GifParams) ([]byte, error) {
 			string(slide.Font),
 			slide.Title,
 			slide.Subtitle,
-			hasBorder,
+			style,
+			lines,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to render frame %d: %w", i, err)

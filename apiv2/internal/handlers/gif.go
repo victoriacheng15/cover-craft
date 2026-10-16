@@ -63,7 +63,8 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorMessage: fmt.Sprintf("Validation failed: %d errors", len(validationErrors)),
 			Size:         &db.SizePreset{Width: params.Width, Height: params.Height},
 			Font:         gifFont(params.Slides),
-			HasBorder:    gifHasBorder(params.Slides),
+			HasBorder:    gifHasBorder(params.BorderStyle, params.Slides),
+			BorderStyle:  gifBorderStyle(params.BorderStyle, params.Slides),
 			SlideCount:   intPtr(len(params.Slides)),
 		})
 
@@ -91,7 +92,8 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorMessage: err.Error(),
 			Size:         &db.SizePreset{Width: params.Width, Height: params.Height},
 			Font:         gifFont(params.Slides),
-			HasBorder:    gifHasBorder(params.Slides),
+			HasBorder:    gifHasBorder(params.BorderStyle, params.Slides),
+			BorderStyle:  gifBorderStyle(params.BorderStyle, params.Slides),
 			SlideCount:   intPtr(len(params.Slides)),
 			Duration:     intPtr(duration),
 		})
@@ -133,7 +135,8 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 		Status:         "success",
 		Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
 		Font:           gifFont(params.Slides),
-		HasBorder:      gifHasBorder(params.Slides),
+		HasBorder:      gifHasBorder(params.BorderStyle, params.Slides),
+		BorderStyle:    gifBorderStyle(params.BorderStyle, params.Slides),
 		SlideCount:     intPtr(len(params.Slides)),
 		Duration:       intPtr(duration),
 		TitleLength:    intPtr(titleLen),
@@ -158,18 +161,36 @@ func GenerateGifHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(gifBytes)
 }
 
-func gifHasBorder(slides []services.GifSlideParams) *bool {
+func gifHasBorder(deckStyle *services.BorderStyle, slides []services.GifSlideParams) *bool {
+	if deckStyle != nil && *deckStyle != services.None {
+		t := true
+		return &t
+	}
 	if len(slides) == 0 {
 		return nil
 	}
 	hasBorder := false
 	for _, s := range slides {
-		if s.HasBorder != nil && *s.HasBorder {
+		style, _ := services.NormalizeBorder(s.BorderStyle, s.BorderLines, s.HasBorder)
+		if style != services.None {
 			hasBorder = true
 			break
 		}
 	}
 	return &hasBorder
+}
+
+func gifBorderStyle(deckStyle *services.BorderStyle, slides []services.GifSlideParams) string {
+	if deckStyle != nil && *deckStyle != services.None {
+		return string(*deckStyle)
+	}
+	for _, s := range slides {
+		style, _ := services.NormalizeBorder(s.BorderStyle, s.BorderLines, s.HasBorder)
+		if style != services.None {
+			return string(style)
+		}
+	}
+	return "none"
 }
 
 func gifFont(slides []services.GifSlideParams) string {

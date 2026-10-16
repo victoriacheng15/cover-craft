@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -434,3 +435,37 @@ func TestRenderCarouselSlideFrame_CornerPositions(t *testing.T) {
 		})
 	}
 }
+
+func TestRenderBorder_AllStylesAndMultiplicities(t *testing.T) {
+	styles := []BorderStyle{Solid, Dashed, Dotted, Rounded, Brackets}
+	lines := []BorderLines{Single, Double}
+
+	for _, s := range styles {
+		for _, l := range lines {
+			testName := fmt.Sprintf("%s_%s", s, l)
+			t.Run(testName, func(t *testing.T) {
+				styleCopy := s
+				linesCopy := l
+				params := ImageParams{
+					Width:           800,
+					Height:          600,
+					BackgroundColor: "#0F172A",
+					TextColor:       "#F8FAFC",
+					Font:            "Montserrat",
+					Title:           "Border Combination",
+					BorderStyle:     &styleCopy,
+					BorderLines:     &linesCopy,
+				}
+
+				pngBytes, err := GeneratePNG(params)
+				if err != nil {
+					t.Fatalf("GeneratePNG failed for %s: %v", testName, err)
+				}
+				if len(pngBytes) == 0 {
+					t.Fatalf("expected non-empty PNG bytes for %s", testName)
+				}
+			})
+		}
+	}
+}
+
