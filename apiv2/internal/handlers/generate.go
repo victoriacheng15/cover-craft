@@ -47,11 +47,17 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 		Font:            services.ImageParamsFont(extracted.Font),
 		Title:           extracted.Title,
 		Filename:        filename,
+		BorderStyle:     extracted.BorderStyle,
+		BorderLines:     extracted.BorderLines,
 		HasBorder:       extracted.HasBorder,
 	}
 	if extracted.Subtitle != "" {
 		params.Subtitle = &extracted.Subtitle
 	}
+
+	normStyle, _ := services.NormalizeBorder(params.BorderStyle, params.BorderLines, params.HasBorder)
+	hasBorderMetric := normStyle != services.None
+	borderStyleStr := string(normStyle)
 
 	// Calculate contrast ratio for metrics
 	contrastRatio, _ := services.GetContrastRatio(params.BackgroundColor, params.TextColor)
@@ -70,7 +76,8 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorMessage:   fmt.Sprintf("Validation failed: %d errors", len(validationErrors)),
 			Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
 			Font:           string(params.Font),
-			HasBorder:      params.HasBorder,
+			HasBorder:      &hasBorderMetric,
+			BorderStyle:    borderStyleStr,
 			TitleLength:    intPtr(len(params.Title)),
 			SubtitleLength: intPtr(len(extracted.Subtitle)),
 			ContrastRatio:  floatPtr(contrastRatio),
@@ -102,7 +109,8 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorMessage:   err.Error(),
 			Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
 			Font:           string(params.Font),
-			HasBorder:      params.HasBorder,
+			HasBorder:      &hasBorderMetric,
+			BorderStyle:    borderStyleStr,
 			TitleLength:    intPtr(len(params.Title)),
 			SubtitleLength: intPtr(len(extracted.Subtitle)),
 			ContrastRatio:  floatPtr(contrastRatio),
@@ -127,7 +135,8 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 		Status:         "success",
 		Size:           &db.SizePreset{Width: params.Width, Height: params.Height},
 		Font:           string(params.Font),
-		HasBorder:      params.HasBorder,
+		HasBorder:      &hasBorderMetric,
+		BorderStyle:    borderStyleStr,
 		TitleLength:    intPtr(len(params.Title)),
 		SubtitleLength: intPtr(len(extracted.Subtitle)),
 		ContrastRatio:  floatPtr(contrastRatio),
@@ -159,6 +168,8 @@ type extractedParams struct {
 	Title           string
 	Subtitle        string
 	Filename        string
+	BorderStyle     *services.BorderStyle
+	BorderLines     *services.BorderLines
 	HasBorder       *bool
 }
 
@@ -168,15 +179,17 @@ func extractParams(r *http.Request, body string) extractedParams {
 
 	// Try parsing body JSON first
 	var bodyParams struct {
-		Width           *int   `json:"width"`
-		Height          *int   `json:"height"`
-		BackgroundColor string `json:"backgroundColor"`
-		TextColor       string `json:"textColor"`
-		Font            string `json:"font"`
-		Title           string `json:"title"`
-		Subtitle        string `json:"subtitle"`
-		Filename        string `json:"filename"`
-		HasBorder       *bool  `json:"hasBorder"`
+		Width           *int                  `json:"width"`
+		Height          *int                  `json:"height"`
+		BackgroundColor string                `json:"backgroundColor"`
+		TextColor       string                `json:"textColor"`
+		Font            string                `json:"font"`
+		Title           string                `json:"title"`
+		Subtitle        string                `json:"subtitle"`
+		Filename        string                `json:"filename"`
+		BorderStyle     *services.BorderStyle `json:"borderStyle"`
+		BorderLines     *services.BorderLines `json:"borderLines"`
+		HasBorder       *bool                 `json:"hasBorder"`
 	}
 	if body != "" {
 		if err := json.Unmarshal([]byte(body), &bodyParams); err != nil {
@@ -212,7 +225,24 @@ func extractParams(r *http.Request, body string) extractedParams {
 	params.Subtitle = getParamWithFallback(r.URL.Query().Get("subtitle"), bodyParams.Subtitle)
 	params.Filename = getParamWithFallback(r.URL.Query().Get("filename"), bodyParams.Filename)
 
-	// 4. HasBorder extraction
+	// 4. Border extraction
+	qBorderStyle := r.URL.Query().Get("borderStyle")
+	if qBorderStyle != "" {
+		bs := services.BorderStyle(qBorderStyle)
+		params.BorderStyle = &bs
+	} else if bodyParams.BorderStyle != nil {
+		params.BorderStyle = bodyParams.BorderStyle
+	}
+
+	qBorderLines := r.URL.Query().Get("borderLines")
+	if qBorderLines != "" {
+		bl := services.BorderLines(qBorderLines)
+		params.BorderLines = &bl
+	} else if bodyParams.BorderLines != nil {
+		params.BorderLines = bodyParams.BorderLines
+	}
+
+	// 5. Legacy HasBorder extraction
 	qHasBorder := r.URL.Query().Get("hasBorder")
 	if qHasBorder != "" {
 		if val, err := strconv.ParseBool(qHasBorder); err == nil {

@@ -116,7 +116,7 @@ func TestGenerateGifHandler_Success(t *testing.T) {
 
 func TestGifHasBorder(t *testing.T) {
 	// Empty slides
-	if res := gifHasBorder(nil); res != nil {
+	if res := gifHasBorder(nil, nil); res != nil {
 		t.Errorf("expected nil for empty slides, got %v", *res)
 	}
 
@@ -126,17 +126,38 @@ func TestGifHasBorder(t *testing.T) {
 		{Title: "1", HasBorder: &f},
 		{Title: "2"},
 	}
-	if res := gifHasBorder(slidesNoBorder); res == nil || *res != false {
+	if res := gifHasBorder(nil, slidesNoBorder); res == nil || *res != false {
 		t.Errorf("expected false, got %v", res)
 	}
 
-	// Border on one slide
+	// Border on one slide via HasBorder
 	tr := true
 	slidesWithBorder := []services.GifSlideParams{
 		{Title: "1", HasBorder: &f},
 		{Title: "2", HasBorder: &tr},
 	}
-	if res := gifHasBorder(slidesWithBorder); res == nil || *res != true {
+	if res := gifHasBorder(nil, slidesWithBorder); res == nil || *res != true {
 		t.Errorf("expected true, got %v", res)
+	}
+
+	// Border via deck-level BorderStyle
+	deckStyle := services.Solid
+	if res := gifHasBorder(&deckStyle, slidesNoBorder); res == nil || *res != true {
+		t.Errorf("expected true for deck-level borderStyle, got %v", res)
+	}
+
+	// Test gifBorderStyle
+	if s := gifBorderStyle(nil, slidesNoBorder); s != "none" {
+		t.Errorf("expected 'none', got %q", s)
+	}
+	if s := gifBorderStyle(&deckStyle, slidesNoBorder); s != "solid" {
+		t.Errorf("expected 'solid', got %q", s)
+	}
+	dashedStyle := services.Dashed
+	slideWithDashed := []services.GifSlideParams{
+		{Title: "1", BorderStyle: &dashedStyle},
+	}
+	if s := gifBorderStyle(nil, slideWithDashed); s != "dashed" {
+		t.Errorf("expected 'dashed', got %q", s)
 	}
 }

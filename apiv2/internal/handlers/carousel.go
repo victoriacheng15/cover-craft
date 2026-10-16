@@ -42,10 +42,8 @@ func GenerateCarouselHandler(w http.ResponseWriter, r *http.Request) {
 		slog.WarnContext(r.Context(), "Carousel validation failed", slog.Int("error_count", len(validationErrors)))
 
 		slideCount := len(params.Slides)
-		borderStyleStr := "none"
-		if params.BorderStyle != nil {
-			borderStyleStr = string(*params.BorderStyle)
-		}
+		style, _ := services.NormalizeBorder(params.BorderStyle, params.BorderLines, nil)
+		borderStyleStr := string(style)
 		hasBorder := borderStyleStr != "none"
 		storeMetric(db.Metric{
 			Event:        EventCarouselGenerated,
