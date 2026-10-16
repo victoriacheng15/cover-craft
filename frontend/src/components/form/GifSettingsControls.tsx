@@ -1,6 +1,10 @@
 "use client";
 
 import {
+	BORDER_LINES,
+	BORDER_STYLES,
+	type BorderLines,
+	type BorderStyle,
 	type FONT_OPTIONS,
 	GIF_DELAY_PRESETS,
 	type GifDelayPreset,
@@ -12,6 +16,7 @@ import {
 	FormError,
 	Input,
 	SectionTitle,
+	SegmentedGroup,
 	Select,
 } from "@/components/ui";
 import type { ContrastCheckResult, GifFormData } from "@/hooks";
@@ -32,6 +37,8 @@ export interface GifSettingsControlsProps {
 	setFilename: (filename: string) => void;
 	setFont: (font: (typeof FONT_OPTIONS)[number]) => void;
 	setHasBorder: (hasBorder: boolean) => void;
+	setBorderStyle?: (style: BorderStyle) => void;
+	setBorderLines?: (lines: BorderLines) => void;
 	handleGenerate: () => void;
 	handleReset: () => void;
 }
@@ -49,6 +56,8 @@ export function GifSettingsControls({
 	setFilename,
 	setFont,
 	setHasBorder,
+	setBorderStyle,
+	setBorderLines,
 	handleGenerate,
 	handleReset,
 }: GifSettingsControlsProps) {
@@ -124,22 +133,30 @@ export function GifSettingsControls({
 						</div>
 					</FormField>
 
-					<div className="flex items-center gap-2 py-1">
-						<input
-							type="checkbox"
-							id="gif-border"
-							checked={formData.hasBorder}
-							onChange={(e) => setHasBorder(e.target.checked)}
-							className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-							aria-label="Add border to all slides"
-						/>
-						<label
-							htmlFor="gif-border"
-							className="text-sm font-medium text-gray-800 cursor-pointer"
-						>
-							Add Border
-						</label>
-					</div>
+					<SegmentedGroup<BorderStyle>
+						label="Border Pattern"
+						options={BORDER_STYLES}
+						value={formData.borderStyle}
+						onChange={(style) => {
+							if (setBorderStyle) {
+								setBorderStyle(style);
+							} else {
+								setHasBorder(style !== "none");
+							}
+						}}
+					/>
+
+					<SegmentedGroup<BorderLines>
+						label="Border Multiplicity"
+						options={BORDER_LINES}
+						value={formData.borderLines}
+						onChange={(lines) => {
+							if (setBorderLines) {
+								setBorderLines(lines);
+							}
+						}}
+						disabled={formData.borderStyle === "none"}
+					/>
 				</div>
 			</div>
 

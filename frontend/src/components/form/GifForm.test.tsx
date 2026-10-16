@@ -28,6 +28,8 @@ describe("GifForm", () => {
 	const mockSetFilename = vi.fn();
 	const mockSetFont = vi.fn();
 	const mockSetHasBorder = vi.fn();
+	const mockSetBorderStyle = vi.fn();
+	const mockSetBorderLines = vi.fn();
 	const mockHandleRandomizeColors = vi.fn();
 	const mockHandleGenerate = vi.fn();
 	const mockHandleDownload = vi.fn();
@@ -44,6 +46,8 @@ describe("GifForm", () => {
 				delayMs: 1500,
 				font: "Montserrat",
 				hasBorder: false,
+				borderStyle: "none",
+				borderLines: "single",
 				slides: [
 					{
 						id: "slide-1",
@@ -81,6 +85,8 @@ describe("GifForm", () => {
 			setFilename: mockSetFilename,
 			setFont: mockSetFont,
 			setHasBorder: mockSetHasBorder,
+			setBorderStyle: mockSetBorderStyle,
+			setBorderLines: mockSetBorderLines,
 			addSlide: mockAddSlide,
 			removeSlide: mockRemoveSlide,
 			moveSlide: vi.fn(),
@@ -163,13 +169,13 @@ describe("GifForm", () => {
 		expect(mockSetFont).toHaveBeenCalledWith("Roboto");
 	});
 
-	it("renders border checkbox and triggers setHasBorder", () => {
+	it("renders border controls and triggers setBorderStyle", () => {
 		render(<GifForm />);
 
-		const borderCheckbox = screen.getByLabelText("Add border to all slides");
-		expect(borderCheckbox).not.toBeChecked();
+		const solidBtn = screen.getByRole("button", { name: "Solid" });
+		expect(solidBtn).toBeInTheDocument();
 
-		fireEvent.click(borderCheckbox);
-		expect(mockSetHasBorder).toHaveBeenCalledWith(true);
+		fireEvent.click(solidBtn);
+		expect(mockSetBorderStyle).toHaveBeenCalledWith("solid");
 	});
 });

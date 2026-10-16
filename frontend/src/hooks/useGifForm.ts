@@ -1,5 +1,7 @@
 import {
 	type AllowedFont,
+	type BorderLines,
+	type BorderStyle,
 	DEFAULT_GIF_DELAY,
 	FONT_OPTIONS,
 	type GifDelayPreset,
@@ -36,6 +38,8 @@ export interface GifFormData {
 	delayMs: GifDelayPreset;
 	font: AllowedFont;
 	hasBorder: boolean;
+	borderStyle: BorderStyle;
+	borderLines: BorderLines;
 	slides: SlideItem[];
 }
 
@@ -53,6 +57,8 @@ export const initialGifFormData: GifFormData = {
 	delayMs: DEFAULT_GIF_DELAY,
 	font: FONT_OPTIONS[0],
 	hasBorder: false,
+	borderStyle: "none",
+	borderLines: "single",
 	slides: [createDefaultSlide(0), createDefaultSlide(1)],
 };
 
@@ -64,6 +70,8 @@ const initialGifSettings = {
 	delayMs: initialGifFormData.delayMs,
 	font: initialGifFormData.font,
 	hasBorder: initialGifFormData.hasBorder,
+	borderStyle: initialGifFormData.borderStyle,
+	borderLines: initialGifFormData.borderLines,
 };
 
 export function useGifForm() {
@@ -129,7 +137,27 @@ export function useGifForm() {
 	};
 
 	const setHasBorder = (hasBorder: boolean) => {
-		setSettings((prev) => ({ ...prev, hasBorder }));
+		setSettings((prev) => ({
+			...prev,
+			hasBorder,
+			borderStyle: hasBorder
+				? prev.borderStyle === "none"
+					? "solid"
+					: prev.borderStyle
+				: "none",
+		}));
+	};
+
+	const setBorderStyle = (borderStyle: BorderStyle) => {
+		setSettings((prev) => ({
+			...prev,
+			borderStyle,
+			hasBorder: borderStyle !== "none",
+		}));
+	};
+
+	const setBorderLines = (borderLines: BorderLines) => {
+		setSettings((prev) => ({ ...prev, borderLines }));
 	};
 
 	const handleRandomizeColors = () => {
@@ -177,18 +205,27 @@ export function useGifForm() {
 				}
 			}
 
+			const borderStyle =
+				formData.borderStyle ?? (formData.hasBorder ? "solid" : "none");
+			const borderLines = formData.borderLines ?? "single";
+			const hasBorder = borderStyle !== "none";
+
 			const { blob, clientDuration } = await generateGif({
 				width: selectedSize.width,
 				height: selectedSize.height,
 				backgroundColor: formData.backgroundColor,
 				delayMs: formData.delayMs,
 				filename: formData.filename || "slideshow",
+				borderStyle,
+				borderLines,
 				slides: formData.slides.map((s) => ({
 					title: s.title,
 					subtitle: s.subtitle || undefined,
 					font: formData.font,
 					textColor: formData.textColor,
-					hasBorder: formData.hasBorder,
+					hasBorder,
+					borderStyle,
+					borderLines,
 				})),
 			});
 
@@ -200,7 +237,7 @@ export function useGifForm() {
 					width: selectedSize.width,
 					height: selectedSize.height,
 				},
-				hasBorder: formData.hasBorder,
+				hasBorder,
 				slideCount: formData.slides.length,
 				titleLength: firstSlide ? firstSlide.title.length : 0,
 				subtitleLength: firstSlide?.subtitle ? firstSlide.subtitle.length : 0,
@@ -261,6 +298,8 @@ export function useGifForm() {
 		setFilename,
 		setFont,
 		setHasBorder,
+		setBorderStyle,
+		setBorderLines,
 		addSlide,
 		removeSlide,
 		moveSlide,

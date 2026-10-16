@@ -20,6 +20,7 @@ describe("CarouselPreviewDisplay", () => {
 			textColor: "#F9FAFB",
 			font: "Montserrat",
 			borderStyle: "none",
+			borderLines: "single",
 			authorHandle: "@handle",
 			authorHandlePosition: "bottom-left",
 			slideNumberPosition: "top-right",

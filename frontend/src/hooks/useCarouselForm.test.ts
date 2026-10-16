@@ -27,6 +27,7 @@ describe("useCarouselForm", () => {
 		expect(result.current.deckSettings.width).toBe(1080);
 		expect(result.current.deckSettings.height).toBe(1080);
 		expect(result.current.deckSettings.borderStyle).toBe("none");
+		expect(result.current.deckSettings.borderLines).toBe("single");
 		expect(result.current.deckSettings.font).toBe("Montserrat");
 		expect(result.current.deckSettings.slideNumberPosition).toBe("none");
 		expect(result.current.isGenerating).toBe(false);
@@ -48,13 +49,15 @@ describe("useCarouselForm", () => {
 
 		act(() => {
 			result.current.updateDeckSettings({
-				borderStyle: "double",
+				borderStyle: "rounded",
+				borderLines: "double",
 				authorHandle: "@dev",
 				authorHandlePosition: "top-left",
 			});
 		});
 
-		expect(result.current.deckSettings.borderStyle).toBe("double");
+		expect(result.current.deckSettings.borderStyle).toBe("rounded");
+		expect(result.current.deckSettings.borderLines).toBe("double");
 		expect(result.current.deckSettings.authorHandle).toBe("@dev");
 		expect(result.current.deckSettings.authorHandlePosition).toBe("top-left");
 	});

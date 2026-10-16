@@ -70,6 +70,7 @@ describe("CarouselForm", () => {
 			textColor: "#F9FAFB",
 			font: "Montserrat" as const,
 			borderStyle: "none" as const,
+			borderLines: "single" as const,
 			authorHandle: "@techlead",
 			authorHandlePosition: "bottom-left" as const,
 			slideNumberPosition: "top-right" as const,
@@ -326,5 +327,30 @@ describe("CarouselForm", () => {
 			.closest("output");
 		expect(output).toBeInTheDocument();
 		expect(output).toHaveAttribute("aria-live", "polite");
+	});
+
+	it("updates deck border style and lines when segmented buttons are clicked", () => {
+		mockUseCarouselForm.mockReturnValueOnce({
+			...baseMockReturn,
+			deckSettings: {
+				...baseMockReturn.deckSettings,
+				borderStyle: "solid",
+				borderLines: "single",
+			},
+		});
+
+		render(<CarouselForm />);
+
+		const dottedBtn = screen.getByRole("button", { name: "Dotted" });
+		fireEvent.click(dottedBtn);
+		expect(mockUpdateDeckSettings).toHaveBeenCalledWith({
+			borderStyle: "dotted",
+		});
+
+		const doubleBtn = screen.getByRole("button", { name: "Double" });
+		fireEvent.click(doubleBtn);
+		expect(mockUpdateDeckSettings).toHaveBeenCalledWith({
+			borderLines: "double",
+		});
 	});
 });

@@ -25,6 +25,8 @@ describe("GifPreviewDisplay", () => {
 		delayMs: 1500,
 		font: "Montserrat",
 		hasBorder: true,
+		borderStyle: "solid",
+		borderLines: "single",
 		slides: [
 			{
 				id: "slide-1",

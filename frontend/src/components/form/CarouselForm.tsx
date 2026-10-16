@@ -1,12 +1,19 @@
 "use client";
 
-import { CAROUSEL_LIMITS } from "@cover-craft/shared";
+import {
+	BORDER_LINES,
+	BORDER_STYLES,
+	type BorderLines,
+	type BorderStyle,
+	CAROUSEL_LIMITS,
+} from "@cover-craft/shared";
 import {
 	Button,
 	Card,
 	FormError,
 	Input,
 	SectionTitle,
+	SegmentedGroup,
 	Select,
 } from "@/components/ui";
 import { useCarouselForm } from "@/hooks/useCarouselForm";
@@ -122,22 +129,20 @@ export function CarouselForm() {
 
 					{/* Right: Border & Corner Overlays */}
 					<div className="flex flex-col gap-4">
-						<FormField label="Border Style" htmlFor="deck-border">
-							<Select
-								id="deck-border"
-								value={deckSettings.borderStyle}
-								onChange={(e) =>
-									updateDeckSettings({
-										borderStyle: e.target.value as "none" | "single" | "double",
-									})
-								}
-								aria-label="Deck border style"
-							>
-								<option value="none">None</option>
-								<option value="single">Single Line</option>
-								<option value="double">Double Line</option>
-							</Select>
-						</FormField>
+						<SegmentedGroup<BorderStyle>
+							label="Border Pattern"
+							options={BORDER_STYLES}
+							value={deckSettings.borderStyle}
+							onChange={(style) => updateDeckSettings({ borderStyle: style })}
+						/>
+
+						<SegmentedGroup<BorderLines>
+							label="Border Multiplicity"
+							options={BORDER_LINES}
+							value={deckSettings.borderLines}
+							onChange={(lines) => updateDeckSettings({ borderLines: lines })}
+							disabled={deckSettings.borderStyle === "none"}
+						/>
 
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<FormField label="Author Handle" htmlFor="deck-author">

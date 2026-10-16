@@ -12,6 +12,8 @@ describe("GifSettingsControls", () => {
 		delayMs: 1500,
 		font: "Montserrat",
 		hasBorder: false,
+		borderStyle: "none",
+		borderLines: "single",
 		slides: [{ id: "slide-1", title: "Slide 1", subtitle: "" }],
 	};
 
@@ -22,6 +24,8 @@ describe("GifSettingsControls", () => {
 	const mockSetFilename = vi.fn();
 	const mockSetFont = vi.fn();
 	const mockSetHasBorder = vi.fn();
+	const mockSetBorderStyle = vi.fn();
+	const mockSetBorderLines = vi.fn();
 	const mockHandleRandomizeColors = vi.fn();
 	const mockHandleGenerate = vi.fn();
 	const mockHandleReset = vi.fn();
@@ -42,6 +46,8 @@ describe("GifSettingsControls", () => {
 		setFilename: mockSetFilename,
 		setFont: mockSetFont,
 		setHasBorder: mockSetHasBorder,
+		setBorderStyle: mockSetBorderStyle,
+		setBorderLines: mockSetBorderLines,
 		handleRandomizeColors: mockHandleRandomizeColors,
 		handleGenerate: mockHandleGenerate,
 		handleReset: mockHandleReset,
@@ -66,9 +72,9 @@ describe("GifSettingsControls", () => {
 		fireEvent.change(fontSelect, { target: { value: "Roboto" } });
 		expect(mockSetFont).toHaveBeenCalledWith("Roboto");
 
-		const borderCheckbox = screen.getByLabelText("Add border to all slides");
-		fireEvent.click(borderCheckbox);
-		expect(mockSetHasBorder).toHaveBeenCalledWith(true);
+		const solidBtn = screen.getByRole("button", { name: "Solid" });
+		fireEvent.click(solidBtn);
+		expect(mockSetBorderStyle).toHaveBeenCalledWith("solid");
 
 		const bgPicker = screen.getByLabelText("Background color picker");
 		fireEvent.change(bgPicker, { target: { value: "#111827" } });

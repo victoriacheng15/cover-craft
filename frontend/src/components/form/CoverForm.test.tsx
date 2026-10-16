@@ -64,7 +64,12 @@ describe("CoverForm", () => {
 		vi.clearAllMocks();
 	});
 
-	const createMockUseForm = (overrides: Partial<UseFormReturn> = {}) => {
+	type MockFormOverrides = Partial<Omit<UseFormReturn, "formData">> & {
+		formData?: Partial<UseFormReturn["formData"]>;
+	};
+
+	const createMockUseForm = (overrides: MockFormOverrides = {}) => {
+		const { formData, ...restOverrides } = overrides;
 		return {
 			formData: {
 				size: "Post (1200 × 627)",
@@ -73,7 +78,10 @@ describe("CoverForm", () => {
 				subtitle: "",
 				backgroundColor: "#374151",
 				textColor: "#F9FAFB",
-				font: "Montserrat",
+				font: "Montserrat" as const,
+				borderStyle: "none" as const,
+				borderLines: "single" as const,
+				...formData,
 			},
 			isGenerating: false,
 			error: null,
@@ -92,11 +100,11 @@ describe("CoverForm", () => {
 				ratio: 5,
 				level: "AA",
 			},
-			...overrides,
+			...restOverrides,
 		};
 	};
 
-	const renderCoverForm = (overrides: Partial<UseFormReturn> = {}) => {
+	const renderCoverForm = (overrides: MockFormOverrides = {}) => {
 		//@ts-expect-error
 		mockUseFormHook.mockReturnValue(createMockUseForm(overrides));
 		render(<CoverForm />);
@@ -176,14 +184,32 @@ describe("CoverForm", () => {
 		expect(handleInputChange).toHaveBeenCalledWith("title", "Test Title");
 	});
 
-	it("calls handleInputChange when border checkbox is toggled", () => {
+	it("calls handleInputChange when border style or lines are selected", () => {
 		const handleInputChange = vi.fn();
-		renderCoverForm({ handleInputChange });
+		renderCoverForm({
+			handleInputChange,
+			formData: {
+				size: "Post (1200 × 627)",
+				filename: "",
+				title: "",
+				subtitle: "",
+				backgroundColor: "#374151",
+				textColor: "#F9FAFB",
+				font: "Montserrat",
+				borderStyle: "solid",
+				borderLines: "single",
+			},
+		});
 
-		const borderCheckbox = screen.getByLabelText(/Add Border/i);
-		expect(borderCheckbox).toBeInTheDocument();
-		fireEvent.click(borderCheckbox);
-		expect(handleInputChange).toHaveBeenCalledWith("hasBorder", true);
+		const dashedButton = screen.getByRole("button", { name: "Dashed" });
+		expect(dashedButton).toBeInTheDocument();
+		fireEvent.click(dashedButton);
+		expect(handleInputChange).toHaveBeenCalledWith("borderStyle", "dashed");
+
+		const doubleButton = screen.getByRole("button", { name: "Double" });
+		expect(doubleButton).toBeInTheDocument();
+		fireEvent.click(doubleButton);
+		expect(handleInputChange).toHaveBeenCalledWith("borderLines", "double");
 	});
 
 	it("displays default preview text when no input provided", () => {
