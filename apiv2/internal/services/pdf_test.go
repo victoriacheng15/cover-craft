@@ -90,7 +90,8 @@ func TestCompileCarouselDeckPDF(t *testing.T) {
 		"Partition-based parallel consumption",
 		"Zero-data-loss dead letter queues",
 	}
-	border := Double
+	border := Solid
+	lines := Double
 	author := "@cloud_lead"
 
 	deck := CarouselParams{
@@ -100,6 +101,7 @@ func TestCompileCarouselDeckPDF(t *testing.T) {
 		TextColor:       "#F8FAFC",
 		Font:            CarouselParamsFontMontserrat,
 		BorderStyle:     &border,
+		BorderLines:     &lines,
 		AuthorHandle:    &author,
 		Slides: []CarouselSlideParams{
 			{

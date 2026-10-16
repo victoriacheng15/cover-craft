@@ -358,13 +358,19 @@ export function useCarouselForm() {
 			return slideParam;
 		});
 
+		const borderStyle: CarouselParams["borderStyle"] =
+			deckSettings.borderStyle === "none" ? "none" : "solid";
+		const borderLines: CarouselParams["borderLines"] =
+			deckSettings.borderStyle === "double" ? "double" : "single";
+
 		const payload: CarouselParams = {
 			width: deckSettings.width,
 			height: deckSettings.height,
 			backgroundColor: deckSettings.backgroundColor,
 			textColor: deckSettings.textColor,
 			font: deckSettings.font,
-			borderStyle: deckSettings.borderStyle,
+			borderStyle,
+			borderLines,
 			authorHandlePosition: deckSettings.authorHandlePosition,
 			showSlideNumbers: deckSettings.slideNumberPosition !== "none",
 			slideNumberPosition:

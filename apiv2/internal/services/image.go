@@ -184,7 +184,14 @@ func RenderCarouselSlideFrame(deck CarouselParams, slideIndex int) (image.Image,
 	// Draw border if requested
 	if deck.BorderStyle != nil && *deck.BorderStyle != None {
 		dc.SetHexColor(textColor)
-		switch *deck.BorderStyle {
+		lines := Single
+		if deck.BorderLines != nil {
+			lines = *deck.BorderLines
+		}
+		if string(*deck.BorderStyle) == "double" {
+			lines = Double
+		}
+		switch lines {
 		case Single:
 			inset := 18.0
 			dc.SetLineWidth(BorderWidth)

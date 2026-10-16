@@ -36,7 +36,16 @@ var (
 		"Open Sans":        true,
 	}
 	AllowedBorderStyles = map[string]bool{
-		"none":   true,
+		"none":     true,
+		"solid":    true,
+		"dashed":   true,
+		"dotted":   true,
+		"rounded":  true,
+		"brackets": true,
+		"single":   true,
+		"double":   true,
+	}
+	AllowedBorderLines = map[string]bool{
 		"single": true,
 		"double": true,
 	}
@@ -57,6 +66,40 @@ var (
 		"bottom": true,
 	}
 )
+
+// CarouselParamsBorderStyle is an alias for BorderStyle for backward compatibility
+type CarouselParamsBorderStyle = BorderStyle
+
+// NormalizeBorder resolves border parameters across new and legacy inputs.
+// - If borderStyle is nil, checks hasBorder (true -> solid single, false -> none single).
+// - If borderStyle is legacy "single" -> solid single, "double" -> solid double.
+// - Default borderLines is "single".
+func NormalizeBorder(style *BorderStyle, lines *BorderLines, hasBorder *bool) (BorderStyle, BorderLines) {
+	effectiveStyle := None
+	effectiveLines := Single
+
+	if style != nil {
+		switch string(*style) {
+		case "single":
+			effectiveStyle = Solid
+			effectiveLines = Single
+		case "double":
+			effectiveStyle = Solid
+			effectiveLines = Double
+		default:
+			effectiveStyle = *style
+		}
+	} else if hasBorder != nil && *hasBorder {
+		effectiveStyle = Solid
+		effectiveLines = Single
+	}
+
+	if lines != nil && *lines == Double {
+		effectiveLines = Double
+	}
+
+	return effectiveStyle, effectiveLines
+}
 
 // RGB representation for contrast math
 type RGB struct {
@@ -210,6 +253,20 @@ func ValidateImageParams(params ImageParams) []ValidationError {
 		}
 	}
 
+	// Border validation
+	if params.BorderStyle != nil && !AllowedBorderStyles[string(*params.BorderStyle)] {
+		errors = append(errors, ValidationError{
+			Field:   "borderStyle",
+			Message: "Border style must be one of: none, solid, dashed, dotted, rounded, brackets",
+		})
+	}
+	if params.BorderLines != nil && !AllowedBorderLines[string(*params.BorderLines)] {
+		errors = append(errors, ValidationError{
+			Field:   "borderLines",
+			Message: "Border lines must be one of: single, double",
+		})
+	}
+
 	return errors
 }
 
@@ -296,9 +353,37 @@ func ValidateGifParams(params GifParams) []ValidationError {
 		})
 	}
 
+	// Global border validation if provided
+	if params.BorderStyle != nil && !AllowedBorderStyles[string(*params.BorderStyle)] {
+		errors = append(errors, ValidationError{
+			Field:   "borderStyle",
+			Message: "Border style must be one of: none, solid, dashed, dotted, rounded, brackets",
+		})
+	}
+	if params.BorderLines != nil && !AllowedBorderLines[string(*params.BorderLines)] {
+		errors = append(errors, ValidationError{
+			Field:   "borderLines",
+			Message: "Border lines must be one of: single, double",
+		})
+	}
+
 	// Validate each slide
 	for i, slide := range params.Slides {
 		prefix := fmt.Sprintf("slides[%d]", i)
+
+		// Slide border validation if provided
+		if slide.BorderStyle != nil && !AllowedBorderStyles[string(*slide.BorderStyle)] {
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.borderStyle", prefix),
+				Message: "Border style must be one of: none, solid, dashed, dotted, rounded, brackets",
+			})
+		}
+		if slide.BorderLines != nil && !AllowedBorderLines[string(*slide.BorderLines)] {
+			errors = append(errors, ValidationError{
+				Field:   fmt.Sprintf("%s.borderLines", prefix),
+				Message: "Border lines must be one of: single, double",
+			})
+		}
 
 		// Title validation
 		if strings.TrimSpace(slide.Title) == "" {
@@ -418,7 +503,13 @@ func ValidateCarouselParams(params CarouselParams) []ValidationError {
 	if params.BorderStyle != nil && !AllowedBorderStyles[string(*params.BorderStyle)] {
 		errors = append(errors, ValidationError{
 			Field:   "borderStyle",
-			Message: "Border style must be one of: none, single, double",
+			Message: "Border style must be one of: none, solid, dashed, dotted, rounded, brackets",
+		})
+	}
+	if params.BorderLines != nil && !AllowedBorderLines[string(*params.BorderLines)] {
+		errors = append(errors, ValidationError{
+			Field:   "borderLines",
+			Message: "Border lines must be one of: single, double",
 		})
 	}
 

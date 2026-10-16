@@ -88,7 +88,8 @@ func TestGeneratePNG_WithBorder(t *testing.T) {
 func TestRenderCarouselSlideFrame_SubtitleMode(t *testing.T) {
 	subtitle := "A deep dive into distributed event streaming systems."
 	author := "@software_lead"
-	border := Single
+	border := Solid
+	lines := Single
 	authorPos := CarouselParamsAuthorHandlePositionBottomLeft
 	slideNumPos := CarouselParamsSlideNumberPositionTopRight
 	showSlideNums := true
@@ -100,6 +101,7 @@ func TestRenderCarouselSlideFrame_SubtitleMode(t *testing.T) {
 		TextColor:            "#F8FAFC",
 		Font:                 CarouselParamsFontMontserrat,
 		BorderStyle:          &border,
+		BorderLines:          &lines,
 		AuthorHandle:         &author,
 		AuthorHandlePosition: &authorPos,
 		ShowSlideNumbers:     &showSlideNums,
@@ -158,7 +160,8 @@ func TestRenderCarouselSlideFrame_ListMode(t *testing.T) {
 		"Implement backpressure across producer pipelines",
 		"Monitor p99 latency SLAs rigorously",
 	}
-	border := Double
+	border := Solid
+	lines := Double
 	author := "@cloud_architect"
 	align := CarouselSlideParamsTextAlignLeft
 	vAlign := CarouselSlideParamsVerticalAlignCenter
@@ -170,6 +173,7 @@ func TestRenderCarouselSlideFrame_ListMode(t *testing.T) {
 		TextColor:       "#F1F5F9",
 		Font:            CarouselParamsFontRoboto,
 		BorderStyle:     &border,
+		BorderLines:     &lines,
 		AuthorHandle:    &author,
 		Slides: []CarouselSlideParams{
 			{
@@ -396,7 +400,8 @@ func TestRenderCarouselSlideFrame_CornerPositions(t *testing.T) {
 
 	author := "@developer"
 	showSlideNums := true
-	borderStyle := Double
+	borderStyle := Solid
+	borderLines := Double
 
 	for _, pos := range positions {
 		t.Run(string(pos.authorPos)+"_"+string(pos.slidePos), func(t *testing.T) {
@@ -409,6 +414,7 @@ func TestRenderCarouselSlideFrame_CornerPositions(t *testing.T) {
 				TextColor:            "#F9FAFB",
 				Font:                 CarouselParamsFontMontserrat,
 				BorderStyle:          &borderStyle,
+				BorderLines:          &borderLines,
 				AuthorHandle:         &author,
 				AuthorHandlePosition: &authorPosCopy,
 				ShowSlideNumbers:     &showSlideNums,

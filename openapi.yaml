@@ -192,6 +192,9 @@ components:
         - timestamp
         - data
 
+    # ==========================================================================
+    # 1. SINGLE COVER IMAGE (Single discrete PNG image)
+    # ==========================================================================
     ImageParams:
       type: object
       properties:
@@ -225,9 +228,14 @@ components:
           type: string
           maxLength: 70
           example: Cover Craft
+        borderStyle:
+          $ref: '#/components/schemas/BorderStyle'
+        borderLines:
+          $ref: '#/components/schemas/BorderLines'
         hasBorder:
           type: boolean
-          description: Whether to render an inset border around the cover (defaults to false)
+          deprecated: true
+          description: Deprecated. Whether to render an inset border around the cover (defaults to false)
           example: false
         filename:
           type: string
@@ -241,6 +249,11 @@ components:
         - title
         - filename
 
+    # ==========================================================================
+    # 2. ANIMATED GIF SLIDESHOW (Multi-frame animation: 2+ slides)
+    #    - GifSlideParams: Frame-level content & optional overrides per slide
+    #    - GifParams: Deck-level animation dimensions, delay & global borders
+    # ==========================================================================
     GifSlideParams:
       type: object
       properties:
@@ -261,9 +274,14 @@ components:
           pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
           description: Slide text color. If omitted, a random WCAG AA compliant color is generated.
           example: '#F9FAFB'
+        borderStyle:
+          $ref: '#/components/schemas/BorderStyle'
+        borderLines:
+          $ref: '#/components/schemas/BorderLines'
         hasBorder:
           type: boolean
-          description: Whether to render an inset border around the slide (defaults to false)
+          deprecated: true
+          description: Deprecated. Whether to render an inset border around the slide (defaults to false)
           example: false
       required:
         - title
@@ -286,6 +304,10 @@ components:
           type: string
           pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
           example: '#374151'
+        borderStyle:
+          $ref: '#/components/schemas/BorderStyle'
+        borderLines:
+          $ref: '#/components/schemas/BorderLines'
         delayMs:
           type: integer
           enum: [1000, 1500, 2000, 3000]
@@ -305,6 +327,11 @@ components:
         - backgroundColor
         - slides
 
+    # ==========================================================================
+    # 3. CAROUSEL PDF & SLIDE DECK (Multi-page document: 2+ slides)
+    #    - CarouselSlideParams: Per-slide content & individual styling
+    #    - CarouselParams: Deck-level dimensions, global borders & metadata
+    # ==========================================================================
     CarouselSlideParams:
       type: object
       properties:
@@ -378,10 +405,9 @@ components:
           enum: [Montserrat, Roboto, Lato, Playfair Display, Open Sans]
           example: Montserrat
         borderStyle:
-          type: string
-          enum: [none, single, double]
-          default: none
-          example: single
+          $ref: '#/components/schemas/BorderStyle'
+        borderLines:
+          $ref: '#/components/schemas/BorderLines'
         authorHandle:
           type: string
           maxLength: 30
@@ -417,6 +443,25 @@ components:
         - textColor
         - font
         - slides
+
+    # ==========================================================================
+    # 4. SHARED BORDER CONTROLS (Unified across Cover Image, GIF & Carousel)
+    #    - BorderStyle: Pattern geometry (none, solid, dashed, dotted, rounded, brackets)
+    #    - BorderLines: Multiplicity multiplier (single 1x vs double 2x concentric)
+    # ==========================================================================
+    BorderStyle:
+      type: string
+      enum: [none, solid, dashed, dotted, rounded, brackets]
+      default: none
+      description: Border pattern geometry.
+      example: solid
+
+    BorderLines:
+      type: string
+      enum: [single, double]
+      default: single
+      description: Line multiplicity for the border (single or double). Ignored if borderStyle is none.
+      example: single
 
     ValidationError:
       type: object

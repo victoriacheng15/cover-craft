@@ -396,8 +396,11 @@ export interface components {
 			title: string;
 			/** @example Cover Craft */
 			subtitle?: string;
+			borderStyle?: components["schemas"]["BorderStyle"];
+			borderLines?: components["schemas"]["BorderLines"];
 			/**
-			 * @description Whether to render an inset border around the cover (defaults to false)
+			 * @deprecated
+			 * @description Deprecated. Whether to render an inset border around the cover (defaults to false)
 			 * @example false
 			 */
 			hasBorder?: boolean;
@@ -419,8 +422,11 @@ export interface components {
 			 * @example #F9FAFB
 			 */
 			textColor?: string;
+			borderStyle?: components["schemas"]["BorderStyle"];
+			borderLines?: components["schemas"]["BorderLines"];
 			/**
-			 * @description Whether to render an inset border around the slide (defaults to false)
+			 * @deprecated
+			 * @description Deprecated. Whether to render an inset border around the slide (defaults to false)
 			 * @example false
 			 */
 			hasBorder?: boolean;
@@ -432,6 +438,8 @@ export interface components {
 			height: number;
 			/** @example #374151 */
 			backgroundColor: string;
+			borderStyle?: components["schemas"]["BorderStyle"];
+			borderLines?: components["schemas"]["BorderLines"];
 			/**
 			 * @default 1500
 			 * @example 1500
@@ -496,12 +504,8 @@ export interface components {
 			 * @enum {string}
 			 */
 			font: "Montserrat" | "Roboto" | "Lato" | "Playfair Display" | "Open Sans";
-			/**
-			 * @default none
-			 * @example single
-			 * @enum {string}
-			 */
-			borderStyle: "none" | "single" | "double";
+			borderStyle?: components["schemas"]["BorderStyle"];
+			borderLines?: components["schemas"]["BorderLines"];
 			/** @example @username */
 			authorHandle?: string;
 			/**
@@ -533,6 +537,26 @@ export interface components {
 			/** @example carousel */
 			filename?: string;
 		};
+		/**
+		 * @description Border pattern geometry.
+		 * @default none
+		 * @example solid
+		 * @enum {string}
+		 */
+		BorderStyle:
+			| "none"
+			| "solid"
+			| "dashed"
+			| "dotted"
+			| "rounded"
+			| "brackets";
+		/**
+		 * @description Line multiplicity for the border (single or double). Ignored if borderStyle is none.
+		 * @default single
+		 * @example single
+		 * @enum {string}
+		 */
+		BorderLines: "single" | "double";
 		ValidationError: {
 			/** @example width */
 			field: string;
