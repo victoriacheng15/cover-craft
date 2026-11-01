@@ -3,15 +3,16 @@ module github.com/victoriacheng15/cover-craft/apiv2
 go 1.26.0
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.23.1
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.23.3
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azqueue v1.0.1
 	github.com/cucumber/godog v0.16.0
 	github.com/fogleman/gg v1.3.0
+	github.com/phpdave11/gofpdf v1.4.3
 	go.mongodb.org/mongo-driver v1.17.10
 )
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/internal v1.12.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/internal v1.13.0 // indirect
 	github.com/cucumber/gherkin/go/v42 v42.0.0 // indirect
 	github.com/cucumber/messages/go/v34 v34.2.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
@@ -22,7 +23,6 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/klauspost/compress v1.20.0 // indirect
 	github.com/montanaflynn/stats v0.12.5 // indirect
-	github.com/phpdave11/gofpdf v1.4.3 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.2.0 // indirect
