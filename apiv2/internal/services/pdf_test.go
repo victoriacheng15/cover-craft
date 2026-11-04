@@ -174,4 +174,32 @@ func TestCompilePDF_ValidationErrors(t *testing.T) {
 			t.Error("expected error for empty deck slides, got nil")
 		}
 	})
+
+	t.Run("CompileCarouselDeckPDF with image slides", func(t *testing.T) {
+		valid1x1Png := "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+		deck := CarouselParams{
+			Width:           1080,
+			Height:          1080,
+			BackgroundColor: "#0F172A",
+			TextColor:       "#F8FAFC",
+			Font:            CarouselParamsFontMontserrat,
+			Slides: []CarouselSlideParams{
+				{
+					Title:    "Slide with Visual Image",
+					ImageUrl: &valid1x1Png,
+				},
+				{
+					Title: "Text Only Slide",
+				},
+			},
+		}
+
+		pdfBytes, err := CompileCarouselDeckPDF(deck)
+		if err != nil {
+			t.Fatalf("expected successful PDF compilation with image slide, got error: %v", err)
+		}
+		if !bytes.HasPrefix(pdfBytes, []byte("%PDF-")) {
+			t.Errorf("expected valid PDF header, got %q", string(pdfBytes[:8]))
+		}
+	})
 }

@@ -2,15 +2,20 @@ package services
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"image"
+	_ "image/jpeg"
 	"image/png"
 	"math"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/fogleman/gg"
+	_ "golang.org/x/image/webp"
 )
 
 // Constants matching shared configuration
@@ -232,6 +237,47 @@ func findFontPath(fontFile string) (string, error) {
 	return "", fmt.Errorf("could not find font file %s in local or ancestor asset directories", fontFile)
 }
 
+// decodeSlideImage parses and decodes an image from a data URI or HTTP/HTTPS URL
+func decodeSlideImage(raw string) (image.Image, error) {
+	raw = strings.TrimSpace(raw)
+	if strings.HasPrefix(raw, "http://") || strings.HasPrefix(raw, "https://") {
+		client := &http.Client{Timeout: 5 * time.Second}
+		resp, err := client.Get(raw)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch image from URL: %w", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("fetching image returned status %d", resp.StatusCode)
+		}
+		img, _, err := image.Decode(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode downloaded image: %w", err)
+		}
+		return img, nil
+	}
+
+	dataStr := raw
+	if idx := strings.Index(raw, ","); idx != -1 {
+		dataStr = raw[idx+1:]
+	}
+	dataStr = strings.TrimSpace(dataStr)
+
+	decoded, err := base64.StdEncoding.DecodeString(dataStr)
+	if err != nil {
+		decoded, err = base64.RawStdEncoding.DecodeString(dataStr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode base64 image: %w", err)
+		}
+	}
+
+	img, _, err := image.Decode(bytes.NewReader(decoded))
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode image format: %w", err)
+	}
+	return img, nil
+}
+
 // RenderCarouselSlideFrame renders an individual carousel slide canvas frame into an image.Image
 func RenderCarouselSlideFrame(deck CarouselParams, slideIndex int) (image.Image, error) {
 	if slideIndex < 0 || slideIndex >= len(deck.Slides) {
@@ -400,9 +446,40 @@ func RenderCarouselSlideFrame(deck CarouselParams, slideIndex int) (image.Image,
 		bodyHeight = float64(len(subtitleLines)) * bodyLineHeight
 	}
 
+	// Check image attachment
+	hasImage := slide.ImageUrl != nil && strings.TrimSpace(*slide.ImageUrl) != ""
+	var slideImg image.Image
+	var imgScale, renderedImgH float64
+	if hasImage {
+		var imgErr error
+		slideImg, imgErr = decodeSlideImage(*slide.ImageUrl)
+		if imgErr != nil {
+			return nil, fmt.Errorf("failed to decode image for slide %d: %w", slideIndex+1, imgErr)
+		}
+		origW := float64(slideImg.Bounds().Dx())
+		origH := float64(slideImg.Bounds().Dy())
+		if origW > 0 && origH > 0 {
+			usedTextHeight := titleHeight
+			if hasListItems || hasSubtitle {
+				usedTextHeight += gap + bodyHeight
+			}
+			maxImgH := math.Max(80.0, boxHeight-usedTextHeight-gap)
+			scaleW := boxWidth / origW
+			scaleH := maxImgH / origH
+			imgScale = math.Min(scaleW, scaleH)
+			if imgScale > 1.0 {
+				imgScale = 1.0
+			}
+			renderedImgH = origH * imgScale
+		}
+	}
+
 	totalContentHeight := titleHeight
 	if hasListItems || hasSubtitle {
 		totalContentHeight += gap + bodyHeight
+	}
+	if hasImage && slideImg != nil {
+		totalContentHeight += gap*0.75 + renderedImgH
 	}
 
 	// Determine vertical alignment and starting Y
@@ -462,6 +539,16 @@ func RenderCarouselSlideFrame(deck CarouselParams, slideIndex int) (image.Image,
 			dc.DrawStringAnchored(line, targetX, currentY, ax, 0.8)
 			currentY += bodyLineHeight
 		}
+	}
+
+	// Draw Image if present
+	if hasImage && slideImg != nil {
+		imgCenterY := currentY + gap*0.75 + renderedImgH/2.0
+		imgCenterX := float64(deck.Width) / 2.0
+		dc.Push()
+		dc.Scale(imgScale, imgScale)
+		dc.DrawImageAnchored(slideImg, int(imgCenterX/imgScale), int(imgCenterY/imgScale), 0.5, 0.5)
+		dc.Pop()
 	}
 
 	return dc.Image(), nil
