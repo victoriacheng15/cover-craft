@@ -40,7 +40,7 @@ jobs:
 
       - name: Tofu Init
         working-directory: tofu
-        run: tofu init
+        run: tofu init -upgrade
         env:
           ARM_CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
           ARM_CLIENT_SECRET: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
