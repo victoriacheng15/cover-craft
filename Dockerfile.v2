@@ -20,7 +20,7 @@
 FROM golang:1.26-alpine AS go-source
 
 # Stage 2: Final dev container with Node.js + Go
-FROM node:lts-bookworm-slim
+FROM node:lts-trixie-slim
 WORKDIR /app
 
 # Install native dependencies for process management and utilities
@@ -33,12 +33,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# Register Microsoft package repository and install Azure Functions Core Tools
+RUN curl -sSL https://packages.microsoft.com/config/debian/13/packages-microsoft-prod.deb -o /tmp/packages-microsoft-prod.deb \
+    && dpkg -i /tmp/packages-microsoft-prod.deb \
+    && rm /tmp/packages-microsoft-prod.deb \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends azure-functions-core-tools-4 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy Go compiler directly from the Go source stage
 COPY --from=go-source /usr/local/go/ /usr/local/go/
 ENV PATH=$PATH:/usr/local/go/bin
 
-# Install PM2, Azure Functions Core Tools, and Azurite globally
-RUN npm install -g pm2 azure-functions-core-tools@4 azurite
+# Install PM2 and Azurite globally
+RUN npm install -g pm2 azurite
 
 # Copy package descriptors first to build a cache
 COPY frontend/package.json frontend/package-lock.json ./frontend/
