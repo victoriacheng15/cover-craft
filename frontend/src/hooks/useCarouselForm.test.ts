@@ -461,4 +461,46 @@ describe("useCarouselForm", () => {
 			}),
 		);
 	});
+
+	it("includes imageUrl in payload when slide has image attached", async () => {
+		const { result } = renderHook(() => useCarouselForm());
+
+		const sampleImageUrl =
+			"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
+		act(() => {
+			result.current.updateSlide(0, {
+				title: "Visual Slide",
+				imageUrl: sampleImageUrl,
+			});
+			result.current.updateSlide(1, {
+				title: "Standard Slide",
+			});
+		});
+
+		generateCarouselMock.mockResolvedValueOnce({
+			id: "job-img",
+			jobId: "job-img",
+			message: "Accepted",
+		});
+
+		await act(async () => {
+			await result.current.handleGenerate();
+		});
+
+		expect(result.current.error).toBeNull();
+		expect(generateCarouselMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				slides: expect.arrayContaining([
+					expect.objectContaining({
+						title: "Visual Slide",
+						imageUrl: sampleImageUrl,
+					}),
+					expect.objectContaining({
+						title: "Standard Slide",
+					}),
+				]),
+			}),
+		);
+	});
 });

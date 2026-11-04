@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	Button,
 	Card,
@@ -30,6 +30,31 @@ export function CarouselPreviewCanvas({
 	className,
 }: CarouselPreviewCanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const [imageObj, setImageObj] = useState<HTMLImageElement | null>(null);
+
+	useEffect(() => {
+		if (!slide.imageUrl) {
+			setImageObj(null);
+			return;
+		}
+		let isCancelled = false;
+		const img = new Image();
+		img.crossOrigin = "anonymous";
+		img.onload = () => {
+			if (!isCancelled) {
+				setImageObj(img);
+			}
+		};
+		img.onerror = () => {
+			if (!isCancelled) {
+				setImageObj(null);
+			}
+		};
+		img.src = slide.imageUrl;
+		return () => {
+			isCancelled = true;
+		};
+	}, [slide.imageUrl]);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -211,6 +236,28 @@ export function CarouselPreviewCanvas({
 			totalContentHeight += gap + bodyHeight;
 		}
 
+		// Image bounds calculation
+		let renderedImgW = 0;
+		let renderedImgH = 0;
+		if (imageObj) {
+			const origW = imageObj.naturalWidth || imageObj.width;
+			const origH = imageObj.naturalHeight || imageObj.height;
+			if (origW > 0 && origH > 0) {
+				const usedTextHeight =
+					titleHeight + (hasListItems || hasSubtitle ? gap + bodyHeight : 0);
+				const maxImgH = Math.max(80, boxHeight - usedTextHeight - gap);
+				const scaleW = boxWidth / origW;
+				const scaleH = maxImgH / origH;
+				const imgScale = Math.min(1.0, Math.min(scaleW, scaleH));
+				renderedImgW = origW * imgScale;
+				renderedImgH = origH * imgScale;
+			}
+		}
+
+		if (renderedImgH > 0) {
+			totalContentHeight += gap * 0.75 + renderedImgH;
+		}
+
 		// 9. Horizontal alignment
 		let targetX = contentMargin;
 		let canvasTextAlign: CanvasTextAlign = "left";
@@ -269,7 +316,14 @@ export function CarouselPreviewCanvas({
 				currentY += bodyLineHeight;
 			}
 		}
-	}, [deckSettings, slide, slideIndex, totalSlides]);
+
+		// 13. Draw Image if present
+		if (imageObj && renderedImgW > 0 && renderedImgH > 0) {
+			const imgTop = currentY + gap * 0.75;
+			const imgLeft = (width - renderedImgW) / 2;
+			ctx.drawImage(imageObj, imgLeft, imgTop, renderedImgW, renderedImgH);
+		}
+	}, [deckSettings, slide, slideIndex, totalSlides, imageObj]);
 
 	return (
 		<canvas

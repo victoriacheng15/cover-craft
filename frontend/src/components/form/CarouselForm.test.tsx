@@ -384,4 +384,42 @@ describe("CarouselForm", () => {
 			slideNumberPosition: "top-right",
 		});
 	});
+
+	it("renders visual image upload button and allows attaching/removing an image", () => {
+		render(<CarouselForm />);
+
+		const uploadBtn = screen.getByRole("button", {
+			name: /Upload image/i,
+		});
+		expect(uploadBtn).toBeInTheDocument();
+
+		const fileInput = screen.getByLabelText(/Upload slide image file/i);
+		const file = new File(["dummy content"], "diagram.png", {
+			type: "image/png",
+		});
+
+		fireEvent.change(fileInput, { target: { files: [file] } });
+	});
+
+	it("renders attached image preview and remove button when imageUrl is present", () => {
+		mockUseCarouselForm.mockReturnValue({
+			...baseMockReturn,
+			activeSlide: {
+				...baseMockReturn.activeSlide,
+				imageUrl: "data:image/png;base64,sampledata",
+			},
+		});
+
+		render(<CarouselForm />);
+
+		expect(screen.getByAltText("Attached image preview")).toBeInTheDocument();
+
+		const removeBtn = screen.getByRole("button", {
+			name: "Remove image",
+		});
+		fireEvent.click(removeBtn);
+		expect(mockUpdateSlide).toHaveBeenCalledWith(0, {
+			imageUrl: undefined,
+		});
+	});
 });
