@@ -468,3 +468,67 @@ func TestRenderBorder_AllStylesAndMultiplicities(t *testing.T) {
 		}
 	}
 }
+
+func TestRenderCarouselSlideFrame_ImageAttachment(t *testing.T) {
+	// 1x1 transparent PNG data URI
+	valid1x1Png := "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+	deck := CarouselParams{
+		Width:           1080,
+		Height:          1080,
+		BackgroundColor: "#0F172A",
+		TextColor:       "#F8FAFC",
+		Font:            CarouselParamsFontMontserrat,
+		Slides: []CarouselSlideParams{
+			{
+				Title:    "Slide with Visual Image",
+				ImageUrl: &valid1x1Png,
+			},
+			{
+				Title:    "Slide with Visual Image & Subtitle",
+				Subtitle: func() *string { s := "Architecture diagram below"; return &s }(),
+				ImageUrl: &valid1x1Png,
+			},
+		},
+	}
+
+	// Test slide 0 with image only
+	img0, err := RenderCarouselSlideFrame(deck, 0)
+	if err != nil {
+		t.Fatalf("expected slide 0 with image to render without error, got: %v", err)
+	}
+	if img0 == nil {
+		t.Fatal("expected non-nil image for slide 0")
+	}
+
+	// Test slide 1 with image and subtitle
+	img1, err := RenderCarouselSlideFrame(deck, 1)
+	if err != nil {
+		t.Fatalf("expected slide 1 with image and subtitle to render without error, got: %v", err)
+	}
+	if img1 == nil {
+		t.Fatal("expected non-nil image for slide 1")
+	}
+
+	// Test GenerateCarouselSlidePNG
+	pngBytes, err := GenerateCarouselSlidePNG(deck, 0)
+	if err != nil {
+		t.Fatalf("expected GenerateCarouselSlidePNG to succeed, got: %v", err)
+	}
+	if len(pngBytes) == 0 {
+		t.Fatal("expected non-empty PNG bytes")
+	}
+
+	// Test invalid image decoding returns descriptive error
+	badImg := "data:image/png;base64,not-valid-base64-content!!!"
+	badDeck := deck
+	badDeck.Slides = []CarouselSlideParams{
+		{
+			Title:    "Bad Image Slide",
+			ImageUrl: &badImg,
+		},
+	}
+	_, err = RenderCarouselSlideFrame(badDeck, 0)
+	if err == nil {
+		t.Fatal("expected error when rendering slide with corrupted image data, got nil")
+	}
+}
