@@ -376,6 +376,10 @@ components:
           pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
           description: Slide text color override. If omitted, uses deck textColor.
           example: '#F8FAFC'
+        imageUrl:
+          type: string
+          description: Optional data URI (base64) or URL of a user-provided image (such as a diagram, flowchart, or code screenshot).
+          example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
       required:
         - title
 

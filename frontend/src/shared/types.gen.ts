@@ -489,6 +489,11 @@ export interface components {
 			 * @example #F8FAFC
 			 */
 			textColor?: string;
+			/**
+			 * @description Optional data URI (base64) or URL of a user-provided image (such as a diagram, flowchart, or code screenshot).
+			 * @example data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==
+			 */
+			imageUrl?: string;
 		};
 		CarouselParams: {
 			/** @example 1080 */

@@ -161,6 +161,9 @@ type CarouselSlideParams struct {
 	// BackgroundColor Slide background color override. If omitted, uses deck backgroundColor.
 	BackgroundColor *string `json:"backgroundColor,omitempty"`
 
+	// ImageUrl Optional data URI (base64) or URL of a user-provided image (such as a diagram, flowchart, or code screenshot).
+	ImageUrl *string `json:"imageUrl,omitempty"`
+
 	// ListItems Optional bulleted or numbered list items
 	ListItems *[]string `json:"listItems,omitempty"`
 
