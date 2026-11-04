@@ -5,6 +5,8 @@ import {
 	getContrastRatio,
 	isValidHexColor,
 } from "@cover-craft/shared";
+import Image from "next/image";
+import { useCallback, useRef, useState } from "react";
 import {
 	Button,
 	Card,
@@ -73,6 +75,58 @@ export function CarouselFormControls({
 		const nextItems = activeSlide.listItems.filter((_, i) => i !== itemIndex);
 		updateSlide(activeSlideIndex, { listItems: nextItems });
 	};
+
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [imageError, setImageError] = useState<string | null>(null);
+	const [isDragging, setIsDragging] = useState(false);
+
+	const handleProcessFile = useCallback(
+		(file: File) => {
+			setImageError(null);
+			if (!file.type.startsWith("image/")) {
+				setImageError("Please select a valid image file (PNG, JPEG, or WebP).");
+				return;
+			}
+			const maxSizeBytes = 3 * 1024 * 1024;
+			if (file.size > maxSizeBytes) {
+				setImageError(
+					"Image size exceeds 3MB limit. Please choose a smaller image.",
+				);
+				return;
+			}
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				const result = e.target?.result;
+				if (typeof result === "string") {
+					updateSlide(activeSlideIndex, { imageUrl: result });
+				}
+			};
+			reader.onerror = () => {
+				setImageError("Failed to read image file.");
+			};
+			reader.readAsDataURL(file);
+		},
+		[activeSlideIndex, updateSlide],
+	);
+
+	const handlePaste = useCallback(
+		(e: React.ClipboardEvent) => {
+			const items = e.clipboardData?.items;
+			if (!items) return;
+			for (let i = 0; i < items.length; i++) {
+				const item = items[i];
+				if (item.type.startsWith("image/")) {
+					const file = item.getAsFile();
+					if (file) {
+						e.preventDefault();
+						handleProcessFile(file);
+						break;
+					}
+				}
+			}
+		},
+		[handleProcessFile],
+	);
 
 	return (
 		<div className="flex-1 flex flex-col gap-6">
@@ -353,6 +407,97 @@ export function CarouselFormControls({
 						</div>
 					</div>
 				)}
+
+				{/* Image Attachment */}
+				<div
+					className="flex flex-col gap-2 pt-2 border-t border-gray-200"
+					onPaste={handlePaste}
+				>
+					<span className="text-sm font-medium text-gray-900">Image</span>
+
+					{activeSlide.imageUrl ? (
+						<div className="flex items-center justify-between gap-4 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+							<Image
+								src={activeSlide.imageUrl}
+								alt="Attached image preview"
+								width={64}
+								height={64}
+								unoptimized
+								className="h-16 w-16 object-contain rounded-lg border border-gray-300 bg-white"
+							/>
+							<div className="flex items-center gap-2">
+								<Button
+									type="button"
+									variant="outline"
+									className="h-8 px-3 text-xs"
+									onClick={() => fileInputRef.current?.click()}
+									aria-label="Replace image"
+								>
+									Replace
+								</Button>
+								<Button
+									type="button"
+									variant="outline"
+									className="h-8 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+									onClick={() =>
+										updateSlide(activeSlideIndex, { imageUrl: undefined })
+									}
+									aria-label="Remove image"
+								>
+									Remove
+								</Button>
+							</div>
+						</div>
+					) : (
+						<button
+							type="button"
+							onDragOver={(e) => {
+								e.preventDefault();
+								setIsDragging(true);
+							}}
+							onDragLeave={() => setIsDragging(false)}
+							onDrop={(e) => {
+								e.preventDefault();
+								setIsDragging(false);
+								const file = e.dataTransfer.files?.[0];
+								if (file) handleProcessFile(file);
+							}}
+							onClick={() => fileInputRef.current?.click()}
+							className={`w-full flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-xl cursor-pointer transition-colors text-center ${
+								isDragging
+									? "border-emerald-500 bg-emerald-50"
+									: "border-gray-300 hover:border-emerald-400 bg-gray-50/50"
+							}`}
+							aria-label="Upload image"
+						>
+							<span className="text-xs font-semibold text-gray-700">
+								Click, drag, or paste image
+							</span>
+							<span className="text-[11px] text-gray-400 mt-1">
+								PNG, JPEG, or WebP up to 3MB
+							</span>
+						</button>
+					)}
+
+					<input
+						ref={fileInputRef}
+						type="file"
+						accept="image/png,image/jpeg,image/webp"
+						className="hidden"
+						aria-label="Upload slide image file"
+						onChange={(e) => {
+							const file = e.target.files?.[0];
+							if (file) handleProcessFile(file);
+							e.target.value = "";
+						}}
+					/>
+
+					{imageError && (
+						<p className="text-xs text-red-600 font-medium" role="alert">
+							{imageError}
+						</p>
+					)}
+				</div>
 
 				{/* Alignment Controls */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-200">

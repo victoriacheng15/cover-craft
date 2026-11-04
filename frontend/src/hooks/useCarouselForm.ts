@@ -37,6 +37,7 @@ export interface CarouselSlideItem {
 	verticalAlign: "top" | "center" | "bottom";
 	textColor?: string;
 	backgroundColor?: string;
+	imageUrl?: string;
 }
 
 export interface CarouselDeckSettings {
@@ -358,6 +359,9 @@ export function useCarouselForm() {
 			}
 			if (s.backgroundColor && isValidHexColor(s.backgroundColor)) {
 				slideParam.backgroundColor = s.backgroundColor;
+			}
+			if (s.imageUrl && s.imageUrl.trim() !== "") {
+				slideParam.imageUrl = s.imageUrl.trim();
 			}
 			return slideParam;
 		});

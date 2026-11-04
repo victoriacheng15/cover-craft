@@ -131,4 +131,24 @@ describe("CarouselPreviewDisplay", () => {
 		fireEvent.click(zipBtn);
 		expect(mockHandleDownloadZip).toHaveBeenCalledTimes(1);
 	});
+
+	it("renders slide preview with an attached imageUrl", () => {
+		const propsWithImage: CarouselPreviewDisplayProps = {
+			...defaultProps,
+			slides: [
+				{
+					...defaultProps.slides[0],
+					imageUrl:
+						"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+				},
+				defaultProps.slides[1],
+			],
+		};
+
+		render(<CarouselPreviewDisplay {...propsWithImage} />);
+
+		expect(
+			screen.getByLabelText("Preview of slide 1: Slide One"),
+		).toBeInTheDocument();
+	});
 });
