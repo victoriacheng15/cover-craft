@@ -1,6 +1,7 @@
 package services
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -790,6 +791,48 @@ func TestValidateCarouselParams(t *testing.T) {
 			}(),
 			expectError: true,
 			errorField:  "slides[0].contrast",
+		},
+		{
+			name: "Valid slide with data URI imageUrl",
+			params: func() CarouselParams {
+				p := baseValidParams
+				validImg := "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+				p.Slides = []CarouselSlideParams{{Title: "Valid", ImageUrl: &validImg}, validSlide2}
+				return p
+			}(),
+			expectError: false,
+		},
+		{
+			name: "Valid slide with https URL imageUrl",
+			params: func() CarouselParams {
+				p := baseValidParams
+				validImg := "https://example.com/diagram.png"
+				p.Slides = []CarouselSlideParams{{Title: "Valid", ImageUrl: &validImg}, validSlide2}
+				return p
+			}(),
+			expectError: false,
+		},
+		{
+			name: "Invalid slide imageUrl format",
+			params: func() CarouselParams {
+				p := baseValidParams
+				badImg := "ftp://example.com/bad.png"
+				p.Slides = []CarouselSlideParams{{Title: "Valid", ImageUrl: &badImg}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].imageUrl",
+		},
+		{
+			name: "Oversized slide imageUrl payload",
+			params: func() CarouselParams {
+				p := baseValidParams
+				oversizedImg := "data:image/png;base64," + strings.Repeat("A", MaxCarouselImageSize+10)
+				p.Slides = []CarouselSlideParams{{Title: "Valid", ImageUrl: &oversizedImg}, validSlide2}
+				return p
+			}(),
+			expectError: true,
+			errorField:  "slides[0].imageUrl",
 		},
 	}
 

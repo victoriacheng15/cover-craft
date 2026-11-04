@@ -24,6 +24,7 @@ const (
 	MaxCarouselAuthorHandleLength = 30
 	MinCarouselSlides             = 2
 	MaxCarouselSlides             = 10
+	MaxCarouselImageSize          = 3 * 1024 * 1024 // 3MB maximum for image data URI or URL
 )
 
 var (
@@ -596,6 +597,22 @@ func ValidateCarouselParams(params CarouselParams) []ValidationError {
 						Message: fmt.Sprintf("List item must be %d characters or less", MaxCarouselListItemLength),
 					})
 				}
+			}
+		}
+
+		// ImageUrl validation
+		if slide.ImageUrl != nil && strings.TrimSpace(*slide.ImageUrl) != "" {
+			trimmedUrl := strings.TrimSpace(*slide.ImageUrl)
+			if len(trimmedUrl) > MaxCarouselImageSize {
+				errors = append(errors, ValidationError{
+					Field:   fmt.Sprintf("%s.imageUrl", prefix),
+					Message: "Image payload exceeds maximum allowed size of 3MB",
+				})
+			} else if !strings.HasPrefix(trimmedUrl, "data:image/") && !strings.HasPrefix(trimmedUrl, "http://") && !strings.HasPrefix(trimmedUrl, "https://") {
+				errors = append(errors, ValidationError{
+					Field:   fmt.Sprintf("%s.imageUrl", prefix),
+					Message: "Image must be a valid data URI (data:image/...) or web URL",
+				})
 			}
 		}
 
